@@ -4,7 +4,7 @@ email: info@airboxlab.com
 description: > # this means to ignore newlines until "baseurl:"
   Airboxlab technical blog, talking about our achievements, our fails, our OSS contributions, ...
 baseurl: "" # the subpath of your site, e.g. /blog/
-url: "https://airboxlav.github.com/" # the base hostname & protocol for your site
+url: "https://airboxlab.github.com/" # the base hostname & protocol for your site
 twitter_username: Airboxlab
 github_username:  airboxlab
 
