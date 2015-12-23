@@ -6,12 +6,12 @@
     <meta name="viewport" content="width=device-width initial-scale=1" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
-    <title>About</title>
+    <title>Detecting and visualizing pollution communities with Louvain algorithm, Spark and D3</title>
     <meta name="description" content="Airboxlab technical blog, talking about our achievements, our fails, our OSS contributions, ...
 ">
 
     <link rel="stylesheet" href="/css/main.css">
-    <link rel="canonical" href="https://airboxlab.github.com//about/">
+    <link rel="canonical" href="https://airboxlab.github.com//spark/machine-learning/d3/louvain/2015/12/23/louvain.html">
 </head>
 
 
@@ -57,13 +57,51 @@
         <div class="post">
 
   <header class="post-header">
-    <h1 class="post-title">About</h1>
+    <h1 class="post-title">Detecting and visualizing pollution communities with Louvain algorithm, Spark and D3</h1>
+    <p class="post-meta">Dec 23, 2015 • Antoine Galataud</p>
   </header>
 
   <article class="post-content">
-    <p>Airboxlab is an actor of the IoT field, designing, producing and delivering air quality monitoring solutions (both hardware and software).</p>
+    <h2 id="context">Context</h2>
+
+<p>Here at Airboxlab, we collect and analyze indoor pollution to make people life safer and easier.</p>
+
+<p>We&#39;re analyzing Foobot sensors data individually so we can inform and alert our customers when pollution levels are higher than recommended, but we&#39;re also trying to analyze global trends with various technics.</p>
+
+<p>Lately, we&#39;ve been interested in using community detection algorithms. Our hopes are to analyze communities size and evolution over time, find trends, and correlate their appearance with external factors.</p>
+
+<p>These algorithms are known to be used by major social networks companies to detect communities in their networks. There are also lot of academic researches in this field; analyzing various types of data sets with community detection algorithms can help find how people are connected. For instance, analyzing phone call logs can highlight where money can be invested in new infrastructure, what are the main communities in a region or country and how they are composed (among criterion like language, age, ...) </p>
+
+<h2 id="louvain-algorithm">Louvain algorithm</h2>
+
+<p>Some well known examples are <a href="https://perso.uclouvain.be/vincent.blondel/research/louvain.html">Twitter and LinkedIn</a>.     </p>
+
+<h3 id="principles">Principles</h3>
+
+<h3 id="implementation-in-spark">Implementation in Spark</h3>
+
+<h2 id="finding-communities-in-foobots">Finding communities in Foobots</h2>
+
+<h2 id="plotting-results-with-d3">Plotting results with D3</h2>
 
   </article>
+  
+  
+<div id="disqus_thread"></div>
+  <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'airboxlabtechnicalblog'; // required: replace example with your forum shortname
+	var disqus_url = 'https://airboxlab.github.com//spark/machine-learning/d3/louvain/2015/12/23/louvain.html';
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+  </script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+    
 
 </div>
 
@@ -129,6 +167,20 @@
 
 
     
+<div id="disqus_thread"></div>
+  <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'airboxlabtechnicalblog'; // required: replace example with your forum shortname
+	var disqus_url = 'https://airboxlab.github.com//spark/machine-learning/d3/louvain/2015/12/23/louvain.html';
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+  </script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
     
 
   </body>
