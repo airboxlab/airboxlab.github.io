@@ -6,12 +6,12 @@
 </description>
     <link>https://airboxlab.github.com//</link>
     <atom:link href="https://airboxlab.github.com//feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Thu, 24 Dec 2015 15:26:46 +0100</pubDate>
-    <lastBuildDate>Thu, 24 Dec 2015 15:26:46 +0100</lastBuildDate>
+    <pubDate>Mon, 28 Dec 2015 15:09:59 +0100</pubDate>
+    <lastBuildDate>Mon, 28 Dec 2015 15:09:59 +0100</lastBuildDate>
     <generator>Jekyll v3.0.1</generator>
     
       <item>
-        <title>Detecting and visualizing pollution communities with Louvain algorithm, Spark and D3</title>
+        <title>Detecting and visualizing pollution communities with Louvain method, Spark GraphX and D3.js</title>
         <description>&lt;h2 id=&quot;context&quot;&gt;Context&lt;/h2&gt;
 
 &lt;p&gt;Here at Airboxlab, we collect and analyze indoor pollution to make people life safer and easier.&lt;/p&gt;
@@ -22,55 +22,103 @@
 
 &lt;p&gt;These algorithms are known to be used by major social networks companies to detect communities in their networks. There are also lot of academic researches in this field; analyzing various types of data sets with community detection algorithms can help find how people are connected. For instance, analyzing phone call logs can highlight where money can be invested in new infrastructure, what are the main communities in a region or country and how they are composed (among criterion like language, age, ...) &lt;/p&gt;
 
-&lt;p&gt;There are different methods for community detection, like &lt;em&gt;Minimum-cut&lt;/em&gt;, &lt;em&gt;Hierarchical clustering&lt;/em&gt;, &lt;em&gt;Girvan-Newman algorithm&lt;/em&gt; or &lt;em&gt;Modularity maximization&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;There are different methods for community detection, like &lt;em&gt;Minimum-cut&lt;/em&gt;, &lt;em&gt;Hierarchical clustering&lt;/em&gt;, &lt;em&gt;Girvan-Newman algorithm&lt;/em&gt; or &lt;em&gt;Modularity maximization&lt;/em&gt;.
+Introductions for these methods can be found on &lt;a href=&quot;https://en.wikipedia.org/wiki/Community_structure&quot;&gt;Wikipedia&lt;/a&gt;&lt;/p&gt;
 
 &lt;p&gt;Discovering communities can also be seen as a clustering problem within graph structures.&lt;/p&gt;
 
 &lt;h2 id=&quot;louvain-algorithm&quot;&gt;Louvain algorithm&lt;/h2&gt;
 
-&lt;p&gt;Louvain method was originally described by Vincent D. Blondel, Jean-Loup Guillaume, Renaud Lambiotte and Etienne Lefebvre. The algorithm took the name of the &lt;em&gt;Université catholique de Louvain&lt;/em&gt; in Belgium, where the 4 authors are researchers.&lt;/p&gt;
+&lt;p&gt;Louvain method was originally described&lt;sup id=&quot;fnref1&quot;&gt;&lt;a href=&quot;#fn1&quot; rel=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt; by Vincent D. Blondel, Jean-Loup Guillaume, Renaud Lambiotte and Etienne Lefebvre. The algorithm took the name of the &lt;em&gt;Université catholique de Louvain&lt;/em&gt; in Belgium, where the 4 authors are researchers.&lt;/p&gt;
 
 &lt;p&gt;It aims at maximizing modularity using heuristic. &lt;/p&gt;
 
-&lt;h3 id=&quot;definition&quot;&gt;Definition&lt;/h3&gt;
+&lt;h4 id=&quot;definition&quot;&gt;Definition&lt;/h4&gt;
 
 &lt;p&gt;Modularity value to be optimized is defined as:
 &lt;img src=&quot;https://upload.wikimedia.org/math/c/f/6/cf68353cacdbbaf0c5d53c251083af4b.png&quot; alt=&quot;mod&quot; title=&quot;Modularity formula&quot;&gt;&lt;/p&gt;
 
+&lt;p&gt;where &lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;img src=&quot;https://upload.wikimedia.org/math/f/8/9/f896be3d8636bddc74beebe184293aff.png&quot; alt=&quot;Aij&quot;&gt; is the weight of the edge between &lt;em&gt;i&lt;/em&gt; and &lt;em&gt;j&lt;/em&gt;&lt;/li&gt;
+&lt;li&gt;&lt;img src=&quot;https://upload.wikimedia.org/math/2/6/e/26e634477c7a1285bb21c5df84371894.png&quot; alt=&quot;ki&quot;&gt; is the sum of the weights of the edges attached to &lt;em&gt;i&lt;/em&gt;&lt;/li&gt;
+&lt;li&gt;&lt;img src=&quot;https://upload.wikimedia.org/math/6/f/8/6f8f57715090da2632453988d9a1501b.png&quot; alt=&quot;m&quot;&gt; is half the sum of all edge weights in the graph. &lt;/li&gt;
+&lt;li&gt;&lt;img src=&quot;https://upload.wikimedia.org/math/d/9/8/d9899588b2b28a768a63ade0f3523596.png&quot; alt=&quot;ci&quot;&gt; is the community to which &lt;em&gt;i&lt;/em&gt; is attached&lt;/li&gt;
+&lt;li&gt;&lt;img src=&quot;https://upload.wikimedia.org/math/f/1/0/f10f03c9836c36537d2539196058bfa2.png&quot; alt=&quot;delta&quot; title=&quot;delta&quot;&gt; is 1 if &lt;img src=&quot;https://upload.wikimedia.org/math/d/9/8/d9899588b2b28a768a63ade0f3523596.png&quot; alt=&quot;ci&quot;&gt; = &lt;img src=&quot;https://upload.wikimedia.org/math/e/b/e/ebeeb713d38e86da62ba72e61376a622.png&quot; alt=&quot;cj&quot;&gt; (same community), 0 otherwise.&lt;/li&gt;
+&lt;/ul&gt;
+
 &lt;p&gt;The algorithm has a 2 steps approach that are repeated iteratively until modularity value is optimized. &lt;/p&gt;
 
-&lt;p&gt;First, the method looks for small communities by optimizing modularity locally. Second, it aggregates nodes belonging to the same community and builds a new network. Nodes of this network are the aggregated ones built during 2nd phase. It iterates until modularity value is optimized.  &lt;/p&gt;
+&lt;p&gt;First, the method looks for small communities by optimizing modularity locally. Second, it aggregates nodes belonging to the same community and builds a new network. Nodes of this network are the aggregated ones built during 2nd phase. It iterates until modularity value is optimized.&lt;/p&gt;
 
-&lt;h3 id=&quot;advantages&quot;&gt;Advantages&lt;/h3&gt;
+&lt;p&gt;A graphical representation of the iterations can be found in original paper&lt;sup id=&quot;fnref1&quot;&gt;&lt;a href=&quot;#fn1&quot; rel=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt; as below&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://airboxlab.github.com//assets/pol.jpg&quot; alt=&quot;iterations&quot;&gt; &lt;/p&gt;
+
+&lt;h4 id=&quot;advantages&quot;&gt;Advantages&lt;/h4&gt;
 
 &lt;ul&gt;
 &lt;li&gt;scalability (performs faster on huge graphs than other methods)&lt;/li&gt;
 &lt;li&gt;simple to code&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h3 id=&quot;pitfalls&quot;&gt;Pitfalls&lt;/h3&gt;
+&lt;h4 id=&quot;pitfalls&quot;&gt;Pitfalls&lt;/h4&gt;
 
 &lt;ul&gt;
 &lt;li&gt;Iterative process can hide small communities found during intermediate phases. The result may be a coarse-grained high level representation of communities, which may not have the granularity needed for analysis. Hopefully, the nature of the algorithm makes it simple to save intermediate phases&amp;#39; results so we can analyze different communities structures at different levels&lt;/li&gt;
-&lt;li&gt;Heuristic used to  initialize phases and find local maximums can lead to not reproductible and not always optimized results. But this is the same with all data algorithms based on heuristic (see K-Means for instance)&lt;br&gt;&lt;/li&gt;
+&lt;li&gt;Heuristic used to  initialize phases and find local maximums can lead to not reproducible and not always optimized results. But this is the same with all data algorithms relying on heuristic (K-Means for instance)&lt;br&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;Some well known usages in social networks are &lt;a href=&quot;https://perso.uclouvain.be/vincent.blondel/research/louvain.html&quot;&gt;Twitter and LinkedIn&lt;/a&gt;. The original study was based on phone calls logs originated from Belgian telecommunication operations&lt;/p&gt;
+&lt;h4 id=&quot;applications&quot;&gt;Applications&lt;/h4&gt;
 
-&lt;h3 id=&quot;implementation-in-spark&quot;&gt;Implementation in Spark&lt;/h3&gt;
+&lt;p&gt;The original study was based on phone calls logs originated from Belgian telecommunication operators.&lt;/p&gt;
+
+&lt;p&gt;Some public examples of applications can be found on &lt;a href=&quot;https://perso.uclouvain.be/vincent.blondel/research/louvain.html&quot;&gt;Vincent Blondel&amp;#39;s personal blog&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Also, here is a detailed study made on &lt;a href=&quot;http://arxiv.org/pdf/1502.03406.pdf&quot;&gt;mobile phone data sets&lt;/a&gt;.  &lt;/p&gt;
+
+&lt;p&gt;An implementation for Apache Spark is available on &lt;a href=&quot;https://github.com/Sotera/spark-distributed-louvain-modularity&quot;&gt;github&lt;/a&gt;.&lt;/p&gt;
 
 &lt;h2 id=&quot;finding-communities-in-foobots&quot;&gt;Finding communities in Foobots&lt;/h2&gt;
 
+&lt;p&gt;First of all, you may be asking: but how are Foobots connected to each other? Simple answer: they aren&amp;#39;t. There is no direct relation or link between 2 devices, except when they both have the same owner.&lt;/p&gt;
+
+&lt;p&gt;As a consequence, we will have to draw artificial links (or edges) between them, based on following criteria:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;geographical distance&lt;sup id=&quot;fnref2&quot;&gt;&lt;a href=&quot;#fn2&quot; rel=&quot;footnote&quot;&gt;2&lt;/a&gt;&lt;/sup&gt; between devices&lt;/li&gt;
+&lt;li&gt;euclidean distance&lt;sup id=&quot;fnref3&quot;&gt;&lt;a href=&quot;#fn3&quot; rel=&quot;footnote&quot;&gt;3&lt;/a&gt;&lt;/sup&gt; between average pollutant values of devices&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Same thing for edges weights: as stated in modularity definition, weight between edges is taken into account and is playing a role in nodes (or vertices) grouping. 
+Setting a meaningful weight on each edge is a tricky problem, and there is probably no single solution for it; it will highly depend on what we analyze, what we want to find or what we want to correlate to. 
+For the purpose of this article, we choose to define weight by using the distance between pollutant values of devices: the closer values are, the bigger weight will be.&lt;/p&gt;
+
 &lt;h2 id=&quot;plotting-results-with-d3&quot;&gt;Plotting results with D3&lt;/h2&gt;
 
-&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
+&lt;div class=&quot;footnotes&quot;&gt;
+&lt;hr&gt;
+&lt;ol&gt;
 
-&lt;p&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/Community_structure&quot;&gt;Community structure&lt;/a&gt;
-&lt;a href=&quot;http://arxiv.org/abs/0803.0476&quot;&gt;Louvain method original paper&lt;/a&gt;&lt;/p&gt;
+&lt;li id=&quot;fn1&quot;&gt;
+&lt;p&gt;&lt;a href=&quot;http://arxiv.org/abs/0803.0476&quot;&gt;Louvain method original paper&lt;/a&gt;&amp;nbsp;&lt;a href=&quot;#fnref1&quot; rev=&quot;footnote&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+
+&lt;li id=&quot;fn2&quot;&gt;
+&lt;p&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/Haversine_formula&quot;&gt;Haversine formula for geographical distance calculation&lt;/a&gt;&amp;nbsp;&lt;a href=&quot;#fnref2&quot; rev=&quot;footnote&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+
+&lt;li id=&quot;fn3&quot;&gt;
+&lt;p&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/Euclidean_distance&quot;&gt;Euclidean distance&lt;/a&gt;&amp;nbsp;&lt;a href=&quot;#fnref3&quot; rev=&quot;footnote&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+
+&lt;/ol&gt;
+&lt;/div&gt;
 </description>
-        <pubDate>Thu, 24 Dec 2015 15:26:46 +0100</pubDate>
-        <link>https://airboxlab.github.com//spark/machine-learning/d3/louvain/2015/12/24/louvain.html</link>
-        <guid isPermaLink="true">https://airboxlab.github.com//spark/machine-learning/d3/louvain/2015/12/24/louvain.html</guid>
+        <pubDate>Mon, 28 Dec 2015 15:09:59 +0100</pubDate>
+        <link>https://airboxlab.github.com//spark/machine-learning/d3/louvain/2015/12/28/louvain.html</link>
+        <guid isPermaLink="true">https://airboxlab.github.com//spark/machine-learning/d3/louvain/2015/12/28/louvain.html</guid>
         
         
         <category>spark</category>
