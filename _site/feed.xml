@@ -6,8 +6,8 @@
 </description>
     <link>https://airboxlab.github.com//</link>
     <atom:link href="https://airboxlab.github.com//feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Wed, 23 Dec 2015 22:10:16 +0100</pubDate>
-    <lastBuildDate>Wed, 23 Dec 2015 22:10:16 +0100</lastBuildDate>
+    <pubDate>Thu, 24 Dec 2015 15:26:46 +0100</pubDate>
+    <lastBuildDate>Thu, 24 Dec 2015 15:26:46 +0100</lastBuildDate>
     <generator>Jekyll v3.0.1</generator>
     
       <item>
@@ -22,21 +22,55 @@
 
 &lt;p&gt;These algorithms are known to be used by major social networks companies to detect communities in their networks. There are also lot of academic researches in this field; analyzing various types of data sets with community detection algorithms can help find how people are connected. For instance, analyzing phone call logs can highlight where money can be invested in new infrastructure, what are the main communities in a region or country and how they are composed (among criterion like language, age, ...) &lt;/p&gt;
 
+&lt;p&gt;There are different methods for community detection, like &lt;em&gt;Minimum-cut&lt;/em&gt;, &lt;em&gt;Hierarchical clustering&lt;/em&gt;, &lt;em&gt;Girvan-Newman algorithm&lt;/em&gt; or &lt;em&gt;Modularity maximization&lt;/em&gt;.&lt;/p&gt;
+
+&lt;p&gt;Discovering communities can also be seen as a clustering problem within graph structures.&lt;/p&gt;
+
 &lt;h2 id=&quot;louvain-algorithm&quot;&gt;Louvain algorithm&lt;/h2&gt;
 
-&lt;p&gt;Some well known examples are &lt;a href=&quot;https://perso.uclouvain.be/vincent.blondel/research/louvain.html&quot;&gt;Twitter and LinkedIn&lt;/a&gt;.     &lt;/p&gt;
+&lt;p&gt;Louvain method was originally described by Vincent D. Blondel, Jean-Loup Guillaume, Renaud Lambiotte and Etienne Lefebvre. The algorithm took the name of the &lt;em&gt;Université catholique de Louvain&lt;/em&gt; in Belgium, where the 4 authors are researchers.&lt;/p&gt;
 
-&lt;h3 id=&quot;principles&quot;&gt;Principles&lt;/h3&gt;
+&lt;p&gt;It aims at maximizing modularity using heuristic. &lt;/p&gt;
+
+&lt;h3 id=&quot;definition&quot;&gt;Definition&lt;/h3&gt;
+
+&lt;p&gt;Modularity value to be optimized is defined as:
+&lt;img src=&quot;https://upload.wikimedia.org/math/c/f/6/cf68353cacdbbaf0c5d53c251083af4b.png&quot; alt=&quot;mod&quot; title=&quot;Modularity formula&quot;&gt;&lt;/p&gt;
+
+&lt;p&gt;The algorithm has a 2 steps approach that are repeated iteratively until modularity value is optimized. &lt;/p&gt;
+
+&lt;p&gt;First, the method looks for small communities by optimizing modularity locally. Second, it aggregates nodes belonging to the same community and builds a new network. Nodes of this network are the aggregated ones built during 2nd phase. It iterates until modularity value is optimized.  &lt;/p&gt;
+
+&lt;h3 id=&quot;advantages&quot;&gt;Advantages&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;scalability (performs faster on huge graphs than other methods)&lt;/li&gt;
+&lt;li&gt;simple to code&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;pitfalls&quot;&gt;Pitfalls&lt;/h3&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Iterative process can hide small communities found during intermediate phases. The result may be a coarse-grained high level representation of communities, which may not have the granularity needed for analysis. Hopefully, the nature of the algorithm makes it simple to save intermediate phases&amp;#39; results so we can analyze different communities structures at different levels&lt;/li&gt;
+&lt;li&gt;Heuristic used to  initialize phases and find local maximums can lead to not reproductible and not always optimized results. But this is the same with all data algorithms based on heuristic (see K-Means for instance)&lt;br&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Some well known usages in social networks are &lt;a href=&quot;https://perso.uclouvain.be/vincent.blondel/research/louvain.html&quot;&gt;Twitter and LinkedIn&lt;/a&gt;. The original study was based on phone calls logs originated from Belgian telecommunication operations&lt;/p&gt;
 
 &lt;h3 id=&quot;implementation-in-spark&quot;&gt;Implementation in Spark&lt;/h3&gt;
 
 &lt;h2 id=&quot;finding-communities-in-foobots&quot;&gt;Finding communities in Foobots&lt;/h2&gt;
 
 &lt;h2 id=&quot;plotting-results-with-d3&quot;&gt;Plotting results with D3&lt;/h2&gt;
+
+&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/Community_structure&quot;&gt;Community structure&lt;/a&gt;
+&lt;a href=&quot;http://arxiv.org/abs/0803.0476&quot;&gt;Louvain method original paper&lt;/a&gt;&lt;/p&gt;
 </description>
-        <pubDate>Wed, 23 Dec 2015 22:10:16 +0100</pubDate>
-        <link>https://airboxlab.github.com//spark/machine-learning/d3/louvain/2015/12/23/louvain.html</link>
-        <guid isPermaLink="true">https://airboxlab.github.com//spark/machine-learning/d3/louvain/2015/12/23/louvain.html</guid>
+        <pubDate>Thu, 24 Dec 2015 15:26:46 +0100</pubDate>
+        <link>https://airboxlab.github.com//spark/machine-learning/d3/louvain/2015/12/24/louvain.html</link>
+        <guid isPermaLink="true">https://airboxlab.github.com//spark/machine-learning/d3/louvain/2015/12/24/louvain.html</guid>
         
         
         <category>spark</category>
