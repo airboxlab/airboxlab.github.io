@@ -46,7 +46,7 @@ First, the method looks for small communities by optimizing modularity locally. 
 
 A graphical representation of the iterations can be found in original paper[^1] as below
 
-![iterations]({{ site.url }}/assets/pol.jpg) 
+![iterations]({{ site.url }}assets/louvain/pol.jpg) 
 
 #### Advantages
 
@@ -72,21 +72,144 @@ An implementation for Apache Spark is available on [github](https://github.com/S
 
 First of all, you may be asking: but how are Foobots connected to each other? Simple answer: they aren't. There is no direct relation or link between 2 devices, except when they both have the same owner.
 
-As a consequence, we will have to draw artificial links (or edges) between them, based on following criteria:
+As a consequence, we will draw artificial links (or edges) between them, based on following criteria:
 
 - geographical distance[^2] between devices
 - euclidean distance[^3] between average pollutant values of devices
 
-Same thing for edges weights: as stated in modularity definition, weight between edges is taken into account and is playing a role in nodes (or vertices) grouping. 
-Setting a meaningful weight on each edge is a tricky problem, and there is probably no single solution for it; it will highly depend on what we analyze, what we want to find or what we want to correlate to. 
+Same thing for edges weights: as stated in modularity definition, weight of edges is taken into account and is playing a role in nodes (or vertices) grouping. 
+
+Setting a meaningful weight on each edge is a tricky problem, and there is probably multiple solutions to it; it will highly depend on what we analyze, what we want to find or what we want to correlate to. 
+
 For the purpose of this article, we choose to define weight by using the distance between pollutant values of devices: the closer values are, the bigger weight will be.
 
- 
+Let's start with fetching a Pair RDD that will have a key defined by the unique device identifier (UUID), and value being an array of the average sensor values (here taking only PM2.5[^5] and VOC[^6]), plus geolocation of device as a (latitude, longitude) tuple. For this article, we took a sample of connected devices, and the last 30 minutes of data for each.
+
+```scala
+val loaded: RDD[(String, (Array[Double], (Double, Double)))] = ... //some function that fetches data
+
+//(UUID, (Latitude, Longitude))
+val geoList: RDD[(String,(Double,Double)] = ...  
+
+```
+
+Now that we have our values, we will compute average and standard deviation for sensor values, and normalize them.
+Definition of <code>Utils</code> functions isn't provided here but they are very common ones, they can be easily written.
+
+```scala
+import Utils._
+val (means, stdevs) = meansAndStdevs(loaded.map(_._2._1))
+val normalized = loaded
+  .map {
+    case (uuid, (sensorValues, geoloc)) => (uuid, (normalize(sensorValues, means, stdevs), geoloc))
+  }
+```
+
+Then we define graph vertices, by associating each UUID with a unique long identifier (from hashCode()). 
+Long identifiers are required by Spark GraphX API.
+
+```scala
+val vertices = normalized
+  .map { case (uuid, (sensorValues, geoloc)) => (uuid, (sensorValues, geoloc, uuid.hashCode().toLong)) }
+  
+val vertexIds: RDD[(Long, String)] = vertices.map { uuid => (uuid._2._3, uuid._1) }
+```
+
+Now we definie edges. We artificially link Foobots by checking their geographical distance. 
+We define edge eight as a function of euclidean distance between 2 devices sensor data.
+
+```scala
+val edges: RDD[Edge[Long]] = vertices
+  .cartesian(vertices)
+  .filter { case (uuid1, uuid2) => !uuid1._1.equals(uuid2._1) } //no loop
+  .filter { case (uuid1, uuid2) => geoDistance(uuid1._2._2, uuid2._2._2) < 10 } //geo distance must be < 10km
+  .map { case (uuid1, uuid2) => Edge(uuid1._2._3, uuid2._2._3, (1/euclideanDistance(uuid1._2._1, uuid2._2._1)).toLong) }
+``` 
+
+And then, we generate the graph:
+
+```scala
+val graph = Graph(vertexIds, edges)
+```
+
+Now that we have a graph, we can run Louvain algorithm on it. Our reference implementation can be found [here](https://github.com/Sotera/spark-distributed-louvain-modularity).
+We slightly modified it, mainly to keep stages data in memory and so we don't require HDFS.
+
+```scala
+val runner = new InMemoryLouvainRunner(5, 3)
+val louvainGraph: Graph[VertexState, Long] = runner.run(sc, graph)
+``` 
+
+Time for a little reverse mapping game: remember we mapped UUIDs with Long identifiers. We want to get UUIDs back.
+We then map each vertex id in edges (source and destination) with their corresponding UUID.
+
+```scala
+val resolvedVertices = louvainGraph.vertices.join(vertexIds)
+  .map { case (vxId, (state, uuid)) => (uuid, state) }
+
+val resolvedEdges = louvainGraph.edges
+  .map { edge => (edge.srcId, (edge.dstId, edge.attr)) }
+  .join(vertexIds)
+  .map { case (vxSrcId, ((vxDstId, linkWeight), srcUuid)) => (vxDstId, (linkWeight, srcUuid)) }
+  .join(vertexIds)
+  .map { case (vxDstId, ((linkWeight, srcUuid), dstUuid)) => (srcUuid, dstUuid, linkWeight) }
+```
+
+Here is the final step: output the result as a JSON file that will be used later to plot our results in graphs. 
+
+```scala
+//Helper classes
+case class JsNode(name: String, communityId: Int, value: Int, polLevel: Double)
+case class JsLink(source: Int, target: Int, value: Int)
+case class JsGraph(nodes: Array[JsNode], links: Array[JsLink])
+
+//Transform vertices
+val geoNodes: Array[JsNode] = resolvedVertices
+  .join(geoList)
+  .map {
+     case (uuid, (state, (lat, lon))) =>
+       val (strLat, strLon) = strLoc(lat, lon)
+       (uuid, (strLat, strLon, scaledWeight(state.nodeWeight)))
+  }
+  .join(loaded)
+  .map { case (uuid, ((strLat, strLon, weight), ((values, loc)))) => (uuid.hashCode().toInt, strLat, strLon, weight, values(0)) }
+  .map { geoNode => JsNode(s"${geoNode._2} ${geoNode._3}", geoNode._1, geoNode._4.toInt, geoNode._5) }
+  .distinct()
+  .collect()
+
+//Transform edges
+val jsonEdges: Array[JsLink] = louvainGraph.edges
+  .map { edge => JsLink(edge.srcId.toInt, edge.dstId.toInt, scaledWeight(edge.attr).toInt) }
+  .collect()
+
+//Output to file
+mapper.writeValue(new File("/var/www/html/communities.json"), JsGraph(geoNodes, jsonEdges))
+```
 
 ## Plotting results with D3
 
+Let's plot our results to visualize more clearly size of communities and links between them. 
+Here we use D3.js for the tons of features and graph types it provides, and first graph we plot is a Force directed graph (definition and other exemples [here](https://bl.ocks.org/mbostock/4062045))
+
+<iframe src="/assets/louvain/simple_com.html" marginwidth="0" marginheight="0" scrolling="no" 
+        frameborder="0" border="0" cellspacing="0"
+        style="border-style: none;width: 100%; height: 680px;"></iframe>
+        
+<iframe src="/assets/louvain/geo.html?cx=-95&cy=37&s=680" marginwidth="0" marginheight="0" scrolling="no" 
+        frameborder="0" border="0" cellspacing="0"
+        style="border-style: none;width: 100%; height: 680px;"></iframe>
+
+Sources: [our github](https://github.com/airboxlab)
+
+## What's next
+
+Several leads for further research:
+
+- How is indoor pollution data correlated with outdoor pollution? Grouping Foobots by "pollution proximity" can reduce correlation-finding task complexity and computing cost.  
 
 [^1]: [Louvain method original paper](http://arxiv.org/abs/0803.0476)
 [^2]: [Haversine formula for geographical distance calculation](https://en.wikipedia.org/wiki/Haversine_formula)
 [^3]: [Euclidean distance](https://en.wikipedia.org/wiki/Euclidean_distance)
 [4]: http://arxiv.org/pdf/1502.03406.pdf
+[^5]: https://en.wikipedia.org/wiki/Particulates
+[^6]: https://en.wikipedia.org/wiki/Volatile_organic_compound
