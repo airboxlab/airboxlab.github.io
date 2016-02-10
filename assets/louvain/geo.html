@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.graticule {
+  fill: none;
+  stroke: #777;
+  stroke-opacity: .5;
+  stroke-width: .5px;
+}
+
+.land {
+  fill: #FAF0E6;
+  stroke: #000;
+  stroke-width: .5px;
+}
+
+.boundary {
+  fill: none;
+  stroke: #000;
+  stroke-width: .5px;
+}
+
+.bubble {
+  fill-opacity: .5;
+  stroke: #fff;
+  stroke-width: .5px;
+}
+
+</style>
+<body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js" charset="utf-8"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/1.6.19/topojson.min.js"></script>
+<script>
+
+var width  = 800;
+var height = 800;
+
+d3.json("world-50m.json", function(error, world) {
+  if (error) return console.error(error);
+  
+  var centerX=getParameterByName("cx");
+  var centerY=getParameterByName("cy");
+  var scale=getParameterByName("s");
+  var topoJson = topojson.feature(world, world.objects.countries);
+  var projection = d3.geo.mercator()
+    .center([centerX, centerY])
+    .scale(scale)
+    .translate([width/2,height/2]);
+  
+  path = d3.geo.path().projection(projection);
+  
+  var graticule = d3.geo.graticule();
+
+  var svg = d3.select("body")
+    .append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+  svg.append("path")
+    .datum(graticule)
+    .attr("class", "graticule")
+    .attr("d", path);
+  
+  svg.insert("path", ".graticule")
+    .datum(topojson.feature(world, world.objects.land))
+    .attr("class", "land")
+    .attr("d", path);
+
+  svg.insert("path", ".graticule")
+    .datum(topojson.mesh(world, world.objects.countries, function(a, b) { return a !== b; }))
+    .attr("class", "boundary")
+    .attr("d", path);
+   
+  d3.json("communities.json", function(error,graph) {
+    if (error) return console.error(error);
+    
+    var color = d3.scale.linear().domain([0,400]).range(['#2E8B57', '#FF4500']);
+    
+	svg.append("g")
+      .attr("class", "bubble")
+      .selectAll("circle")
+      .data(graph.nodes)
+      .enter().append("circle")
+      .attr("transform", function(d) {
+    	  var strLoc = d.name.split(" ");
+    	  var location = [parseFloat(strLoc[0].replace("+","")), parseFloat(strLoc[1].replace("+",""))];
+    	  return "translate(" + projection([location[1], location[0]]) + ")";
+      })
+      .style("fill", function(d) { return color(d.polLevel); })
+      .style("stroke", function(d) { return colorFrom(color(d.polLevel),-0.5); })
+      .attr("r", function(d) { return d.value; })
+      .append("title").text(function(d) { return d.name; });;
+  });
+});
+
+function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+function colorFrom(hex, lum) {
+    hex = String(hex).replace(/[^0-9a-f]/gi, '');
+    if (hex.length < 6) {
+        hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+    }
+    lum = lum || 0;
+
+    var rgb = "#", c, i;
+    for (i = 0; i < 3; i++) {
+        c = parseInt(hex.substr(i*2,2), 16);
+        c = Math.round(Math.min(Math.max(0, c + (c * lum)), 255)).toString(16);
+        rgb += ("00"+c).substr(c.length);
+    }
+    return rgb;
+}
+</script>
+
