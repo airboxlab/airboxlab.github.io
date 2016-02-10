@@ -9,7 +9,7 @@ twitter_username: Airboxlab
 github_username:  airboxlab
 
 # Build settings
-# markdown: kramdown
-markdown: redcarpet
-redcarpet:
-  extensions: ["no_intra_emphasis", "fenced_code_blocks", "autolink", "tables",     "with_toc_data", "footnotes"]
+markdown: kramdown
+#markdown: redcarpet
+#redcarpet:
+#  extensions: ["no_intra_emphasis", "fenced_code_blocks", "autolink", "tables",     "with_toc_data", "footnotes"]
