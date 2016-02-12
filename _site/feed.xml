@@ -4,19 +4,19 @@
     <title>Airboxlab Technical Blog</title>
     <description>Airboxlab technical blog, talking about our achievements, our fails, our OSS contributions, ...
 </description>
-    <link>https://airboxlab.github.com//</link>
-    <atom:link href="https://airboxlab.github.com//feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Fri, 12 Feb 2016 08:18:14 +0100</pubDate>
-    <lastBuildDate>Fri, 12 Feb 2016 08:18:14 +0100</lastBuildDate>
+    <link>https://airboxlab.github.io//</link>
+    <atom:link href="https://airboxlab.github.io//feed.xml" rel="self" type="application/rss+xml" />
+    <pubDate>Fri, 12 Feb 2016 17:30:28 +0100</pubDate>
+    <lastBuildDate>Fri, 12 Feb 2016 17:30:28 +0100</lastBuildDate>
     <generator>Jekyll v3.0.1</generator>
     
       <item>
-        <title>Detecting and visualizing pollution communities with Louvain method, Spark GraphX and D3.js</title>
+        <title>Detecting and visualizing Foobot communities with Louvain method, Spark GraphX and D3.js</title>
         <description>&lt;h2 id=&quot;context&quot;&gt;Context&lt;/h2&gt;
 
 &lt;p&gt;Here at Airboxlab, we collect and analyze indoor pollution to make people life safer and easier.&lt;/p&gt;
 
-&lt;p&gt;We’re analyzing Foobot sensors data individually so we can inform and alert our customers when pollution levels are higher than recommended, but we’re also trying to analyze global trends with various technics.&lt;/p&gt;
+&lt;p&gt;We’re analyzing &lt;a href=&quot;https://foobot.io&quot;&gt;Foobot&lt;/a&gt; sensors data individually so we can inform and alert our customers when pollution levels are higher than recommended, but we’re also trying to analyze global trends with various technics.&lt;/p&gt;
 
 &lt;p&gt;Lately, we’ve been interested in using community detection algorithms. Our hopes are to analyze communities size and evolution over time, find trends, and correlate their appearance with external factors.&lt;/p&gt;
 
@@ -52,22 +52,22 @@ Introductions for these methods can be found on &lt;a href=&quot;https://en.wiki
 
 &lt;p&gt;First, the method looks for small communities by optimizing modularity locally. Second, it aggregates nodes belonging to the same community and builds a new network. Nodes of this network are the aggregated ones built during 2nd phase. It iterates until modularity value is optimized.&lt;/p&gt;
 
-&lt;p&gt;A graphical representation of the iterations can be found in original paper&lt;sup id=&quot;fnref:1:1&quot;&gt;&lt;a href=&quot;#fn:1&quot; class=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt; as below&lt;/p&gt;
+&lt;p&gt;A graphical representation of the iterations can be found in original paper&lt;sup id=&quot;fnref:1:1&quot;&gt;&lt;a href=&quot;#fn:1&quot; class=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt;, and is reproduced below&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;https://airboxlab.github.com/assets/louvain/pol.jpg&quot; alt=&quot;iterations&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://airboxlab.github.io/assets/louvain/pol.jpg&quot; alt=&quot;iterations&quot; /&gt;&lt;/p&gt;
 
-&lt;h4 id=&quot;advantages&quot;&gt;Advantages&lt;/h4&gt;
+&lt;h4 id=&quot;pros&quot;&gt;Pros&lt;/h4&gt;
 
 &lt;ul&gt;
-  &lt;li&gt;scalability (performs faster on huge graphs than other methods)&lt;/li&gt;
-  &lt;li&gt;simple to code&lt;/li&gt;
+  &lt;li&gt;Scalability (performs faster on huge graphs than other methods)&lt;/li&gt;
+  &lt;li&gt;Simple to code&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;h4 id=&quot;pitfalls&quot;&gt;Pitfalls&lt;/h4&gt;
+&lt;h4 id=&quot;cons&quot;&gt;Cons&lt;/h4&gt;
 
 &lt;ul&gt;
   &lt;li&gt;Iterative process can hide small communities found during intermediate phases. The result may be a coarse-grained high level representation of communities, which may not have the granularity needed for analysis. Hopefully, the nature of the algorithm makes it simple to save intermediate phases’ results so we can analyze different communities structures at different levels&lt;/li&gt;
-  &lt;li&gt;Heuristic used to  initialize phases and find local maximums can lead to not reproducible and not always optimized results. But this is the same with all data algorithms relying on heuristic (K-Means for instance)&lt;/li&gt;
+  &lt;li&gt;Heuristic used to initialize phases and find local maximums can lead to not reproducible and not always optimized results. But this is the same with all data algorithms relying on heuristic (K-Means&lt;sup id=&quot;fnref:7&quot;&gt;&lt;a href=&quot;#fn:7&quot; class=&quot;footnote&quot;&gt;2&lt;/a&gt;&lt;/sup&gt; for instance)&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;h4 id=&quot;applications&quot;&gt;Applications&lt;/h4&gt;
@@ -80,24 +80,26 @@ Introductions for these methods can be found on &lt;a href=&quot;https://en.wiki
 
 &lt;p&gt;An implementation for Apache Spark is available on &lt;a href=&quot;https://github.com/Sotera/spark-distributed-louvain-modularity&quot;&gt;github&lt;/a&gt;.&lt;/p&gt;
 
-&lt;h2 id=&quot;finding-communities-in-foobots&quot;&gt;Finding communities in Foobots&lt;/h2&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;finding-foobots-communities&quot;&gt;Finding Foobots communities&lt;/h2&gt;
 
 &lt;p&gt;First of all, you may be asking: but how are Foobots connected to each other? Simple answer: they aren’t. There is no direct relation or link between 2 devices, except when they both have the same owner.&lt;/p&gt;
 
 &lt;p&gt;As a consequence, we will draw artificial links (or edges) between them, based on following criteria:&lt;/p&gt;
 
 &lt;ul&gt;
-  &lt;li&gt;geographical distance&lt;sup id=&quot;fnref:2&quot;&gt;&lt;a href=&quot;#fn:2&quot; class=&quot;footnote&quot;&gt;2&lt;/a&gt;&lt;/sup&gt; between devices&lt;/li&gt;
-  &lt;li&gt;euclidean distance&lt;sup id=&quot;fnref:3&quot;&gt;&lt;a href=&quot;#fn:3&quot; class=&quot;footnote&quot;&gt;3&lt;/a&gt;&lt;/sup&gt; between average pollutant values of devices&lt;/li&gt;
+  &lt;li&gt;geographical distance&lt;sup id=&quot;fnref:2&quot;&gt;&lt;a href=&quot;#fn:2&quot; class=&quot;footnote&quot;&gt;3&lt;/a&gt;&lt;/sup&gt; between devices&lt;/li&gt;
+  &lt;li&gt;euclidean distance&lt;sup id=&quot;fnref:3&quot;&gt;&lt;a href=&quot;#fn:3&quot; class=&quot;footnote&quot;&gt;4&lt;/a&gt;&lt;/sup&gt; between average pollutant values of devices&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;p&gt;Same thing for edges weights: as stated in modularity definition, weight of edges is taken into account and is playing a role in nodes (or vertices) grouping.&lt;/p&gt;
 
-&lt;p&gt;Setting a meaningful weight on each edge is a tricky problem, and there is probably multiple solutions to it; it will highly depend on what we analyze, what we want to find or what we want to correlate to.&lt;/p&gt;
+&lt;p&gt;Setting a meaningful weight on each edge is a tricky problem, and there are probably multiple solutions to it; it will highly depend on what we analyze, what we want to find or what we want to correlate to.&lt;/p&gt;
 
 &lt;p&gt;For the purpose of this article, we choose to define weight by using the distance between pollutant values of devices: the closer values are, the bigger weight will be.&lt;/p&gt;
 
-&lt;p&gt;Let’s start with fetching a Pair RDD that will have a key defined by the unique device identifier (UUID), and value being an array of the average sensor values (here taking only PM2.5&lt;sup id=&quot;fnref:5&quot;&gt;&lt;a href=&quot;#fn:5&quot; class=&quot;footnote&quot;&gt;4&lt;/a&gt;&lt;/sup&gt; and VOC&lt;sup id=&quot;fnref:6&quot;&gt;&lt;a href=&quot;#fn:6&quot; class=&quot;footnote&quot;&gt;5&lt;/a&gt;&lt;/sup&gt;), plus geolocation of device as a (latitude, longitude) tuple. For this article, we took a sample of connected devices, and the last 30 minutes of data for each.&lt;/p&gt;
+&lt;p&gt;Let’s start with fetching a Pair RDD that will have a key defined by the unique device identifier (UUID), and value being an array of the average sensor values (here taking only PM2.5&lt;sup id=&quot;fnref:5&quot;&gt;&lt;a href=&quot;#fn:5&quot; class=&quot;footnote&quot;&gt;5&lt;/a&gt;&lt;/sup&gt;, although it would be interesting to include VOC&lt;sup id=&quot;fnref:6&quot;&gt;&lt;a href=&quot;#fn:6&quot; class=&quot;footnote&quot;&gt;6&lt;/a&gt;&lt;/sup&gt; too), plus geolocation of device as a (latitude, longitude) tuple. For this article, we took a sample of connected devices, and the last 30 minutes of data for each.&lt;/p&gt;
 
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;loaded&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;RDD&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;String&lt;/span&gt;, &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Array&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Double&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;, &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Double&lt;/span&gt;, &lt;span class=&quot;kt&quot;&gt;Double&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)))]&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;//some function that fetches data
 &lt;/span&gt;
@@ -108,6 +110,7 @@ Introductions for these methods can be found on &lt;a href=&quot;https://en.wiki
 &lt;/div&gt;
 
 &lt;p&gt;Now that we have our values, we will compute average and standard deviation for sensor values, and normalize them.
+Note that normalization isn’t necessary here as our input array contains only PM values.
 Definition of &lt;code&gt;Utils&lt;/code&gt; can be found on &lt;a href=&quot;https://github.com/airboxlab/Louvain_sample&quot;&gt;our github&lt;/a&gt;&lt;/p&gt;
 
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;Utils._&lt;/span&gt;
@@ -130,7 +133,7 @@ Long identifiers are required by Spark GraphX API.&lt;/p&gt;
 &lt;/div&gt;
 
 &lt;p&gt;Now we definie edges. We artificially link Foobots by checking their geographical distance. 
-We define edge eight as a function of euclidean distance between 2 devices sensor data.&lt;/p&gt;
+We define edge weight as a function of euclidean distance between 2 devices average sensor values.&lt;/p&gt;
 
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;edges&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;RDD&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Edge&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Long&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]]&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;vertices&lt;/span&gt;
   &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cartesian&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vertices&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
@@ -147,7 +150,7 @@ We define edge eight as a function of euclidean distance between 2 devices senso
 &lt;/div&gt;
 
 &lt;p&gt;Now that we have a graph, we can run Louvain algorithm on it. Our reference implementation can be found &lt;a href=&quot;https://github.com/Sotera/spark-distributed-louvain-modularity&quot;&gt;here&lt;/a&gt;.
-We slightly modified it, mainly to keep stages data in memory and so we don’t require HDFS.&lt;/p&gt;
+We slightly modified it, mainly to keep stages data in memory so we don’t require HDFS.&lt;/p&gt;
 
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;runner&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;InMemoryLouvainRunner&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
 &lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;louvainGraph&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Graph&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;VertexState&lt;/span&gt;, &lt;span class=&quot;kt&quot;&gt;Long&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;runner&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;run&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;graph&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
@@ -200,6 +203,8 @@ We then map each vertex id in edges (source and destination) with their correspo
 &lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
 &lt;h2 id=&quot;plotting-results-with-d3&quot;&gt;Plotting results with D3&lt;/h2&gt;
 
 &lt;p&gt;Let’s plot our results to visualize more clearly size of communities and links between them. 
@@ -211,28 +216,36 @@ Here we use D3.js for the tons of features and graph types it provides, and firs
 
 &lt;p&gt;Finally, as we have kept geographical coordinates of communities (by assigning one of the Foobot’s to the community - could be more accurate by taking the one which has the smaller distance to every other), it is possible to plot a map, like below.&lt;/p&gt;
 
-&lt;iframe src=&quot;/assets/louvain/geo.html?cx=-95&amp;amp;cy=37&amp;amp;s=680&quot; marginwidth=&quot;0&quot; marginheight=&quot;0&quot; scrolling=&quot;no&quot; frameborder=&quot;0&quot; border=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;border-style: none;width: 100%; height: 680px;&quot;&gt;&lt;/iframe&gt;
+&lt;iframe src=&quot;/assets/louvain/geo.html?cx=-95&amp;amp;cy=34&amp;amp;s=680&quot; marginwidth=&quot;0&quot; marginheight=&quot;0&quot; scrolling=&quot;no&quot; frameborder=&quot;0&quot; border=&quot;0&quot; cellspacing=&quot;0&quot; style=&quot;border-style: none;width: 100%; height: 680px;&quot;&gt;&lt;/iframe&gt;
 
 &lt;p&gt;&lt;em&gt;Notes&lt;/em&gt;:&lt;/p&gt;
 
 &lt;ul&gt;
-  &lt;li&gt;We took data at 2016-02-09 4.PM GMT (11.AM EST / 8.AM PST) as a source.&lt;/li&gt;
+  &lt;li&gt;Data snapshot at 2016-02-09 4.PM GMT (11.AM EST / 8.AM PST)&lt;/li&gt;
   &lt;li&gt;You can find sources for these graphs in &lt;a href=&quot;https://github.com/airboxlab/Louvain_sample&quot;&gt;our github&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
 &lt;h2 id=&quot;summary&quot;&gt;Summary&lt;/h2&gt;
 
-&lt;p&gt;In this article we’ve seen an introduction on communities detection in graphs, especially with Louvain algorithm, and we’ve used Foobot dataset to compute and plot communities on a map. This could be investigated deeper, for the following fields of research:&lt;/p&gt;
+&lt;p&gt;In this article we’ve seen an introduction on communities detection in graphs, especially with Louvain algorithm, and we’ve used Foobot dataset to compute and plot communities on a map. Deeper investigation could include:&lt;/p&gt;
 
 &lt;ul&gt;
+  &lt;li&gt;try another algorithm, like &lt;a href=&quot;https://en.wikipedia.org/wiki/DBSCAN&quot;&gt;DBSCAN&lt;/a&gt;&lt;/li&gt;
   &lt;li&gt;find how communities come and go, analyze and predict appearance of population of users with bad air quality.&lt;/li&gt;
   &lt;li&gt;study correlation with external factors, like outdoor air quality.&lt;/li&gt;
 &lt;/ul&gt;
+
+&lt;hr /&gt;
 
 &lt;div class=&quot;footnotes&quot;&gt;
   &lt;ol&gt;
     &lt;li id=&quot;fn:1&quot;&gt;
       &lt;p&gt;&lt;a href=&quot;http://arxiv.org/abs/0803.0476&quot;&gt;Louvain method original paper&lt;/a&gt; &lt;a href=&quot;#fnref:1&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;/a&gt; &lt;a href=&quot;#fnref:1:1&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;sup&gt;2&lt;/sup&gt;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+    &lt;li id=&quot;fn:7&quot;&gt;
+      &lt;p&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/K-means_clustering&quot;&gt;K-Means&lt;/a&gt; &lt;a href=&quot;#fnref:7&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
     &lt;/li&gt;
     &lt;li id=&quot;fn:2&quot;&gt;
       &lt;p&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/Haversine_formula&quot;&gt;Haversine formula for geographical distance calculation&lt;/a&gt; &lt;a href=&quot;#fnref:2&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
@@ -249,12 +262,14 @@ Here we use D3.js for the tons of features and graph types it provides, and firs
   &lt;/ol&gt;
 &lt;/div&gt;
 </description>
-        <pubDate>Fri, 12 Feb 2016 08:18:14 +0100</pubDate>
-        <link>https://airboxlab.github.com//spark/machine-learning/d3/louvain/2016/02/12/louvain.html</link>
-        <guid isPermaLink="true">https://airboxlab.github.com//spark/machine-learning/d3/louvain/2016/02/12/louvain.html</guid>
+        <pubDate>Fri, 12 Feb 2016 00:00:00 +0100</pubDate>
+        <link>https://airboxlab.github.io//spark/graphx/machine-learning/d3/louvain/2016/02/12/louvain.html</link>
+        <guid isPermaLink="true">https://airboxlab.github.io//spark/graphx/machine-learning/d3/louvain/2016/02/12/louvain.html</guid>
         
         
         <category>spark</category>
+        
+        <category>graphx</category>
         
         <category>machine-learning</category>
         
@@ -270,8 +285,8 @@ Here we use D3.js for the tons of features and graph types it provides, and firs
 
 </description>
         <pubDate>Wed, 14 Oct 2015 19:00:00 +0200</pubDate>
-        <link>https://airboxlab.github.com//launch/2015/10/14/blog-launch.html</link>
-        <guid isPermaLink="true">https://airboxlab.github.com//launch/2015/10/14/blog-launch.html</guid>
+        <link>https://airboxlab.github.io//launch/2015/10/14/blog-launch.html</link>
+        <guid isPermaLink="true">https://airboxlab.github.io//launch/2015/10/14/blog-launch.html</guid>
         
         
         <category>launch</category>
