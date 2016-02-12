@@ -49,7 +49,7 @@ d3.json("communities.json", function(error, graph) {
       .nodes(graph.nodes)
       .links(edges)
       .start();
-
+  
   var link = svg.selectAll(".link")
       .data(edges)
       .enter().append("line")
@@ -58,7 +58,7 @@ d3.json("communities.json", function(error, graph) {
 
   var node = svg.selectAll(".node")
       .data(graph.nodes)
-    .enter().append("circle")
+      .enter().append("circle")
       .attr("class", "node")
       .attr("r", function(d) { return d.value; })
       .style("fill", function(d) { return color(d.group); })
