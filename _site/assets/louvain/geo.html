@@ -75,9 +75,9 @@ d3.json("world-50m.json", function(error, world) {
   d3.json("communities.json", function(error,graph) {
     if (error) return console.error(error);
     
-    var color = d3.scale.linear().domain([0,400]).range(['#2E8B57', '#FF4500']);
+    var color = d3.scale.linear().domain([0,50]).range(['#2E8B57', '#FF4500']);
     
-	svg.append("g")
+    svg.append("g")
       .attr("class", "bubble")
       .selectAll("circle")
       .data(graph.nodes)

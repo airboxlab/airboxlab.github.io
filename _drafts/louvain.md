@@ -85,65 +85,65 @@ For the purpose of this article, we choose to define weight by using the distanc
 
 Let's start with fetching a Pair RDD that will have a key defined by the unique device identifier (UUID), and value being an array of the average sensor values (here taking only PM2.5[^5] and VOC[^6]), plus geolocation of device as a (latitude, longitude) tuple. For this article, we took a sample of connected devices, and the last 30 minutes of data for each.
 
-```scala
+~~~ scala
 val loaded: RDD[(String, (Array[Double], (Double, Double)))] = ... //some function that fetches data
 
 //(UUID, (Latitude, Longitude))
 val geoList: RDD[(String,(Double,Double)] = ...  
 
-```
+~~~
 
 Now that we have our values, we will compute average and standard deviation for sensor values, and normalize them.
-Definition of <code>Utils</code> functions isn't provided here but they are very common ones, they can be easily written.
+Definition of <code>Utils</code> can be found on [our github](https://github.com/airboxlab/Louvain_sample)
 
-```scala
+~~~ scala
 import Utils._
 val (means, stdevs) = meansAndStdevs(loaded.map(_._2._1))
 val normalized = loaded
   .map {
     case (uuid, (sensorValues, geoloc)) => (uuid, (normalize(sensorValues, means, stdevs), geoloc))
   }
-```
+~~~
 
-Then we define graph vertices, by associating each UUID with a unique long identifier (from hashCode()). 
+Then we define graph vertices, by associating each UUID with a unique long identifier (from <code>hashCode()</code>). 
 Long identifiers are required by Spark GraphX API.
 
-```scala
+~~~ scala
 val vertices = normalized
   .map { case (uuid, (sensorValues, geoloc)) => (uuid, (sensorValues, geoloc, uuid.hashCode().toLong)) }
   
 val vertexIds: RDD[(Long, String)] = vertices.map { uuid => (uuid._2._3, uuid._1) }
-```
+~~~
 
 Now we definie edges. We artificially link Foobots by checking their geographical distance. 
 We define edge eight as a function of euclidean distance between 2 devices sensor data.
 
-```scala
+~~~ scala
 val edges: RDD[Edge[Long]] = vertices
   .cartesian(vertices)
   .filter { case (uuid1, uuid2) => !uuid1._1.equals(uuid2._1) } //no loop
   .filter { case (uuid1, uuid2) => geoDistance(uuid1._2._2, uuid2._2._2) < 10 } //geo distance must be < 10km
   .map { case (uuid1, uuid2) => Edge(uuid1._2._3, uuid2._2._3, (1/euclideanDistance(uuid1._2._1, uuid2._2._1)).toLong) }
-``` 
+~~~ 
 
 And then, we generate the graph:
 
-```scala
+~~~ scala
 val graph = Graph(vertexIds, edges)
-```
+~~~
 
 Now that we have a graph, we can run Louvain algorithm on it. Our reference implementation can be found [here](https://github.com/Sotera/spark-distributed-louvain-modularity).
 We slightly modified it, mainly to keep stages data in memory and so we don't require HDFS.
 
-```scala
+~~~ scala
 val runner = new InMemoryLouvainRunner(5, 3)
 val louvainGraph: Graph[VertexState, Long] = runner.run(sc, graph)
-``` 
+~~~ 
 
 Time for a little reverse mapping game: remember we mapped UUIDs with Long identifiers. We want to get UUIDs back.
 We then map each vertex id in edges (source and destination) with their corresponding UUID.
 
-```scala
+~~~ scala
 val resolvedVertices = louvainGraph.vertices.join(vertexIds)
   .map { case (vxId, (state, uuid)) => (uuid, state) }
 
@@ -153,11 +153,11 @@ val resolvedEdges = louvainGraph.edges
   .map { case (vxSrcId, ((vxDstId, linkWeight), srcUuid)) => (vxDstId, (linkWeight, srcUuid)) }
   .join(vertexIds)
   .map { case (vxDstId, ((linkWeight, srcUuid), dstUuid)) => (srcUuid, dstUuid, linkWeight) }
-```
+~~~
 
 Here is the final step: output the result as a JSON file that will be used later to plot our results in graphs. 
 
-```scala
+~~~ scala
 //Helper classes
 case class JsNode(name: String, communityId: Int, value: Int, polLevel: Double)
 case class JsLink(source: Int, target: Int, value: Int)
@@ -184,7 +184,7 @@ val jsonEdges: Array[JsLink] = louvainGraph.edges
 
 //Output to file
 mapper.writeValue(new File("/var/www/html/communities.json"), JsGraph(geoNodes, jsonEdges))
-```
+~~~
 
 ## Plotting results with D3
 
@@ -194,22 +194,30 @@ Here we use D3.js for the tons of features and graph types it provides, and firs
 <iframe src="/assets/louvain/simple_com.html" marginwidth="0" marginheight="0" scrolling="no" 
         frameborder="0" border="0" cellspacing="0"
         style="border-style: none;width: 100%; height: 680px;"></iframe>
-        
+
+This gives us a first overview of how communities were built, and how they are "linked". Note that size of node is given by community weight, but this weight has been scaled (logarithmically) so it can fit on a map. So are much bigger than what is actually rendered.
+
+Finally, as we have kept geographical coordinates of communities (by assigning one of the Foobot's to the community - could be more accurate by taking the one which has the smaller distance to every other), it is possible to plot a map, like below. 
+
 <iframe src="/assets/louvain/geo.html?cx=-95&cy=37&s=680" marginwidth="0" marginheight="0" scrolling="no" 
         frameborder="0" border="0" cellspacing="0"
         style="border-style: none;width: 100%; height: 680px;"></iframe>
 
-Sources: [our github](https://github.com/airboxlab)
+*Notes*: 
 
-## What's next
+- We took data at 2016-02-09 4.PM GMT (11.AM EST / 8.AM PST) as a source.
+- You can find sources for these graphs in [our github](https://github.com/airboxlab/Louvain_sample)
 
-Several leads for further research:
+## Summary
 
-- How is indoor pollution data correlated with outdoor pollution? Grouping Foobots by "pollution proximity" can reduce correlation-finding task complexity and computing cost.  
+In this article we've seen an introduction on communities detection in graphs, especially with Louvain algorithm, and we've used Foobot dataset to compute and plot communities on a map. This could be investigated deeper, for the following fields of research:
 
+- find how communities come and go, analyze and predict appearance of population of users with bad air quality.
+- study correlation with external factors, like outdoor air quality.
+ 
 [^1]: [Louvain method original paper](http://arxiv.org/abs/0803.0476)
 [^2]: [Haversine formula for geographical distance calculation](https://en.wikipedia.org/wiki/Haversine_formula)
 [^3]: [Euclidean distance](https://en.wikipedia.org/wiki/Euclidean_distance)
 [4]: http://arxiv.org/pdf/1502.03406.pdf
-[^5]: https://en.wikipedia.org/wiki/Particulates
-[^6]: https://en.wikipedia.org/wiki/Volatile_organic_compound
+[^5]: [Particulates definition](https://en.wikipedia.org/wiki/Particulates)
+[^6]: [Volatile organic coumpounds definition](https://en.wikipedia.org/wiki/Volatile_organic_compound)
