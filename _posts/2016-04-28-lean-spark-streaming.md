@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Lean Approach to Spark Streaming with AWS EC2"
-date:   2016-04-27 19:00:00
+date:   2016-04-28 14:00:00
 categories: spark streaming cluster ec2 aws lean
 comments: true
 author: Antoine Galataud

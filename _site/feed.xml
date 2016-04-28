@@ -6,13 +6,13 @@
 </description>
     <link>https://airboxlab.github.io//</link>
     <atom:link href="https://airboxlab.github.io//feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Thu, 28 Apr 2016 16:13:12 +0200</pubDate>
-    <lastBuildDate>Thu, 28 Apr 2016 16:13:12 +0200</lastBuildDate>
+    <pubDate>Thu, 28 Apr 2016 16:16:25 +0200</pubDate>
+    <lastBuildDate>Thu, 28 Apr 2016 16:16:25 +0200</lastBuildDate>
     <generator>Jekyll v3.0.1</generator>
     
       <item>
         <title>Lean Approach to Spark Streaming with AWS EC2</title>
-        <description>&lt;p&gt;I’ve been using &lt;a href=&quot;http://spark.apache.org&quot;&gt;Apache Spark&lt;/a&gt; for 1 year, and I wanted to share some thoughts and tips about it.&lt;/p&gt;
+        <description>&lt;p&gt;We’ve been using &lt;a href=&quot;http://spark.apache.org&quot;&gt;Apache Spark&lt;/a&gt; for 1 year, and we wanted to share some thoughts and tips about it.&lt;/p&gt;
 
 &lt;p&gt;Spark is beautiful. It has a strong and simple API, a vibrant community, a wide ecosystem and lot of satellite projects. However, it doesn’t come for free: you need to understand its API, internal structures, and deployment methodologies. Setting up a cluster, maintaining, designing applications and jobs, … All of this can be overwhelming and looks like a daunting task at first.&lt;/p&gt;
 
@@ -262,13 +262,13 @@ See &lt;a href=&quot;http://spark.apache.org/docs/latest/streaming-programming-g
 
 &lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
 
-&lt;p&gt;What I shared here is experience using Spark Streaming, from prototyping to production, with a particular focus on how to get the best of it without wasting too much resources. 
+&lt;p&gt;What we shared here is experience using Spark Streaming, from prototyping to production, with a particular focus on how to get the best of it without wasting too much resources. 
 Most of these thoughts and advice remain valid for bigger clusters and workloads, but there would be different approaches and topics to discuss.&lt;/p&gt;
 
 </description>
-        <pubDate>Wed, 27 Apr 2016 21:00:00 +0200</pubDate>
-        <link>https://airboxlab.github.io//spark/streaming/cluster/ec2/aws/lean/2016/04/27/lean-spark-streaming.html</link>
-        <guid isPermaLink="true">https://airboxlab.github.io//spark/streaming/cluster/ec2/aws/lean/2016/04/27/lean-spark-streaming.html</guid>
+        <pubDate>Thu, 28 Apr 2016 16:00:00 +0200</pubDate>
+        <link>https://airboxlab.github.io//spark/streaming/cluster/ec2/aws/lean/2016/04/28/lean-spark-streaming.html</link>
+        <guid isPermaLink="true">https://airboxlab.github.io//spark/streaming/cluster/ec2/aws/lean/2016/04/28/lean-spark-streaming.html</guid>
         
         
         <category>spark</category>
