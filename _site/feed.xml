@@ -6,9 +6,284 @@
 </description>
     <link>https://airboxlab.github.io//</link>
     <atom:link href="https://airboxlab.github.io//feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Fri, 12 Feb 2016 17:30:28 +0100</pubDate>
-    <lastBuildDate>Fri, 12 Feb 2016 17:30:28 +0100</lastBuildDate>
+    <pubDate>Thu, 28 Apr 2016 16:13:12 +0200</pubDate>
+    <lastBuildDate>Thu, 28 Apr 2016 16:13:12 +0200</lastBuildDate>
     <generator>Jekyll v3.0.1</generator>
+    
+      <item>
+        <title>Lean Approach to Spark Streaming with AWS EC2</title>
+        <description>&lt;p&gt;I’ve been using &lt;a href=&quot;http://spark.apache.org&quot;&gt;Apache Spark&lt;/a&gt; for 1 year, and I wanted to share some thoughts and tips about it.&lt;/p&gt;
+
+&lt;p&gt;Spark is beautiful. It has a strong and simple API, a vibrant community, a wide ecosystem and lot of satellite projects. However, it doesn’t come for free: you need to understand its API, internal structures, and deployment methodologies. Setting up a cluster, maintaining, designing applications and jobs, … All of this can be overwhelming and looks like a daunting task at first.&lt;/p&gt;
+
+&lt;p&gt;The goal of this article is to provide overview, instructions and tips on how to build, deploy and maintain a distributed data analytics application based on Spark, with a particular focus on Spark Streaming.&lt;/p&gt;
+
+&lt;h2 id=&quot;context&quot;&gt;Context&lt;/h2&gt;
+
+&lt;p&gt;We decided to go for Spark at &lt;a href=&quot;https://foobot.io&quot;&gt;Airboxlab&lt;/a&gt; firstly to ingest and analyze streams of sensors data. We design, build and sell air quality monitoring products, that are used to monitor and trigger actions based on air quality measurements.&lt;/p&gt;
+
+&lt;p&gt;We had several options on the table (AWS Kinesis, Apache Storm, …) but we decided to pick Spark for the following reasons:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;unified platform for data streaming and batch analysis (lambda architecture), with machine learning capabilities&lt;/li&gt;
+  &lt;li&gt;heterogeneous team with different background and technical skills&lt;/li&gt;
+  &lt;li&gt;tight budget&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;As of now, some other options may be available to you, like AWS Kinesis Firehose.&lt;/p&gt;
+
+&lt;p&gt;We started with Spark 1.2.0 in test, and went in production with 1.3.0 few months later.&lt;/p&gt;
+
+&lt;p&gt;Our first Spark job was a streaming job, one to clean and store sensor data sent by devices. It made us discover Spark architecture, application deployment process, and fault tolerance semantics.&lt;/p&gt;
+
+&lt;h2 id=&quot;spark-cluster-topology&quot;&gt;Spark cluster topology&lt;/h2&gt;
+
+&lt;p&gt;I won’t go into details here as it has been extensively described in main &lt;a href=&quot;?&quot;&gt;Spark documentation&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Here is just a quick reminder of main Spark processes&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;em&gt;Master&lt;/em&gt;: this is the main process responsible for coordinating cluster, scheduling jobs, restarting failed workers, …&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Worker&lt;/em&gt;: a worker node is where executors can be launched.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Executor&lt;/em&gt;: started by workers for a given application. There may be 1 or thousands of them, depending on task configuration. They execute the application and store data in memory or in persistent stores.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;Driver&lt;/em&gt;: application submitted to the cluster that contains the main() method.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://spark.apache.org/docs/latest/img/cluster-overview.png&quot; alt=&quot;Cluster&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;There are 3 deployment methods if you want to run your own cluster:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Standalone (comes with AWS EC2 deployment scripts)&lt;/li&gt;
+  &lt;li&gt;Mesos&lt;/li&gt;
+  &lt;li&gt;YARN&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;And there are several companies that sell Spark cluster management, like Databricks (created by creators of Apache Spark), Hortonworks, Cloudera, and even AWS and Google are proposing services.&lt;/p&gt;
+
+&lt;p&gt;Here comes the first question you may be asking yourself: will I invest in my own Spark clusters (probably several if you have test environments), or can I use an hosted and managed cluster?&lt;/p&gt;
+
+&lt;h3 id=&quot;own-cluster-vs-managed-cluster&quot;&gt;Own cluster VS Managed cluster&lt;/h3&gt;
+
+&lt;p&gt;Having your own cluster will let choose your configuration, that may not be easy with a provider. For instance, Databricks doesn’t let you choose your AWS instance type (it’s a r3.2xlarge and that’s it!).&lt;/p&gt;
+
+&lt;p&gt;Another important point is that, especially in the case of clusters dedicated to batches, or even with streaming applications that run on over-sized clusters where there is CPU and RAM available, you could share instances for other tasks. Mesos and YARN let you share resources between clusters, so you can efficiently allocate resources and avoid wasting money.&lt;/p&gt;
+
+&lt;p&gt;But there are also advantages using an hosted solution: you don’t need to know a lot about Spark or system administration before you start your first data exploration job. Not all teams have someone available to setup (and maintain) a cluster, and Spark is all about giving instant access to big data analysis. In that perspective, a managed cluster is a good solution.&lt;/p&gt;
+
+&lt;p&gt;It can also be interesting if you want to temporarily create a cluster: Spark version upgrade testing, scheduled jobs, external users access to your data and jobs, …&lt;/p&gt;
+
+&lt;p&gt;Last but not least: you don’t need a cluster to start testing Spark! You will see it when you start reading &lt;a href=&quot;http://spark.apache.org/docs/latest/programming-guide.html&quot;&gt;Spark programming guide&lt;/a&gt;, Spark can run on your own machine, just pick a reduced dataset and don’t try to load terabytes of data.
+That’s one of the main strengths of Spark, you can develop and test your whole job locally.&lt;/p&gt;
+
+&lt;h3 id=&quot;deploying-spark-on-aws-ec2&quot;&gt;Deploying Spark on AWS EC2&lt;/h3&gt;
+
+&lt;p&gt;Say you decide to give a try to Spark with your own standalone cluster, on AWS. Spark comes with a set of scripts that let you deploy a cluster from a command line. Documentation is available &lt;a href=&quot;http://spark.apache.org/docs/latest/ec2-scripts.html&quot;&gt;here&lt;/a&gt;. You can deploy inside or outside of a VPC, define your spot instance price, or choose your instance types for both master and workers.&lt;/p&gt;
+
+&lt;p&gt;Speaking of master and workers, there is a first budget optimization you can do here: you can share the master node, that will rather go unoccupied with only the master process and your driver. You can start one or more workers on it.&lt;/p&gt;
+
+&lt;p&gt;Spark EC2 will also do several other things:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;create 2 &lt;strong&gt;Hadoop&lt;/strong&gt; clusters, one said ephemeral because it’s started on SSD instance storage, another said persistent (not started by default). It allows you to store and fetch data on HDFS, and it’s also used by Spark internals and application checkpointing.&lt;/li&gt;
+  &lt;li&gt;create a &lt;strong&gt;Tachyon&lt;/strong&gt; cluster for in memory caching&lt;/li&gt;
+  &lt;li&gt;add monitoring agents with &lt;strong&gt;Ganglia&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;When your cluster is built, there are 2 web UIs available where you can monitor Spark and your instances:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;code&gt;http://&amp;lt;spark_master&amp;gt;:8080/&lt;/code&gt; is the Spark Web interface. There you can check health of master, workers, executors and jobs.&lt;/li&gt;
+  &lt;li&gt;&lt;code&gt;http://&amp;lt;spark_master&amp;gt;:5080/ganglia/&lt;/code&gt; is the Ganglia master UI (monitoring of hardware, processes, memory, …).&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;cluster-management&quot;&gt;Cluster management&lt;/h3&gt;
+
+&lt;p&gt;Your cluster is up and running, you may now wonder what you will have to do to keep it healthy. There are some things you need to automate to ensure nothing breaks without you being alerted, and also to simplify provisioning (adding and retiring nodes).&lt;/p&gt;
+
+&lt;h4 id=&quot;adding-nodes&quot;&gt;Adding nodes&lt;/h4&gt;
+
+&lt;p&gt;Spark EC2 scripts doesn’t help on this (hey, they already did a lot!). The way we do it at Airboxlab is based on AWS AMIs: we build an AMI from one of the worker nodes freshly created and configured.&lt;/p&gt;
+
+&lt;p&gt;The first thing is to let your master node know about this new node: you have to edit spark configuration (&lt;em&gt;slaves&lt;/em&gt; files under spark and spark-ec2) and hadoop configuration (&lt;em&gt;slaves&lt;/em&gt; under ephemeral-hdfs) to add the host name of your newly created instance. Don’t forget to &lt;em&gt;r-sync&lt;/em&gt; all these files (&lt;em&gt;spark-ec2/copy-dir&lt;/em&gt; command).&lt;/p&gt;
+
+&lt;p&gt;When you launch a new instance from this AMI, there are processed that must started so your node is operational:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;start Hadoop data node: &lt;code&gt;sudo /root/ephemeral-hdfs/bin/start-dfs.sh&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;start Ganglia agent: &lt;code&gt;sudo /usr/sbin/gmond&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;start Spark worker: &lt;code&gt;nohup sudo /root/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://&lt;master_hostname&gt;:7077 &amp;amp;&amp;lt;/code&amp;gt;&lt;/master_hostname&gt;&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Note: if you use Tachyon, above steps apply too.&lt;/p&gt;
+
+&lt;h4 id=&quot;scheduling-clean-up&quot;&gt;Scheduling clean up&lt;/h4&gt;
+
+&lt;p&gt;Jobs are started on worker nodes and will produce logs in &lt;code&gt;$SPARK_HOME/work/&lt;/code&gt;. Each application jar version will also be stored on each worker running it. If you run a lot of them, disk space will decrease.
+Below are cleanup tasks that can be scheduled with &lt;code&gt;cron&lt;/code&gt; on each worker node and that removes logs and jars after 30 days. &lt;strong&gt;Warning&lt;/strong&gt;: this assumes you redeploy at least every 30 days!&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;find /root/spark/work/ -type f -name &lt;span class=&quot;s2&quot;&gt;&quot;std*&quot;&lt;/span&gt; -mtime +30 -delete
+find /root/spark/work/ -type f -name &lt;span class=&quot;s2&quot;&gt;&quot;*.jar&quot;&lt;/span&gt; -mtime +30 -delete
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Also, Spark AWS deployment comes with a Hadoop cluster that also needs maintenance. Hadoop logs cleanup task can be scheduled the same way:&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;find /mnt/ephemeral-hdfs/logs -name &lt;span class=&quot;s2&quot;&gt;&quot;hadoop*.log.201*&quot;&lt;/span&gt; -type f -mtime +10 -delete
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h4 id=&quot;system-failures-handling&quot;&gt;System failures handling&lt;/h4&gt;
+
+&lt;p&gt;You may have started with 1 or 2 worker nodes, but you may end up with dozens of them. Eventually, one or more servers will fail. They will. You have to anticipate it: a streaming job may not stop too long!
+Few tips to anticipate a failure, in case you chose standalone deployment mode (different approaches apply for Mesos or YARN):&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;On AWS, &lt;strong&gt;create AMIs&lt;/strong&gt; from both master and worker node types. We already talked about the latter, but it can help to have an image for the former. This way you can start a new master instance and restart your workers one by one to point to the master&lt;/li&gt;
+  &lt;li&gt;Spark deployment guide already covers this: have a &lt;strong&gt;standby master&lt;/strong&gt;&lt;/li&gt;
+  &lt;li&gt;You could also study the creation of a &lt;strong&gt;standby cluster&lt;/strong&gt;: one that is an exact replica of the running one, but that you let shut down (so you save the price of running instances, but not EBS volumes unfortunately). It can be created on a different AWS availability zone or region than the other one, in case the first may become unavailable for a moment. It can also be used for &lt;em&gt;blue/green&lt;/em&gt; types of deployment.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;monitoring&quot;&gt;Monitoring&lt;/h4&gt;
+
+&lt;p&gt;Monitoring is essential and can’t be skipped. In our case, with streaming jobs that must run 24/7 in multiple data-centers, monitoring and alerting are vital.&lt;/p&gt;
+
+&lt;p&gt;Your first weapons are Spark and Ganglia UIs, which are very good at collecting monitoring information about instances. Spark UI will help you find failed jobs and stages, application exceptions (log files are accessible in &lt;em&gt;Executors&lt;/em&gt; tab), receiver exceptions (&lt;em&gt;Streaming&lt;/em&gt; tab).&lt;/p&gt;
+
+&lt;p&gt;You also need to be alerted when something goes wrong; that’s something we do with logstash (1 by cluster node) by analyzing jobs and workers log files for specific exceptions.&lt;/p&gt;
+
+&lt;p&gt;Spark master also comes with a &lt;a href=&quot;http://spark.apache.org/docs/latest/monitoring.html#rest-api&quot;&gt;REST API&lt;/a&gt; that you can query periodically to check health of each job.&lt;/p&gt;
+
+&lt;p&gt;In the particular case of a streaming application, you can also monitor:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;batch processing time&lt;/strong&gt;: if it’s frequently above your configured batch interval, your job is too slow at processing received and records and lags behind. Another hint for that is an increasing number of waiting batches. You need to either increase batch interval, add cores/mem to your job, optimize it.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;input stream pending records&lt;/strong&gt;: if you use a broker like Kafka or RabbitMQ, check that your job is able to process incoming events. Spark has flow control mechanisms to move pressure back to the sender, still you may want your data to be processed in a timely manner.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;spark-application-development&quot;&gt;Spark application development&lt;/h2&gt;
+
+&lt;p&gt;Good, you have your own cluster now! It’s time to run something on it. This part won’t cover the basics of how to write a streaming job with Spark Streaming API, but rather try to list some useful tips on application development and life-cycle management.&lt;/p&gt;
+
+&lt;p&gt;A very complete programming guide is available &lt;a href=&quot;http://spark.apache.org/docs/latest/streaming-programming-guide.html&quot;&gt;here&lt;/a&gt; and is a good start point. Working examples are available in &lt;a href=&quot;https://github.com/apache/spark/tree/master/examples/src/main/scala/org/apache/spark/examples/streaming&quot;&gt;Spark github repo&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;cores-are-expensive&quot;&gt;Cores are expensive&lt;/h3&gt;
+
+&lt;p&gt;You’re still in the early stages but want to use Spark anyway. Spark streaming applications require at least 2 cores to run, and that can look overwhelming if you already think about the dozen of small streaming jobs you want to write.
+A quick solution is to write a &lt;strong&gt;single driver with several output operations&lt;/strong&gt;. You can then make different jobs share the same resources, within the same driver execution process. It’s still possible to scale, as it will benefit from adding additional cores to driver the same way a driver with a single output operation would do (you’ll have to define &lt;code&gt;spark.streaming.concurrentJobs&lt;/code&gt; to parallelize processing of jobs in a single driver) . Another advantage is you can create much cheaper integration test environments.&lt;/p&gt;
+
+&lt;p&gt;The drawbacks are:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;you loose code and process isolation, and you’ll have to redeploy everything even when you want to upgrade a single job. Code your driver with future splits in mind.&lt;/li&gt;
+  &lt;li&gt;debugging can be much harder.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;stateful-operators-think-twice&quot;&gt;Stateful operators: think twice&lt;/h3&gt;
+
+&lt;p&gt;They look apealing, and can do really great job. However, logic for stateful operations in a stream are more complex than other kinds, and more complex to debug.
+First of all, a common mistake we made at the beginning (saw it also in different mailing lists conversations), is to use stateful operations as persistent stores. They are not, of course, and they are wiped out when checkpoint directory is cleared. You have to save everything that needs to be in a reliable persistent storage. Stateful operations are great to store transitive states that you can afford to lose or are easy to store and restore on startup.
+Complexity in writing a working and maintainable job is also something to avoid. There are usually other ways to write the same job without using stateful operators (like persisting and fetching everything in DB)&lt;/p&gt;
+
+&lt;h3 id=&quot;event-driven&quot;&gt;Event-driven&lt;/h3&gt;
+
+&lt;p&gt;Think event-driven: streaming applications will run micro batches every few seconds. Is it ok to fetch static or live data from your relational database everytime, for every received record? It is a possible solution, but it won’t scale well. Prefer an event-driven approach: when you change the value of a column or row in DB that the streaming app should be aware of, also send a message asynchronously to a specific topic that will be broadcasted by your message broker.&lt;/p&gt;
+
+&lt;p&gt;You can then merge different &lt;code&gt;DStream&lt;/code&gt; in a single job using &lt;code&gt;DStream.join&lt;/code&gt;: if the first is of &lt;code&gt;(K,V)&lt;/code&gt; and the second &lt;code&gt;(K,W)&lt;/code&gt;, the merged stream will be of &lt;code&gt;(K,(V,W))&lt;/code&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;use-pooling-everywhere&quot;&gt;Use pooling everywhere&lt;/h3&gt;
+
+&lt;p&gt;It’s strongly recommended to use connection pooling everywhere. It is true with database connections, and you’re probably already using it in your applications. But it’s also true with connections to other systems, like your message broker. For that purpose, a simple solution is to use &lt;em&gt;Apache Commons Pool&lt;/em&gt; library.&lt;/p&gt;
+
+&lt;h3 id=&quot;batch-interval-and-recovery&quot;&gt;Batch interval and recovery&lt;/h3&gt;
+
+&lt;p&gt;When you design your job and calculate a relevant batch interval, you will take into account estimated messages rate, probable spikes in load, capacity of dedicated hardware, … A thing that must also be part of the reasoning is recovery in case of failure: if a driver (or any other piece of the system) fails and messages aren’t consumed for a while, they will pile up on the producer side. When application restarts, it will have to handle a massive and unusual work load. This can have several impacts, especially overwhelming systems used as data input and output providers (DB, brokers, …), and this can end up in messages lost because of processing errors.&lt;/p&gt;
+
+&lt;p&gt;Spark now ships back pressure mechanisms (on both sides), and you can also use &lt;code&gt;spark.streaming.receiver.maxRate&lt;/code&gt; that will define the maximum number of records per second a batch will process. This is extremely useful in case of recovery or during application upgrade, to avoid the firehose effect of letting messages queued in a broker.&lt;/p&gt;
+
+&lt;h3 id=&quot;life-cycle&quot;&gt;Life cycle&lt;/h3&gt;
+
+&lt;p&gt;If you have run stateful operations, or want complete recovery of a failed driver with no data loss, &lt;strong&gt;checkpointing&lt;/strong&gt; is mandatory.
+Both last data received and jobs meta data are checkpointed. This means that if you modify code job and redeploy, you also need to remove checkpoint directory. Even if you modify application submission configuration (number of cores, memory to allocate, …) you’ll have to do so.&lt;/p&gt;
+
+&lt;p&gt;Don’t forget to enable &lt;strong&gt;graceful shutdown&lt;/strong&gt;. When enabled, a hook is added to the shutdown sequence so the driver won’t stop until current batch is fully finished, while receiver has stopped and has no pending messages to be processed.&lt;/p&gt;
+
+&lt;p&gt;This was previously done with following piece of code&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;sys&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;ShutdownHookThread&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;ssc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;stop&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;But since 1.4 you can also use the following property&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;py&quot;&gt;spark.streaming.stopGracefullyOnShutdown&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;true&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h3 id=&quot;tuning&quot;&gt;Tuning&lt;/h3&gt;
+
+&lt;p&gt;Apart from obvious or mandatory &lt;a href=&quot;http://spark.apache.org/docs/latest/configuration.html&quot;&gt;parameters&lt;/a&gt;, there are several important things to tune up:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;configuring &lt;strong&gt;block interval&lt;/strong&gt; (default is 200ms) improves performances a lot (divided batch processing time by 4 for us). Basically, for a small cluster and small amount of data, there is no need to divide incoming data into blocks of 200ms. It’s better to form bigger blocks and avoid wasting time in sending and processing small ones. 
+See &lt;a href=&quot;http://spark.apache.org/docs/latest/streaming-programming-guide.html#level-of-parallelism-in-data-receiving&quot;&gt;Spark performance tuning&lt;/a&gt; for details.&lt;/li&gt;
+  &lt;li&gt;number of &lt;strong&gt;concurrent jobs&lt;/strong&gt; is also important to setup if you have more than one output operation in your driver. If you don’t raise this number, each output operation will be run sequentially. The drawback is that it will be harder to detect jobs that run longer than the configured batch time, as operations will continue to run while a new batch is getting processed.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;don’t use the default serializer&lt;/strong&gt;: it’s a well-known fact, Java serialization isn’t not efficient. Spark supports Kryo, but that requires to write read and write functions.&lt;/li&gt;
+  &lt;li&gt;configure &lt;strong&gt;cleaner TTL&lt;/strong&gt;, or RDD will be kept in memory forever.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Here is a sample driver submission script&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;SPARK_HOME&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&#39;/root/spark&#39;&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;SPARK_MASTER&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;&#39;spark://host:6066&#39;&lt;/span&gt;
+
+&lt;span class=&quot;nv&quot;&gt;$SPARK_HOME&lt;/span&gt;/bin/spark-submit &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+ --class com.foobot.stream.DatapointStream &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+ --master &lt;span class=&quot;nv&quot;&gt;$SPARK_MASTER&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+ --deploy-mode cluster &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+ --supervise &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+ --executor-memory 1536m &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+ --total-executor-cores 6 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+ --driver-memory 1G &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+ --driver-java-options &lt;span class=&quot;s2&quot;&gt;&quot;-XX:MaxPermSize=512m&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+ --conf spark.streaming.blockInterval&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;500 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+ --conf spark.streaming.concurrentJobs&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;6 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+ --conf spark.cleaner.ttl&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;1800 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+ --conf spark.executor.logs.rolling.strategy&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;time&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+ --conf spark.executor.logs.rolling.time.interval&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;daily &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+ --conf spark.executor.logs.rolling.maxRetainedFiles&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;10 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+ --conf spark.streaming.receiver.maxRate&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;30 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+ /home/ec2-user/spark-drivers/spark-driver-datapoint.jar &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+ &lt;span class=&quot;nv&quot;&gt;$1&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;What I shared here is experience using Spark Streaming, from prototyping to production, with a particular focus on how to get the best of it without wasting too much resources. 
+Most of these thoughts and advice remain valid for bigger clusters and workloads, but there would be different approaches and topics to discuss.&lt;/p&gt;
+
+</description>
+        <pubDate>Wed, 27 Apr 2016 21:00:00 +0200</pubDate>
+        <link>https://airboxlab.github.io//spark/streaming/cluster/ec2/aws/lean/2016/04/27/lean-spark-streaming.html</link>
+        <guid isPermaLink="true">https://airboxlab.github.io//spark/streaming/cluster/ec2/aws/lean/2016/04/27/lean-spark-streaming.html</guid>
+        
+        
+        <category>spark</category>
+        
+        <category>streaming</category>
+        
+        <category>cluster</category>
+        
+        <category>ec2</category>
+        
+        <category>aws</category>
+        
+        <category>lean</category>
+        
+      </item>
     
       <item>
         <title>Detecting and visualizing Foobot communities with Louvain method, Spark GraphX and D3.js</title>
