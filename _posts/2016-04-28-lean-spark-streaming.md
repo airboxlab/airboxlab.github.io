@@ -206,7 +206,7 @@ Apart from obvious or mandatory [parameters](http://spark.apache.org/docs/latest
 - configuring **block interval** (default is 200ms) improves performances a lot (divided batch processing time by 4 for us). Basically, for a small cluster and small amount of data, there is no need to divide incoming data into blocks of 200ms. It's better to form bigger blocks and avoid wasting time in sending and processing small ones. 
 See [Spark performance tuning](http://spark.apache.org/docs/latest/streaming-programming-guide.html#level-of-parallelism-in-data-receiving) for details.
 - number of **concurrent jobs** is also important to setup if you have more than one output operation in your driver. If you don't raise this number, each output operation will be run sequentially. The drawback is that it will be harder to detect jobs that run longer than the configured batch time, as operations will continue to run while a new batch is getting processed.
-- **don't use the default serializer**: it's a well-known fact, Java serialization isn't not efficient. Spark supports Kryo, but that requires to write read and write functions.
+- **don't use the default serializer**: it's a well-known fact, Java serialization isn't efficient. Spark supports Kryo, but that requires to write read and write functions.
 - configure **cleaner TTL**, or RDD will be kept in memory forever.
 
 Here is a sample driver submission script
