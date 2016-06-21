@@ -1,11 +1,11 @@
 # Site settings
 title: Airboxlab Technical Blog 
-email: info@airboxlab.com
+email: hello@airboxlab.com
 description: > # this means to ignore newlines until "baseurl:"
-  Airboxlab technical blog, talking about our achievements, our fails, our OSS contributions, ...
+  The guys behind Foobot.Talking here about our achievements, failures & OSS contributions
 baseurl: "" # the subpath of your site, e.g. /blog/
 url: "https://airboxlab.github.io/" # the base hostname & protocol for your site
-twitter_username: Airboxlab
+twitter_username: myfoobot
 github_username:  airboxlab
 
 # Build settings

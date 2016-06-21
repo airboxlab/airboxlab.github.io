@@ -4,4 +4,7 @@ title: About
 permalink: /about/
 ---
 
-Airboxlab is an actor of the IoT field, designing, producing and delivering air quality monitoring solutions (both hardware and software).
+We are the guys behind Foobot, indoor air quality monitor. Talking here about our achievements, failures and OSS contributions.
+Buzzwords: #MobileApp #Product #IoT #Hardware #BigData #MachineLearning #Sensors
+
+Thanks for checking us out!
