@@ -6,8 +6,8 @@
 </description>
     <link>https://airboxlab.github.io//</link>
     <atom:link href="https://airboxlab.github.io//feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Mon, 29 Aug 2016 14:53:44 +0200</pubDate>
-    <lastBuildDate>Mon, 29 Aug 2016 14:53:44 +0200</lastBuildDate>
+    <pubDate>Mon, 29 Aug 2016 15:01:29 +0200</pubDate>
+    <lastBuildDate>Mon, 29 Aug 2016 15:01:29 +0200</lastBuildDate>
     <generator>Jekyll v3.0.1</generator>
     
       <item>
@@ -47,7 +47,7 @@ Indoor air quality is a matter of comfort and health, hence being alerted too la
 
 &lt;p&gt;&lt;strong&gt;Jobs&lt;/strong&gt; are the processes that transform input from a source to a desired result and output it to a sink. We have 2 types: &lt;em&gt;Spark Streaming&lt;/em&gt; jobs and &lt;em&gt;microservices&lt;/em&gt;.&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;Communication&lt;/strong&gt; between sources, sinks &amp;amp; jobs depends on physical location of them (e.g. Foobot devices are living in users networks, data is crossing WAN), performance requirements (in memory vs over network), and flexibility (need to start/stop a source/sink dynamically).&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Communication&lt;/strong&gt; between sources, sinks &amp;amp; jobs depends on physical location of them (e.g. Foobot devices are living in users networks, data is sent through WAN), performance requirements (in memory vs over network), and flexibility (need to start/stop a source/sink dynamically).&lt;/p&gt;
 
 &lt;p&gt;Finally, a streaming pipeline is all about sources, sinks and how data goes from one to another. With (you guess so) complex interactions between them. That’s what I’m going to detail in the next section.&lt;/p&gt;
 
@@ -65,7 +65,7 @@ Indoor air quality is a matter of comfort and health, hence being alerted too la
       &lt;li&gt;
         &lt;p&gt;&lt;strong&gt;Storage&lt;/strong&gt;&lt;/p&gt;
 
-        &lt;p&gt;Between sensor data emission and storage the path must be as short as possible. The shorter it is, the less we expose ourself to failure and eventually lost data. Hence storage happens right away after reception. Job responsible for receiving and storing is extremely simple, load-balanced, and tolerant to failure.&lt;/p&gt;
+        &lt;p&gt;Between sensor data emission and storage the path must be as short as possible. The shorter it is, the less we expose ourselves to failure and eventually data loss. Hence storage happens right away after reception. Job responsible for receiving and storing is extremely simple, load-balanced, and tolerant to failure.&lt;/p&gt;
 
         &lt;p&gt;Also, we don’t throw anything, even “junk” data that can sometimes be sent during temporary or permanent failure of a sensor: this won’t be taken into account by downstream consumers of the main pipeline but is used for failure detection.&lt;/p&gt;
       &lt;/li&gt;
@@ -96,7 +96,7 @@ Indoor air quality is a matter of comfort and health, hence being alerted too la
       &lt;li&gt;reporting tools, for instance one that email a periodic email to users telling him how was air quality in the past days or weeks&lt;br /&gt;&lt;br /&gt;&lt;/li&gt;
     &lt;/ul&gt;
 
-    &lt;p&gt;We also perform &lt;strong&gt;aggregations&lt;/strong&gt; that are used downstream or served to users (values available by API, used by mobile and web apps). It reduces throughput&lt;/p&gt;
+    &lt;p&gt;We also perform &lt;strong&gt;aggregations&lt;/strong&gt; that are used downstream or served to users (values available by API, used by mobile and web apps). It reduces average response size and latency.&lt;/p&gt;
   &lt;/li&gt;
   &lt;li&gt;
     &lt;p&gt;&lt;strong&gt;Alerting&lt;/strong&gt;&lt;/p&gt;
@@ -109,7 +109,7 @@ Indoor air quality is a matter of comfort and health, hence being alerted too la
 
     &lt;ul&gt;
       &lt;li&gt;Direct user notifiers, mostly using mobile push notifications&lt;/li&gt;
-      &lt;li&gt;External systems notifications: for instance we can trigger the ventilation system linked to an Ecobee thermostat if particulate matter level is higher than what the user defined.&lt;br /&gt;&lt;br /&gt;&lt;/li&gt;
+      &lt;li&gt;External systems notifications: for instance we can trigger the ventilation system linked to an Ecobee thermostat if particulate matter level is higher than user-defined threshold.&lt;br /&gt;&lt;br /&gt;&lt;/li&gt;
     &lt;/ul&gt;
   &lt;/li&gt;
   &lt;li&gt;
@@ -165,7 +165,7 @@ Similarly, if user disconnects from Foobot channel, we don’t want the service 
 
 &lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
 
-&lt;p&gt;This article gave an overview of one of the critical parts of our system, and explains why we choose Spark Streaming and microservices to implement it. 
+&lt;p&gt;This article gave an overview of one of the most critical part of our system, and explains why we choose Spark Streaming and microservices to implement it. 
 A future series of articles will dive into more specific parts of the pipeline.&lt;/p&gt;
 
 </description>

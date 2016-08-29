@@ -40,7 +40,7 @@ That's why engineers at Airboxlab invest a lot in building a reliable, scalable 
 
 **Jobs** are the processes that transform input from a source to a desired result and output it to a sink. We have 2 types: _Spark Streaming_ jobs and _microservices_. 
 
-**Communication** between sources, sinks & jobs depends on physical location of them (e.g. Foobot devices are living in users networks, data is crossing WAN), performance requirements (in memory vs over network), and flexibility (need to start/stop a source/sink dynamically).
+**Communication** between sources, sinks & jobs depends on physical location of them (e.g. Foobot devices are living in users networks, data is sent through WAN), performance requirements (in memory vs over network), and flexibility (need to start/stop a source/sink dynamically).
 
 Finally, a streaming pipeline is all about sources, sinks and how data goes from one to another. With (you guess so) complex interactions between them. That's what I'm going to detail in the next section.
 
@@ -54,7 +54,7 @@ This is our main data pipeline, the richer and more complex one (there are also 
 
    - **Storage**
    
-      Between sensor data emission and storage the path must be as short as possible. The shorter it is, the less we expose ourself to failure and eventually lost data. Hence storage happens right away after reception. Job responsible for receiving and storing is extremely simple, load-balanced, and tolerant to failure.
+      Between sensor data emission and storage the path must be as short as possible. The shorter it is, the less we expose ourselves to failure and eventually data loss. Hence storage happens right away after reception. Job responsible for receiving and storing is extremely simple, load-balanced, and tolerant to failure.
    
       Also, we don't throw anything, even "junk" data that can sometimes be sent during temporary or permanent failure of a sensor: this won't be taken into account by downstream consumers of the main pipeline but is used for failure detection.
 
@@ -79,7 +79,7 @@ This is our main data pipeline, the richer and more complex one (there are also 
    - other jobs in the pipeline that can trigger events based on statictics values
    - reporting tools, for instance one that email a periodic email to users telling him how was air quality in the past days or weeks<br/><br/>
 
-   We also perform **aggregations** that are used downstream or served to users (values available by API, used by mobile and web apps). It reduces throughput 
+   We also perform **aggregations** that are used downstream or served to users (values available by API, used by mobile and web apps). It reduces average response size and latency.
 
 3. **Alerting**
 
@@ -90,7 +90,7 @@ This is our main data pipeline, the richer and more complex one (there are also 
    There are 2 main types of consumers to these alerts:
 
    - Direct user notifiers, mostly using mobile push notifications
-   - External systems notifications: for instance we can trigger the ventilation system linked to an Ecobee thermostat if particulate matter level is higher than what the user defined.<br/><br/>
+   - External systems notifications: for instance we can trigger the ventilation system linked to an Ecobee thermostat if particulate matter level is higher than user-defined threshold.<br/><br/>
 
 4. **Machine learning**
 
@@ -136,7 +136,7 @@ In order to fulfill these requirements, we opted for a **microservices** archite
 
 ## Conclusion
 
-This article gave an overview of one of the critical parts of our system, and explains why we choose Spark Streaming and microservices to implement it. 
+This article gave an overview of one of the most critical part of our system, and explains why we choose Spark Streaming and microservices to implement it. 
 A future series of articles will dive into more specific parts of the pipeline.
 
 
