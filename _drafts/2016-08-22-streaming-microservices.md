@@ -7,6 +7,13 @@ comments: true
 author: Antoine Galataud
 ---
 
+<style type="text/css">
+.callout {
+    float: right;
+    margin-left: 5px;
+}
+</style>
+
 ![oil pipeline](http://localhost:4000/assets/data_pipeline/oilpipeline.jpg)
 
 ## What is Airboxlab doing with Foobot data?
@@ -94,7 +101,7 @@ This is our main data pipeline, the richer and more complex one (there are also 
 
 5. **Backup**
 
-   ![ingestion](http://localhost:4000/assets/data_pipeline/data_pipeline_backup.png)
+   ![ingestion](http://localhost:4000/assets/data_pipeline/data_pipeline_backup.png){: .callout}
 
    Even backup can be done in a near real-time manner: instead of fetching and storing data in an external backup store on a daily basis, why not benefit from streaming pipeline to do it at event processing time. This is how we implemented our incremental and asynchronous backup system. This has several advantages:
 
@@ -105,13 +112,31 @@ This is our main data pipeline, the richer and more complex one (there are also 
 
 ## Keeping the pipeline flexible
 
-Peripheral services that consume events created in the pipeline
-Fine-grained configuration based on topic subscription, by user or device
-Comes and goes, as features are implemented (push notifications, external devices triggers, IFTTT, ...)
+The backbone of our pipeline relies on Spark Streaming, which allows us to dedicate more or less resources (CPU & RAM) to streaming jobs, making it able to scale well. Dividing each functional process into separate jobs allows us to re-deploy or scale them independently.
 
-### Benefits of microservices
- - easy to setup a new service (service creation is simplified)
- - easy to subscribe and react to an event (topics are structured and documented)
- - easy to test (micro framework that simplifies integration testing)
- - easy to scale a particular feature (e.g. IFTTT more used? spin up new services)
+An other important thing in our day-to-day job is to be able to "plug" a new job at the "periphery" of the pipeline quickly. For instance, we often decide to interact with a new external vendor API, and we don't want to think about anything else than:
+
+- what will the service subscribe to?
+- how will it interact with the API?
+  
+Most importantly, we want to avoid modifying other jobs in the pipeline as much as possible. This allows us to develop and deploy the new service without restarting anything else.
+
+On another hand, we want subscriptions to be dynamic too. For instance, a new user connects on IFTTT and wants its [Foobot to turn on his WeMo switch](https://ifttt.com/connect/foobot/wemo_switch)  whenever global pollution level is too bad. To do that, we will record user configuration but also make the service responsible for interacting with IFTTT listen to relevant user's device events. 
+Similarly, if user disconnects from Foobot channel, we don't want the service keep listening to his thresholds alerts.
+
+In order to fulfill these requirements, we opted for a **microservices** architecture very early. This brings the following benefits:
+
+- _easier to develop a new service_: we invested a bit in simplifying services creation, so creating a new one is a matter of minutes.
+- _easier to extends a service functionality_: let's say you want to add a trigger to your IFTTT channel: you'll only need to change this service code, and retest it. Nothing else. This greatly reduces the risk of regression in other functionalities, and allows us to deploy faster and more often
+- _efficient communication_: each service subscribes and reacts to the events it's supposed to listen to. We structured messaging topics so that services receive only what they need.
+- _easier to test_: well, easier than having to deploy the whole pipeline and re-testing everything. Testing a pipeline is still harder than a classic piece of software though, so we invested in a internal testing microframework that helps writing integration tests.
+- _easier to scale_ a particular integration: one of our integration becomes popular? we can spin up new services only for this type, making the whole architecture cost-efficient.
+
+![subscribers](http://localhost:4000/assets/data_pipeline/data_pipeline_subscribers.png)
+
+## Conclusion
+
+This article gave an overview of one of the critical parts of our system, and explains why we choose Spark Streaming and microservices to implement it. 
+A future series of articles will dive into more specific parts of the pipeline.
+
 

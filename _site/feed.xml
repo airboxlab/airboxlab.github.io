@@ -6,13 +6,20 @@
 </description>
     <link>https://airboxlab.github.io//</link>
     <atom:link href="https://airboxlab.github.io//feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Mon, 29 Aug 2016 13:21:33 +0200</pubDate>
-    <lastBuildDate>Mon, 29 Aug 2016 13:21:33 +0200</lastBuildDate>
+    <pubDate>Mon, 29 Aug 2016 14:53:44 +0200</pubDate>
+    <lastBuildDate>Mon, 29 Aug 2016 14:53:44 +0200</lastBuildDate>
     <generator>Jekyll v3.0.1</generator>
     
       <item>
         <title>A streaming pipeline for the IoT with Apache Spark &amp; microservices</title>
-        <description>&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/data_pipeline/oilpipeline.jpg&quot; alt=&quot;oil pipeline&quot; /&gt;&lt;/p&gt;
+        <description>&lt;style type=&quot;text/css&quot;&gt;
+.callout {
+    float: right;
+    margin-left: 5px;
+}
+&lt;/style&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/data_pipeline/oilpipeline.jpg&quot; alt=&quot;oil pipeline&quot; /&gt;&lt;/p&gt;
 
 &lt;h2 id=&quot;what-is-airboxlab-doing-with-foobot-data&quot;&gt;What is Airboxlab doing with Foobot data?&lt;/h2&gt;
 
@@ -116,7 +123,7 @@ Downstream consumers are somehow the same as for alerting.&lt;/p&gt;
   &lt;li&gt;
     &lt;p&gt;&lt;strong&gt;Backup&lt;/strong&gt;&lt;/p&gt;
 
-    &lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/data_pipeline/data_pipeline_backup.png&quot; alt=&quot;ingestion&quot; /&gt;&lt;/p&gt;
+    &lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/data_pipeline/data_pipeline_backup.png&quot; alt=&quot;ingestion&quot; class=&quot;callout&quot; /&gt;&lt;/p&gt;
 
     &lt;p&gt;Even backup can be done in a near real-time manner: instead of fetching and storing data in an external backup store on a daily basis, why not benefit from streaming pipeline to do it at event processing time. This is how we implemented our incremental and asynchronous backup system. This has several advantages:&lt;/p&gt;
 
@@ -130,17 +137,36 @@ Downstream consumers are somehow the same as for alerting.&lt;/p&gt;
 
 &lt;h2 id=&quot;keeping-the-pipeline-flexible&quot;&gt;Keeping the pipeline flexible&lt;/h2&gt;
 
-&lt;p&gt;Peripheral services that consume events created in the pipeline
-Fine-grained configuration based on topic subscription, by user or device
-Comes and goes, as features are implemented (push notifications, external devices triggers, IFTTT, …)&lt;/p&gt;
+&lt;p&gt;The backbone of our pipeline relies on Spark Streaming, which allows us to dedicate more or less resources (CPU &amp;amp; RAM) to streaming jobs, making it able to scale well. Dividing each functional process into separate jobs allows us to re-deploy or scale them independently.&lt;/p&gt;
 
-&lt;h3 id=&quot;benefits-of-microservices&quot;&gt;Benefits of microservices&lt;/h3&gt;
+&lt;p&gt;An other important thing in our day-to-day job is to be able to “plug” a new job at the “periphery” of the pipeline quickly. For instance, we often decide to interact with a new external vendor API, and we don’t want to think about anything else than:&lt;/p&gt;
+
 &lt;ul&gt;
-  &lt;li&gt;easy to setup a new service (service creation is simplified)&lt;/li&gt;
-  &lt;li&gt;easy to subscribe and react to an event (topics are structured and documented)&lt;/li&gt;
-  &lt;li&gt;easy to test (micro framework that simplifies integration testing)&lt;/li&gt;
-  &lt;li&gt;easy to scale a particular feature (e.g. IFTTT more used? spin up new services)&lt;/li&gt;
+  &lt;li&gt;what will the service subscribe to?&lt;/li&gt;
+  &lt;li&gt;how will it interact with the API?&lt;/li&gt;
 &lt;/ul&gt;
+
+&lt;p&gt;Most importantly, we want to avoid modifying other jobs in the pipeline as much as possible. This allows us to develop and deploy the new service without restarting anything else.&lt;/p&gt;
+
+&lt;p&gt;On another hand, we want subscriptions to be dynamic too. For instance, a new user connects on IFTTT and wants its &lt;a href=&quot;https://ifttt.com/connect/foobot/wemo_switch&quot;&gt;Foobot to turn on his WeMo switch&lt;/a&gt;  whenever global pollution level is too bad. To do that, we will record user configuration but also make the service responsible for interacting with IFTTT listen to relevant user’s device events. 
+Similarly, if user disconnects from Foobot channel, we don’t want the service keep listening to his thresholds alerts.&lt;/p&gt;
+
+&lt;p&gt;In order to fulfill these requirements, we opted for a &lt;strong&gt;microservices&lt;/strong&gt; architecture very early. This brings the following benefits:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;em&gt;easier to develop a new service&lt;/em&gt;: we invested a bit in simplifying services creation, so creating a new one is a matter of minutes.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;easier to extends a service functionality&lt;/em&gt;: let’s say you want to add a trigger to your IFTTT channel: you’ll only need to change this service code, and retest it. Nothing else. This greatly reduces the risk of regression in other functionalities, and allows us to deploy faster and more often&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;efficient communication&lt;/em&gt;: each service subscribes and reacts to the events it’s supposed to listen to. We structured messaging topics so that services receive only what they need.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;easier to test&lt;/em&gt;: well, easier than having to deploy the whole pipeline and re-testing everything. Testing a pipeline is still harder than a classic piece of software though, so we invested in a internal testing microframework that helps writing integration tests.&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;easier to scale&lt;/em&gt; a particular integration: one of our integration becomes popular? we can spin up new services only for this type, making the whole architecture cost-efficient.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/data_pipeline/data_pipeline_subscribers.png&quot; alt=&quot;subscribers&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;This article gave an overview of one of the critical parts of our system, and explains why we choose Spark Streaming and microservices to implement it. 
+A future series of articles will dive into more specific parts of the pipeline.&lt;/p&gt;
 
 </description>
         <pubDate>Mon, 22 Aug 2016 10:00:00 +0200</pubDate>
