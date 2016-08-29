@@ -6,8 +6,8 @@
 </description>
     <link>https://airboxlab.github.io//</link>
     <atom:link href="https://airboxlab.github.io//feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Mon, 29 Aug 2016 15:01:29 +0200</pubDate>
-    <lastBuildDate>Mon, 29 Aug 2016 15:01:29 +0200</lastBuildDate>
+    <pubDate>Mon, 29 Aug 2016 16:51:15 +0200</pubDate>
+    <lastBuildDate>Mon, 29 Aug 2016 16:51:15 +0200</lastBuildDate>
     <generator>Jekyll v3.0.1</generator>
     
       <item>
@@ -19,7 +19,7 @@
 }
 &lt;/style&gt;
 
-&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/data_pipeline/oilpipeline.jpg&quot; alt=&quot;oil pipeline&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://airboxlab.github.io/assets/data_pipeline/oilpipeline.jpg&quot; alt=&quot;oil pipeline&quot; /&gt;&lt;/p&gt;
 
 &lt;h2 id=&quot;what-is-airboxlab-doing-with-foobot-data&quot;&gt;What is Airboxlab doing with Foobot data?&lt;/h2&gt;
 
@@ -59,7 +59,7 @@ Indoor air quality is a matter of comfort and health, hence being alerted too la
   &lt;li&gt;
     &lt;p&gt;&lt;strong&gt;Ingestion&lt;/strong&gt;&lt;/p&gt;
 
-    &lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/data_pipeline/data_pipeline_ingestion.png&quot; alt=&quot;ingestion&quot; /&gt;&lt;/p&gt;
+    &lt;p&gt;&lt;img src=&quot;https://airboxlab.github.io/assets/data_pipeline/data_pipeline_ingestion.png&quot; alt=&quot;ingestion&quot; /&gt;&lt;/p&gt;
 
     &lt;ul&gt;
       &lt;li&gt;
@@ -101,7 +101,7 @@ Indoor air quality is a matter of comfort and health, hence being alerted too la
   &lt;li&gt;
     &lt;p&gt;&lt;strong&gt;Alerting&lt;/strong&gt;&lt;/p&gt;
 
-    &lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/data_pipeline/data_pipeline_alerting.png&quot; alt=&quot;ingestion&quot; /&gt;&lt;/p&gt;
+    &lt;p&gt;&lt;img src=&quot;https://airboxlab.github.io/assets/data_pipeline/data_pipeline_alerting.png&quot; alt=&quot;ingestion&quot; /&gt;&lt;/p&gt;
 
     &lt;p&gt;Alerting is the process of raising an alert when a particular event occurs. That is often related to a sensor data value crossing a standard or user-defined threshold, what we call instant threshold crossing, but can be more complex when it comes to “air quality event” detection. A simple type of event would be a pollution event, one that starts when a pollutant crosses a threshold and ends when it comes back to normal. This implies using mechanisms like windowing and stateful operations to preserve event state, or applying hysteresis for values constantly crossing thresholds up and down.&lt;/p&gt;
 
@@ -123,7 +123,7 @@ Downstream consumers are somehow the same as for alerting.&lt;/p&gt;
   &lt;li&gt;
     &lt;p&gt;&lt;strong&gt;Backup&lt;/strong&gt;&lt;/p&gt;
 
-    &lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/data_pipeline/data_pipeline_backup.png&quot; alt=&quot;ingestion&quot; class=&quot;callout&quot; /&gt;&lt;/p&gt;
+    &lt;p&gt;&lt;img src=&quot;https://airboxlab.github.io/assets/data_pipeline/data_pipeline_backup.png&quot; alt=&quot;ingestion&quot; class=&quot;callout&quot; /&gt;&lt;/p&gt;
 
     &lt;p&gt;Even backup can be done in a near real-time manner: instead of fetching and storing data in an external backup store on a daily basis, why not benefit from streaming pipeline to do it at event processing time. This is how we implemented our incremental and asynchronous backup system. This has several advantages:&lt;/p&gt;
 
@@ -161,7 +161,7 @@ Similarly, if user disconnects from Foobot channel, we don’t want the service 
   &lt;li&gt;&lt;em&gt;easier to scale&lt;/em&gt; a particular integration: one of our integration becomes popular? we can spin up new services only for this type, making the whole architecture cost-efficient.&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/data_pipeline/data_pipeline_subscribers.png&quot; alt=&quot;subscribers&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://airboxlab.github.io/assets/data_pipeline/data_pipeline_subscribers.png&quot; alt=&quot;subscribers&quot; /&gt;&lt;/p&gt;
 
 &lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
 
@@ -169,9 +169,9 @@ Similarly, if user disconnects from Foobot channel, we don’t want the service 
 A future series of articles will dive into more specific parts of the pipeline.&lt;/p&gt;
 
 </description>
-        <pubDate>Mon, 22 Aug 2016 10:00:00 +0200</pubDate>
-        <link>https://airboxlab.github.io//streaming/microservices/iot/spark/real-time/2016/08/22/streaming-microservices.html</link>
-        <guid isPermaLink="true">https://airboxlab.github.io//streaming/microservices/iot/spark/real-time/2016/08/22/streaming-microservices.html</guid>
+        <pubDate>Mon, 29 Aug 2016 14:00:00 +0200</pubDate>
+        <link>https://airboxlab.github.io//streaming/microservices/iot/spark/real-time/2016/08/29/streaming-microservices.html</link>
+        <guid isPermaLink="true">https://airboxlab.github.io//streaming/microservices/iot/spark/real-time/2016/08/29/streaming-microservices.html</guid>
         
         
         <category>streaming</category>

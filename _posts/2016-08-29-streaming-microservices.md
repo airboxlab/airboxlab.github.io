@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "A streaming pipeline for the IoT with Apache Spark & microservices"
-date:   2016-08-22 08:00:00
+date:   2016-08-29 12:00:00
 categories: streaming microservices iot spark real-time
 comments: true
 author: Antoine Galataud
@@ -14,7 +14,7 @@ author: Antoine Galataud
 }
 </style>
 
-![oil pipeline](http://localhost:4000/assets/data_pipeline/oilpipeline.jpg)
+![oil pipeline]({{ site.url }}assets/data_pipeline/oilpipeline.jpg)
 
 ## What is Airboxlab doing with Foobot data?
 
@@ -50,7 +50,7 @@ This is our main data pipeline, the richer and more complex one (there are also 
 
 1. **Ingestion**
 
-   ![ingestion](http://localhost:4000/assets/data_pipeline/data_pipeline_ingestion.png)
+   ![ingestion]({{ site.url }}assets/data_pipeline/data_pipeline_ingestion.png)
 
    - **Storage**
    
@@ -83,7 +83,7 @@ This is our main data pipeline, the richer and more complex one (there are also 
 
 3. **Alerting**
 
-   ![ingestion](http://localhost:4000/assets/data_pipeline/data_pipeline_alerting.png)
+   ![ingestion]({{ site.url }}assets/data_pipeline/data_pipeline_alerting.png)
 
    Alerting is the process of raising an alert when a particular event occurs. That is often related to a sensor data value crossing a standard or user-defined threshold, what we call instant threshold crossing, but can be more complex when it comes to "air quality event" detection. A simple type of event would be a pollution event, one that starts when a pollutant crosses a threshold and ends when it comes back to normal. This implies using mechanisms like windowing and stateful operations to preserve event state, or applying hysteresis for values constantly crossing thresholds up and down.
 
@@ -101,7 +101,7 @@ This is our main data pipeline, the richer and more complex one (there are also 
 
 5. **Backup**
 
-   ![ingestion](http://localhost:4000/assets/data_pipeline/data_pipeline_backup.png){: .callout}
+   ![ingestion]({{ site.url }}assets/data_pipeline/data_pipeline_backup.png){: .callout}
 
    Even backup can be done in a near real-time manner: instead of fetching and storing data in an external backup store on a daily basis, why not benefit from streaming pipeline to do it at event processing time. This is how we implemented our incremental and asynchronous backup system. This has several advantages:
 
@@ -132,7 +132,7 @@ In order to fulfill these requirements, we opted for a **microservices** archite
 - _easier to test_: well, easier than having to deploy the whole pipeline and re-testing everything. Testing a pipeline is still harder than a classic piece of software though, so we invested in a internal testing microframework that helps writing integration tests.
 - _easier to scale_ a particular integration: one of our integration becomes popular? we can spin up new services only for this type, making the whole architecture cost-efficient.
 
-![subscribers](http://localhost:4000/assets/data_pipeline/data_pipeline_subscribers.png)
+![subscribers]({{ site.url }}assets/data_pipeline/data_pipeline_subscribers.png)
 
 ## Conclusion
 
