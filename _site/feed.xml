@@ -6,9 +6,159 @@
 </description>
     <link>https://airboxlab.github.io//</link>
     <atom:link href="https://airboxlab.github.io//feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Tue, 21 Jun 2016 14:36:05 +0200</pubDate>
-    <lastBuildDate>Tue, 21 Jun 2016 14:36:05 +0200</lastBuildDate>
+    <pubDate>Mon, 29 Aug 2016 13:21:33 +0200</pubDate>
+    <lastBuildDate>Mon, 29 Aug 2016 13:21:33 +0200</lastBuildDate>
     <generator>Jekyll v3.0.1</generator>
+    
+      <item>
+        <title>A streaming pipeline for the IoT with Apache Spark &amp; microservices</title>
+        <description>&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/data_pipeline/oilpipeline.jpg&quot; alt=&quot;oil pipeline&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;what-is-airboxlab-doing-with-foobot-data&quot;&gt;What is Airboxlab doing with Foobot data?&lt;/h2&gt;
+
+&lt;p&gt;We build Foobot, which sends indoor air quality data on a regular schedule. This data represents our users most valuable information, and is why they are buying a Foobot for. 
+This data itself is the core of our business, and as engineers we have to secure the process of receiving and storing it.&lt;/p&gt;
+
+&lt;p&gt;However, data alone isn’t enough to give users a smart and complete experience so they can learn and act to improve their environment: an important part of the value is in the processing of this data, how we react to it, and at what speed. 
+Indoor air quality is a matter of comfort and health, hence being alerted too late that the air you breath is polluted reduces interest and impact of the product a lot. In a similar manner, if you used a toxic cleanser but your ventilation system kicks in too late you just bought a mute doctor: he knows what you’re suffering from but can’t help!&lt;/p&gt;
+
+&lt;p&gt;That’s why engineers at Airboxlab invest a lot in building a reliable, scalable and extensible streaming data pipeline. We want to make sure data is safe, that we react appriopriately and in a timely fashion to it, and that the next useful external system integration (be it a thermostat, HVAC system, IFTTT-like platform, customized stream…) will be straightforward.&lt;/p&gt;
+
+&lt;h2 id=&quot;anatomy-of-our-streaming-pipeline&quot;&gt;Anatomy of our streaming pipeline&lt;/h2&gt;
+
+&lt;h3 id=&quot;sources-sinks--jobs&quot;&gt;Sources, Sinks &amp;amp; Jobs&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;Sources&lt;/strong&gt; in our pipelines are various. Most data (in volume) is emitted by Foobot sensors, but there are also events sent by applications (mobile, web), internal sources of static data (for instance device or user definitions that can serve to enrich context), and intermediate results in the pipeline that can be served as sources in other steps.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Sinks&lt;/strong&gt; are also of various nature. We can categorize them as following:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;persistent storage, like SQL and NoSQL databases, HDFS and S3&lt;/li&gt;
+  &lt;li&gt;transient like message brokers to which analysis from processed input are sent on structured topics. Downstream pipeline clients subscribe to the topics they are interested in, process incoming messages, and send results to another sink&lt;/li&gt;
+  &lt;li&gt;external like external API offered by partners&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;Jobs&lt;/strong&gt; are the processes that transform input from a source to a desired result and output it to a sink. We have 2 types: &lt;em&gt;Spark Streaming&lt;/em&gt; jobs and &lt;em&gt;microservices&lt;/em&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Communication&lt;/strong&gt; between sources, sinks &amp;amp; jobs depends on physical location of them (e.g. Foobot devices are living in users networks, data is crossing WAN), performance requirements (in memory vs over network), and flexibility (need to start/stop a source/sink dynamically).&lt;/p&gt;
+
+&lt;p&gt;Finally, a streaming pipeline is all about sources, sinks and how data goes from one to another. With (you guess so) complex interactions between them. That’s what I’m going to detail in the next section.&lt;/p&gt;
+
+&lt;h3 id=&quot;sensor-data-streaming-pipeline&quot;&gt;Sensor data streaming pipeline&lt;/h3&gt;
+
+&lt;p&gt;This is our main data pipeline, the richer and more complex one (there are also other peripheral pipelines that fulfill specific requirements). We can summarize its functions as following:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Ingestion&lt;/strong&gt;&lt;/p&gt;
+
+    &lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/data_pipeline/data_pipeline_ingestion.png&quot; alt=&quot;ingestion&quot; /&gt;&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;
+        &lt;p&gt;&lt;strong&gt;Storage&lt;/strong&gt;&lt;/p&gt;
+
+        &lt;p&gt;Between sensor data emission and storage the path must be as short as possible. The shorter it is, the less we expose ourself to failure and eventually lost data. Hence storage happens right away after reception. Job responsible for receiving and storing is extremely simple, load-balanced, and tolerant to failure.&lt;/p&gt;
+
+        &lt;p&gt;Also, we don’t throw anything, even “junk” data that can sometimes be sent during temporary or permanent failure of a sensor: this won’t be taken into account by downstream consumers of the main pipeline but is used for failure detection.&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;&lt;strong&gt;Transformation&lt;/strong&gt;&lt;/p&gt;
+
+        &lt;p&gt;Sensor data is sent in a specific, raw, compressed format in order to save bandwidth. This step transforms this data into a json document. It also performs input validation in the meantime.&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;&lt;strong&gt;Contextual enrichment&lt;/strong&gt;&lt;/p&gt;
+
+        &lt;p&gt;Raw sensor data is stored but not used as is downstream: we need to calibrate them in order to have meaningful values. Each device has its own calibration (each sensor is slightly different). Device-specific static data is also added to the context, and the whole forms the first rich json document that is sent to multiple downstream consumers.&lt;/p&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Aggregations &amp;amp; statistics computing&lt;/strong&gt;&lt;/p&gt;
+
+    &lt;p&gt;&lt;strong&gt;Stats&lt;/strong&gt; are continuously computed for each device connected to our backend. Most of them are quite basic, like cumulative moving averages for each sensor, some others are based on regressions, like averages of top minimum or maximum values.&lt;/p&gt;
+
+    &lt;p&gt;Most statistics computations never imply loading historical values: this would be a scaling problem. Whenever possible, we use a rolling/cumulative version of the statistic.&lt;/p&gt;
+
+    &lt;p&gt;Statistics are used by several consumers:&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;calibration adapter that is used to adapt sensors baseline&lt;/li&gt;
+      &lt;li&gt;other jobs in the pipeline that can trigger events based on statictics values&lt;/li&gt;
+      &lt;li&gt;reporting tools, for instance one that email a periodic email to users telling him how was air quality in the past days or weeks&lt;br /&gt;&lt;br /&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+
+    &lt;p&gt;We also perform &lt;strong&gt;aggregations&lt;/strong&gt; that are used downstream or served to users (values available by API, used by mobile and web apps). It reduces throughput&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Alerting&lt;/strong&gt;&lt;/p&gt;
+
+    &lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/data_pipeline/data_pipeline_alerting.png&quot; alt=&quot;ingestion&quot; /&gt;&lt;/p&gt;
+
+    &lt;p&gt;Alerting is the process of raising an alert when a particular event occurs. That is often related to a sensor data value crossing a standard or user-defined threshold, what we call instant threshold crossing, but can be more complex when it comes to “air quality event” detection. A simple type of event would be a pollution event, one that starts when a pollutant crosses a threshold and ends when it comes back to normal. This implies using mechanisms like windowing and stateful operations to preserve event state, or applying hysteresis for values constantly crossing thresholds up and down.&lt;/p&gt;
+
+    &lt;p&gt;There are 2 main types of consumers to these alerts:&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;Direct user notifiers, mostly using mobile push notifications&lt;/li&gt;
+      &lt;li&gt;External systems notifications: for instance we can trigger the ventilation system linked to an Ecobee thermostat if particulate matter level is higher than what the user defined.&lt;br /&gt;&lt;br /&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Machine learning&lt;/strong&gt;&lt;/p&gt;
+
+    &lt;p&gt;We apply machine learning at various levels, from calibration baseline improvement to air quality events detection. We use algorithm implementations provided by Spark ML that can be integrated in Spark Streaming jobs: here Spark reveals all its power, as all these bricks feet well together.
+Downstream consumers are somehow the same as for alerting.&lt;/p&gt;
+
+    &lt;p&gt;There are things to say here, but we’ll cover this in a future blog post.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;Backup&lt;/strong&gt;&lt;/p&gt;
+
+    &lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/data_pipeline/data_pipeline_backup.png&quot; alt=&quot;ingestion&quot; /&gt;&lt;/p&gt;
+
+    &lt;p&gt;Even backup can be done in a near real-time manner: instead of fetching and storing data in an external backup store on a daily basis, why not benefit from streaming pipeline to do it at event processing time. This is how we implemented our incremental and asynchronous backup system. This has several advantages:&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;2 seat belts: data is stored on arrival, and almost immediately backed up.&lt;/li&gt;
+      &lt;li&gt;we can develop alternative pipelines to handle temporary or non mission critical tools: we store backup data in HDFS, that can be a source for &lt;a href=&quot;http://spark.apache.org/docs/latest/streaming-programming-guide.html#basic-sources&quot;&gt;Spark Streaming&lt;/a&gt;.&lt;/li&gt;
+      &lt;li&gt;we have an up-to-date offline version of our data on which we can perform heavy data mining and model training.&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;keeping-the-pipeline-flexible&quot;&gt;Keeping the pipeline flexible&lt;/h2&gt;
+
+&lt;p&gt;Peripheral services that consume events created in the pipeline
+Fine-grained configuration based on topic subscription, by user or device
+Comes and goes, as features are implemented (push notifications, external devices triggers, IFTTT, …)&lt;/p&gt;
+
+&lt;h3 id=&quot;benefits-of-microservices&quot;&gt;Benefits of microservices&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;easy to setup a new service (service creation is simplified)&lt;/li&gt;
+  &lt;li&gt;easy to subscribe and react to an event (topics are structured and documented)&lt;/li&gt;
+  &lt;li&gt;easy to test (micro framework that simplifies integration testing)&lt;/li&gt;
+  &lt;li&gt;easy to scale a particular feature (e.g. IFTTT more used? spin up new services)&lt;/li&gt;
+&lt;/ul&gt;
+
+</description>
+        <pubDate>Mon, 22 Aug 2016 10:00:00 +0200</pubDate>
+        <link>https://airboxlab.github.io//streaming/microservices/iot/spark/real-time/2016/08/22/streaming-microservices.html</link>
+        <guid isPermaLink="true">https://airboxlab.github.io//streaming/microservices/iot/spark/real-time/2016/08/22/streaming-microservices.html</guid>
+        
+        
+        <category>streaming</category>
+        
+        <category>microservices</category>
+        
+        <category>iot</category>
+        
+        <category>spark</category>
+        
+        <category>real-time</category>
+        
+      </item>
     
       <item>
         <title>Lean Approach to Spark Streaming with AWS EC2</title>
