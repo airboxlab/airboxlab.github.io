@@ -86,6 +86,15 @@ To achieve this, we needed to design and implement 2 technical parts:
 
 ### Machine learning to the rescue
 
+[*Anomaly detection*](https://en.wikipedia.org/wiki/Anomaly_detection) (or [*outlier detection*](https://en.wikipedia.org/wiki/Outlier#Detection)) is a common problem in data-mining.
+The concept of anomaly detection is quite general, but the idea is to detect outliers (observations very distant to others) from a dataset, and that can be used in a variety of areas like hardware failure detection, intrusion detection systems, or fraud detection. 
+
+There are also different ways to tackle the problem, with a complexity ranging from basic to very complex (neural networks).
+
+We decided to head into [K-Means](https://en.wikipedia.org/wiki/K-means_clustering) which is a clustering technique (unsupervised learning): given a number *k* of clusters, the algorithm will divide the dataset into *k* groups (or *clusters*) in a way that minimizes distance between cluster center and data point. K-Means is also relatively fast to train, and its output is easy to understand (compared to other algorithms). 
+
+![clustering](http://localhost:4000/assets/airqual_events_class/clustering_outlier.png)
+
 K-Means presentation + 2 dimensions sample clustering graph
 Training: k-means training + centroids selection
 Prediction: predict then compute distance

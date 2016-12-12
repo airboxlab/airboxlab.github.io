@@ -6,8 +6,8 @@
 </description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Mon, 12 Dec 2016 12:28:43 +0100</pubDate>
-    <lastBuildDate>Mon, 12 Dec 2016 12:28:43 +0100</lastBuildDate>
+    <pubDate>Mon, 12 Dec 2016 17:09:50 +0100</pubDate>
+    <lastBuildDate>Mon, 12 Dec 2016 17:09:50 +0100</lastBuildDate>
     <generator>Jekyll v3.3.1</generator>
     
       <item>
@@ -98,6 +98,15 @@ This kind of event is also depending on external factors like season and locatio
 &lt;/ul&gt;
 
 &lt;h3 id=&quot;machine-learning-to-the-rescue&quot;&gt;Machine learning to the rescue&lt;/h3&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/Anomaly_detection&quot;&gt;&lt;em&gt;Anomaly detection&lt;/em&gt;&lt;/a&gt; (or &lt;a href=&quot;https://en.wikipedia.org/wiki/Outlier#Detection&quot;&gt;&lt;em&gt;outlier detection&lt;/em&gt;&lt;/a&gt;) is a common problem in data-mining.
+The concept of anomaly detection is quite general, but the idea is to detect outliers (observations very distant to others) from a dataset, and that can be used in a variety of areas like hardware failure detection, intrusion detection systems, or fraud detection.&lt;/p&gt;
+
+&lt;p&gt;There are also different ways to tackle the problem, with a complexity ranging from basic to very complex (neural networks).&lt;/p&gt;
+
+&lt;p&gt;We decided to head into &lt;a href=&quot;https://en.wikipedia.org/wiki/K-means_clustering&quot;&gt;K-Means&lt;/a&gt; which is a clustering technique (unsupervised learning): given a number &lt;em&gt;k&lt;/em&gt; of clusters, the algorithm will divide the dataset into &lt;em&gt;k&lt;/em&gt; groups (or &lt;em&gt;clusters&lt;/em&gt;) in a way that minimizes distance between cluster center and data point. K-Means is also relatively fast to train, and its output is easy to understand (compared to other algorithms).&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/airqual_events_class/clustering_outlier.png&quot; alt=&quot;clustering&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;K-Means presentation + 2 dimensions sample clustering graph
 Training: k-means training + centroids selection
