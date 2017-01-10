@@ -68,9 +68,9 @@ Finally, air quality event detection is a non trivial problem. It requires more 
 
 ## Air Quality Events Detection
 
-### Detecting anomalies in the air
+### Oddities are in the air
 
-Air quality events we want to detect are actually abnormal and most probably infrequent changes in the values sent by Foobot sensors. For instance, when you open the oven, important amount of PMs can be released (if something have burned), or when you open your window, temperature and humidity may change, as well as VOCs, CO2 and PMs.
+Air quality events we want to detect are actually abnormal and most probably infrequent changes in the values sent by Foobot sensors. For instance, when you open the oven, important amount of PMs can be released (if something burnt), or when you open your window, temperature and humidity may change, as well as VOCs, CO2 and PMs.
 
 We took the following approach: we know we don't know all combinations of the events we want to detect, and we don't even know the events we want to detect. Actually, we want to detect and classify much more than a few categories, and the best way is to let users tell us what they do.
 
@@ -82,7 +82,7 @@ We also want to let users know with no delay that something happen and ask them 
 To achieve this, we needed to design and implement 2 technical parts:
 
 - something able to detect anomalies by comparing a vector of values to an existing and already organized set of vectors
-- a streaming layer to continuously analyze incoming data  
+- a streaming layer to continuously analyze incoming data
 
 ### Machine learning to the rescue
 
@@ -91,20 +91,47 @@ The concept of anomaly detection is quite general, but the idea is to detect out
 
 There are also different ways to tackle the problem, with a complexity ranging from basic to very complex (neural networks).
 
-We decided to head into [K-Means](https://en.wikipedia.org/wiki/K-means_clustering) which is a clustering technique (unsupervised learning): given a number *k* of clusters, the algorithm will divide the dataset into *k* groups (or *clusters*) in a way that minimizes distance between cluster center and data point. K-Means is also relatively fast to train, and its output is easy to understand (compared to other algorithms). 
+We decided to head into [K-Means](https://en.wikipedia.org/wiki/K-means_clustering) which is a clustering technique (unsupervised learning): given a number *k*, the algorithm will divide the dataset into *k* groups (or *clusters*) in a way that minimizes distance between cluster center and data points. K-Means is also relatively fast to train, and its output is easy to understand (compared to other algorithms). 
+
+When applied to the entire dataset, K-Means training will output a model composed of *centroids*: basically coordinates of cluster centers. Centroids are computed to minimize distance between itself and surrounding data points.
+
+Parameter *k* is to the discretion of the data scientist: depending on the clustering task needs, you may want more or less cluster centers. It's also possible to iteratively train models while incrementing *k*, and compute average distance of each data point to its centroid for each run: after a specific value of *k*, accuracy will stop increasing (plateau). 
+
+### Anomaly detection with K-Means
+
+Let's dig into anomaly detection, as we talked about K-Means basics, but it's not yet clear at this point how it can help to detect anomalies. 
+
+It's quite simple: every time a data point will be classified with our trained model, the output will be the coordinates of the closest centroid. We can then compute [euclidean distance](https://en.wikipedia.org/wiki/Euclidean_distance) between data point vector and centroid vector to see how far it is from the cluster center. Anomaly detection will make us of this distance: if data point is far, it basically means it's something we didn't see very often in the training dataset.
+
+Going a step further, from the model we trained we'll only select centroids for clusters that classified the more entries. If we take a basic example of 5 clusters, initial training could output something like below:
+
+~~~ 
+1: (0.1, 0.2, 0.1, 0.5)    => 100000 entries
+2: (-0.2, 0.1, -0.05, 0.1) => 50000
+3: ...
+5: (4, -2, 4, 4)           => 100
+~~~ 
+
+The more entries are classified in a cluster, the more frequent they appear in the dataset. Differently said, clusters with more entries represent the more frequent patterns in the data set.
+
+With a 3D representation, it gets clearer how outliers or anomalies will stand out of the crowd: a pack of points reprensenting clusters with most values (below clusters are grouped but you could get groups with a distance between each of them), and suddenly an anomaly, classified in one of the existing clusters but far from the center.
 
 ![clustering](http://localhost:4000/assets/airqual_events_class/clustering_outlier.png)
 
-K-Means presentation + 2 dimensions sample clustering graph
-Training: k-means training + centroids selection
-Prediction: predict then compute distance
-Production: K-Means prediction is fast to execute, no online learning/training as patterns don't evolve much
+### Events and Data points
 
-### Accuracy measurement
+Ok but then, how do you feed your model? This is part of the *feature selection* process, that makes us pick some values or derivatives of values (like aggregations) but not others from the data set, in order to train the model. 
+
+Being more specific, we're interested in variations of sensor values: our data set is composed of the following vectors:
+
+~~~ 
+Vector(PM_value_t - PM_value_t-1, VOC_value_t - VOC_value_t-1, CO2_value_t - CO2_value_t-1, TEMP_value_t - TEMP_value_t-1, HUM_value_t - HUM_value_t-1)
+~~~ 
+
+While training models with this kind of data we rapidly realized that clusters with less data had coordinates representing the most important variations in sensors values, while the ones with more data were associated with small variations. Selecting only the latter gave us a clustering model that could outline anomalies.
+
+## Detecting in near real-time
  
-Sampling for some beta units
-Visualization
-
 ## Conclusion
 
 Summary
