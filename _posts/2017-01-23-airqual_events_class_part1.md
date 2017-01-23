@@ -15,7 +15,7 @@ author: Antoine Galataud
 </style>
 
 <!-- http://wide-wallpapers.net/download/orion-nebula-in-the-infrared-wide-wallpaper-1920x1200.jpg -->
-![orion galaxy?](http://{{ site.url }}/assets/airqual_events_class/orion_nebula.jpg)
+![orion galaxy?]({{ site.url }}/assets/airqual_events_class/orion_nebula.jpg)
 
 <br/>
 
@@ -62,7 +62,7 @@ More over, let's think about sensor value context: a small change in one sensor 
 
 Let's have a look at below graph: it's 24 hours in the day of a Foobot. Lot of things happen and it illustrates well the complexity of detecting events, without generating too much noise for the user (not every variation is an event). Some events are brutal changes of values in a short period of time, some last longer and there is a bigger period of time between start and end phases. Some involves all sensors but the 3 last are only reflecting on temperature and humidity.
 
-![sensors graph](http://{{ site.url }}/assets/airqual_events_class/sensors_values_events.png)
+![sensors graph]({{ site.url }}/assets/airqual_events_class/sensors_values_events.png)
 
 Finally, air quality event detection is a non trivial problem. It requires more than simple algorithm or heuristics: this is a very good application of using machine learning algorithms.
 
@@ -116,7 +116,7 @@ The more entries are classified in a cluster, the more frequent they appear in t
 
 With a 3D representation, it gets clearer how outliers or anomalies will stand out of the crowd: a pack of points reprensenting clusters with most values (below clusters are grouped but you could get groups with a distance between each of them), and suddenly an anomaly, classified in one of the existing clusters but far from the center.
 
-![clustering](http://{{ site.url }}/assets/airqual_events_class/clustering_outlier.png)
+![clustering]({{ site.url }}/assets/airqual_events_class/clustering_outlier.png)
 
 To wrap this up, we're using anamoly detection technique based on K-Means, but we cut the model from its less populated clusters. We'll then use distance computation between vector to classify and its centroid to decide if it's an event or not.
 
@@ -145,7 +145,7 @@ When event ends, not only we can easily retrieve datapoints that caused the even
 
 Below diagram illustrates this flow
 
-![real time detection](http://{{ site.url }}/assets/airqual_events_class/real_time_detect_diag.png)
+![real time detection]({{ site.url }}/assets/airqual_events_class/real_time_detect_diag.png)
 
 ### Fooboters own the value
 
