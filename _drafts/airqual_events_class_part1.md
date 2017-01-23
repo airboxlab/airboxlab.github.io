@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Applying Machine Learning to Air Quality Events Analysis: Part I"
+title:  "Applying Machine Learning to Air Quality Events Analysis (Part I)"
 date:   2016-10-27 12:00:00
 categories: "machine learning"
 comments: true
@@ -19,18 +19,18 @@ author: Antoine Galataud
 
 <br/>
 
-Why was Dark Vador wearing a mask? When you hear him breathing, it's obvious he has serious lung problems, at least severe asthma. Maybe he didn't pay attention to Death Star indoor air quality enough. 
+Why was Dark Vador wearing a mask? When you hear him breathing, it's obvious he had serious lung problems, at least severe asthma. Maybe he didn't pay attention to Death Star indoor air quality enough. 
 But who could blame? This was a huge space to monitor, with troopers coming and going all the time, cosmic dust from all galaxies, chemicals and exhaust gazes from spaceships... 
 
-Indoor air quality can harm your internals, we know that. But if we aren't able to know pollution sources, it gets tricky to avoid them; beyond taking basic actions when air quality degrades, it'd much more interesting to remove the source, change ones habits, automatically trigger the appropriate solution. It's useful to trigger your ventilation every time VOC level is above a threshold, but what if you become aware that it comes from your cleaning habbits?
+Indoor air quality can harm your internals, we know that. But if we aren't able to know pollution sources, it gets tricky to avoid them; beyond taking basic actions when air quality degrades, it'd much more interesting to remove the source, change specific bad habits, automatically trigger the appropriate solution. It's useful to trigger your ventilation every time VOC level is above a threshold, but what if you become aware that it comes from your house cleaning habbits?
 
-This is what we're working on at Airboxlab, and this article will be the first of a series of 2 describing how we decided to tackle the problem of pollution source awareness and the benefits it could bring. It also relates the mistakes we did along the way, and how we learned from them.
+This is one of the subjects we're working on at Airboxlab, and this article will be the first of a series of 2 describing how we decided to tackle the problem of pollution source awareness and the benefits it could bring. It also relates the mistakes we did along the way, and how we learned from them.
 
 ## First approach: experiments and lessons learned
 
 In the early days we were very enthusiastic: we'd have to monitor 1 or 2 houses for a while, ask users to note what they were doing (cooking, vacuum cleaning, ...) while we were monitoring. Even better, we could get super accurate insight by installing extra sensors and monitors. 
 
-When the experiment ends, we collected data and worked with the [LIST](http://list.lu) to build our models. After a few weeks of work, conclusions came like a cold shower: no way to extract any significant pattern from collected data. Although graphs showed correlation between user activity and sensors response, no model could be built. Attempts to build classification models showed disappointing accuracy.
+When the experiment ended, we collected data and worked in collaboration with the [LIST](http://list.lu) to build our models. After a few weeks of work, conclusions came like a cold shower: no way to extract any significant pattern from collected data. Although graphs showed correlation between user activity and sensors response, no model could be built. Attempts to build classification models showed disappointing accuracy.
 
 However, this wasn't a show stopper. We learned a lot from this first failed attempt. 
 
@@ -38,16 +38,16 @@ However, this wasn't a show stopper. We learned a lot from this first failed att
 - dataset was imbalanced: some classes we wanted to learn about had no data at all
 - conducting experiment with different sensors, in a controlled environment, isn't a portable approach. Our users wouldn't be equipped the same way, and they obviously wouldn't be that disciplined in reporting their actions. The resulting model wouldn't match our users habits
 
-More importantly, we realized from last point that our experimented users were doing what we asked them. But our real users, the ones who bought our product and installed the app, would they try that hard to help us collect data? At that time, we weren't able to ask them about causes because we weren't telling them when *something* happened. Solution at that time was to open the app, select a time range and select a catagory. Actually, some users were already doing it. But without any trigger, it was very hard to have a clue about what happened, when exactly, for how long, etc. Existing tags dataset collected from real users input was inaccurate and improper to learning. 
+More importantly, we realized from last point that users were doing what we asked them. But our real users, the ones who bought our product and installed the app, would they try that hard to help us collect data? At that time, we weren't able to ask them about causes because we weren't telling them when *something* happened. Solution at that time was to open the app, select a time range and select a catagory. Actually, some users were already doing it. But without any trigger, it was very hard to have a clue about what happened, when exactly, for how long, etc. Existing tags dataset collected from real users input was inaccurate and improper to learning. 
 
 It became clear initial problem could be divided into 2 distinct ones:
 
 - how can we detect air quality events?
 - how can we classify them?
 
-And that would mean not a single model to build, but several. First things first, we started to work on air quality events detection so we could notify users and ask to tag the event.
+And that would mean not a single model or pipeline to build, but several. First things first, we started to work on air quality events detection so we could notify users and ask them to tag air quality events.
 
-## Air Quality Events: an (approximate) definition 
+## Air quality events: an (approximate) definition 
 
 This first unsuccessful attempt to give meaning to Foobot readings lead us to fundamental questions we eluded from the beginning: what do we want to detect? Air quality events. Ok, but what is it?
 
@@ -93,9 +93,9 @@ There are also different ways to tackle the problem, with a complexity ranging f
 
 We decided to head into [K-Means](https://en.wikipedia.org/wiki/K-means_clustering) which is a clustering technique (unsupervised learning): given a number *k*, the algorithm will divide the dataset into *k* groups (or *clusters*) in a way that minimizes distance between cluster center and data points. K-Means is also relatively fast to train, and its output is easy to understand (compared to other algorithms). 
 
-When applied to the entire dataset, K-Means training will output a model composed of *centroids*: basically coordinates of cluster centers. Centroids are computed to minimize distance between itself and surrounding data points.
+When applied to the entire dataset, K-Means training will output a model composed of *centroids*: basically coordinates of cluster centers. Centroids are computed to minimize distance between themselves and surrounding data points.
 
-Parameter *k* is to the discretion of the data scientist: depending on the clustering task needs, you may want more or less cluster centers. It's also possible to iteratively train models while incrementing *k*, and compute average distance of each data point to its centroid for each run: after a specific value of *k*, accuracy will stop increasing (plateau). 
+Parameter *k* is left to the discretion of the data scientist: depending on clustering task needs, you may want more or less cluster centers. If minimizing distance is your objective, it's possible to iteratively train models while incrementing *k*, and compute average distance of each data point to its centroid for each run: after a specific value of *k*, accuracy will stop increasing (plateau).  On the contrary, if you want to rough outline patterns in your data, you may want to keep *k* low.
 
 ### Anomaly detection with K-Means
 
@@ -118,25 +118,50 @@ With a 3D representation, it gets clearer how outliers or anomalies will stand o
 
 ![clustering](http://localhost:4000/assets/airqual_events_class/clustering_outlier.png)
 
-### Events and Data points
+To wrap this up, we're using anamoly detection technique based on K-Means, but we cut the model from its less populated clusters. We'll then use distance computation between vector to classify and its centroid to decide if it's an event or not.
 
-Ok but then, how do you feed your model? This is part of the *feature selection* process, that makes us pick some values or derivatives of values (like aggregations) but not others from the data set, in order to train the model. 
+### Events and Datapoints
 
-Being more specific, we're interested in variations of sensor values: our data set is composed of the following vectors:
+Ok but then, how do we feed the trainer? This is part of the *feature selection* process, that makes us pick some values or derivatives of values (like aggregations) but not others from the data set, in order to train the model. 
 
-~~~ 
-Vector(PM_value_t - PM_value_t-1, VOC_value_t - VOC_value_t-1, CO2_value_t - CO2_value_t-1, TEMP_value_t - TEMP_value_t-1, HUM_value_t - HUM_value_t-1)
-~~~ 
+Being specific here, we're interested in variations of sensor values over a period of time. Intuitively, sensor values variation between now and a few minutes ago is what can tell better that something is happening as it reflects a change in the air composition. Absolute values alone are not interesting, because, for instance, you could have indoor air with constant high VOC values. 
 
-While training models with this kind of data we rapidly realized that clusters with less data had coordinates representing the most important variations in sensors values, while the ones with more data were associated with small variations. Selecting only the latter gave us a clustering model that could outline anomalies.
+Finally, while training models with this kind of data we rapidly realized that clusters with less data had coordinates representing the most important variations in sensors values, while the ones with more data were associated with small variations. Selecting only the latter gave us a clustering model that could outline anomalies.
 
 ## Detecting in near real-time
- 
+
+Near real-time detection is where we wanted to go from the beginning. Detecting events with a few hours delay with a batch would have reduced the benefit of it all, as the user couldn't be notified immediately. 
+
+Here, near real-time detection means continuous stream of datapoints that a job transforms and submits to the classifier. In Spark Streaming, it translates into a sliding window that maintains a state for each device. This state is a representation of the variations of sensor values for the device over a period of time. Spark Streaming offers several operators that comes in handy. See [Spark Streaming - Window Operations](http://spark.apache.org/docs/latest/streaming-programming-guide.html#window-operations) for details.
+Spark Streaming also allows us to load a K-Means model and to submit vectors to be classified in a continuous manner.
+
+Upon reception, datapoints are transformed and some flags are checked to help make better decisions, like wether or not taking datapoint into account, applying custom transformations, etc. Then we submit the state to the K-Means classifier and depending on distance to the closest cluster, we tag it as an indoor air quality event or not.
+
+Event end is also a matter of clustering: we consider an event as finished if variations between last datapoint received and first event datapoint are classified close to a highly populated cluster centroid.
+
+Sensitivity of event detection and event closing are depending on the configurable threshold that we compare to each distance `euclid_dist(state_vector - centroid)`. In the case of detection, the bigger the threshold is, the less sensitive detection will be. And it's the exact opposite for event closing. It took us quite some time to find *interesting* thresholds: it was all about working with beta testers, checking large amount of detected events, and fine tuning.
+
+When event ends, not only we can easily retrieve datapoints that caused the event to be triggered, but we can also analyse event life: max and min values, variance, duration... All this data will be extremely useful to understand patterns of indoor air quality events.
+
+Below diagram illustrates this flow
+
+![real time detection](http://localhost:4000/assets/airqual_events_class/real_time_detect_diag.png)
+
+### Fooboters own the value
+
+Detecting events in a streaming manner has some benefits: our users can be informed immediately, and they can tell us what it is. When an event is detected, it's transformed into a push notification, that users can open in Foobot mobile app, then select in a list the kind of event he or she thinks was the cause of the event.
+
+Fooboters have been more than kind with us: not only we got a massive amount of tags, but they also helped us expending our list, so we could be an amazing one corresponding to real-life situations.
+
+From this, we collected an important dataset of tags that we're able to join with event characteristics, in order to form another training dataset: the one that will help building an air quality events classification model!
+
 ## Conclusion
 
-Summary
-What to improve in detection
-Next article about detected events classification
+In this article we've investigated in details some of the internals of indoor air quality event detection at Airboxlab. There is a lot more to say about the different approaches we've tried, the failures we faced, what we've learned.
+
+Detection is non trivial, but we're fairly satisfied with what we obtained. We regularly monitor accuracy of detected events, and it's quite interesting to see amount of events and conditions of classifications. We've also set configurable thresholds that allow to increase or decrease sensitivity of detection. Still, there is room for improvement; for instance, we didn't dig too much into detecting several events happening in the same window of time. This would involve managing competing events and states. Probably interesting to look into, but somewhat difficult to compare to single-state-per-device (current) technique in terms of relevance, accuracy, and user friendlyness.
+
+In a future article we'll discuss another important part of our indoor air quality events processing pipeline: classification. This will be the occasion to detail our understanding of the topic, both on the user and technical sides. And of course a chance to dig into other data processing and machine learning techniques. Stay tuned!
 
 
 
