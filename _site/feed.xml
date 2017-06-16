@@ -4,11 +4,124 @@
     <title>Airboxlab Technical Blog</title>
     <description>The guys behind Foobot.Talking here about our achievements, failures &amp; OSS contributions
 </description>
-    <link>http://localhost:4000/</link>
-    <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Mon, 23 Jan 2017 18:12:06 +0100</pubDate>
-    <lastBuildDate>Mon, 23 Jan 2017 18:12:06 +0100</lastBuildDate>
+    <link>http://0.0.0.0:4000/</link>
+    <atom:link href="http://0.0.0.0:4000/feed.xml" rel="self" type="application/rss+xml" />
+    <pubDate>Fri, 16 Jun 2017 10:52:02 +0200</pubDate>
+    <lastBuildDate>Fri, 16 Jun 2017 10:52:02 +0200</lastBuildDate>
     <generator>Jekyll v3.3.1</generator>
+    
+      <item>
+        <title>Scaling MQTT connections with RabbitMQ</title>
+        <description>&lt;style type=&quot;text/css&quot;&gt;
+.callout {
+    float: right;
+    margin-left: 5px;
+    width: 200px;
+}
+&lt;/style&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;suddenly-it-failed&quot;&gt;Suddenly, it failed&lt;/h2&gt;
+
+&lt;p&gt;It happened at the beginning of 2017. Our number of clients had grown steadily so far, and we were confident our current MQTT clusters configuration was strong enough to cope with it for a while.&lt;/p&gt;
+
+&lt;p&gt;Wrong! So wrong! While we were quietly preparing for weekend leave, several alarm bells rang: rabbitmq node 1 not responding, then another, finally the entire cluster. Ok, no worries, let’s just restart it. Wrong again! While it’s easy to change a tire on a stopped car, doing it when you’re driving at 200 km/h is another thing: clients trying to automatically reconnect were preventing a smooth restart. After several unsuccessful attempts, lot of sweat, and placing the cluster in a safe mode, we finally managed to get it back to work.&lt;/p&gt;
+
+&lt;h2 id=&quot;after-the-storm-time-to-look-back&quot;&gt;After the storm, time to look back&lt;/h2&gt;
+
+&lt;p&gt;With this painful event, we realized we were still operating our message brokers, and everything around, as if they were handling a few hundreds of clients. Although we knew we would have to strengthen this core part of our infrastructure, it wasn’t showing any sign of weakness. The danger of things working well is you quickly forget them! And in a small but rapidly growing shop like ours, priorities change. Still, reality strikes back to make you face all the things you are missing:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;strong isolation&lt;/strong&gt;: a single message brokers cluster that does everything (internal/external communication) is very convenient at the beginning: it’s cheap and easy to setup. But one piece failing and the entire system is out. Also, upgrading or simply tuning becomes a stressful operation.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;performance tests&lt;/strong&gt;: what are our needs if number of clients double? Are we able to deal with forecasted throughput? What happens under flaky network conditions? What harwdware for that?&lt;/li&gt;
+  &lt;li&gt;clear &lt;strong&gt;disaster recovery procedures&lt;/strong&gt;: a document with some basic steps isn’t enough. Let’s learn from disasters, and shape up a correct recovery plan with realistic scenarios and steps.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;This article focuses on 1st point (but we worked also on the others, performance tests were one of the prerequisites for developing the solution).&lt;/p&gt;
+
+&lt;h2 id=&quot;divide-and-conquer&quot;&gt;Divide and conquer&lt;/h2&gt;
+
+&lt;p&gt;We expose our services through different APIs and protocols, but most of the activity comes from asynchronous messages processing that come from various sources: &lt;em&gt;internal&lt;/em&gt; (microservices communication based on AMQP) and &lt;em&gt;external&lt;/em&gt; (MQTT and STOMP, available for mobile apps, web apps, devices).&lt;/p&gt;
+
+&lt;p&gt;As a matter of fact, if something goes wrong with the broker, all communications stop. And things can go wrong in a lot of ways: broker crash (not so often), massive reconnection event (thousands of devices reconnecting at the same time), or sudden spike of messages in a specific exchange (if consumers aren’t fast enough, messages will pile up and performance can degrade for all the system).&lt;/p&gt;
+
+&lt;p&gt;Also, brokers exposing different protocols to various types of clients need to play with a lot of constraints: you need to tune for both throughput and high number of connections and you’re over-exposed to bugs due to the large number of plugins and custom settings you have to put in the game.&lt;/p&gt;
+
+&lt;p&gt;Finally, if you open communication channels to partners or external developers, you can’t easily isolate environments (lack of isolation for meta-data and messages, can’t do clear provisioning depending on number of clients), probability of occurrence of a problem increases dramatically (for instance with bugs from incorrectly coded firmware), and you’re rapidly stuck with inextricable compatibility or upgrade issues (like impossibility to server different protocol versions to different clients).&lt;/p&gt;
+
+&lt;p&gt;Taking into account the experience we grew with RabbitMQ, and the large set of topologies you can build with it, it was a valid choice for us to help us build our next messaging system.&lt;/p&gt;
+
+&lt;h3 id=&quot;splitting-brokers&quot;&gt;Splitting brokers&lt;/h3&gt;
+
+&lt;p&gt;The plan was then to split the broker (actually cluster of brokers but we’re refering to it as a single entity). The plan was to create a &lt;em&gt;backend&lt;/em&gt; cluster to keep backend communications completely internal and expose external channels through &lt;em&gt;gateway&lt;/em&gt; brokers that could be located in different places of the world. But those brokers would have to send messages to each others (between backend and each gateway, not between gateways).&lt;/p&gt;
+
+&lt;p&gt;To do that, RabbitMQ has 2 plugins called &lt;a href=&quot;https://www.rabbitmq.com/federation.html&quot;&gt;federation&lt;/a&gt; and &lt;a href=&quot;https://www.rabbitmq.com/shovel.html&quot;&gt;shovel&lt;/a&gt;. Deciding which one to pick depends on target topology, patterns of message transfer and level of control you need.&lt;/p&gt;
+
+&lt;p&gt;We rolled out the plan in several phases, but are the 2 major steps:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;1 backend cluster + 1 gateway cluster&lt;/strong&gt; with direct messages routing through federation. Below a logical representation of how they communicate:
+&lt;img src=&quot;http://0.0.0.0:4000/assets/scale_mqtt/rabbitmq_split_step1.png&quot; alt=&quot;step 1&quot; /&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;1 backend cluster + X gateway clusters&lt;/strong&gt; with &lt;em&gt;intelligent&lt;/em&gt; routing: when messages need to be routed to more than 1 gateway, it becomes inefficient to send all messages to all gateways. We developped a simple message router that route messages based on known location of the client (and broadcasts in case of doubt).
+&lt;img src=&quot;http://0.0.0.0:4000/assets/scale_mqtt/rabbitmq_split_step2.png&quot; alt=&quot;step 2&quot; /&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Clients are routed using AWS Route53 latency-based configuration.&lt;/p&gt;
+
+&lt;h3 id=&quot;tuning-rabbitmq&quot;&gt;Tuning RabbitMQ&lt;/h3&gt;
+
+&lt;p&gt;It’s possible to tune RabbitMQ for throughput or for large number of connections. This is well documented &lt;a href=&quot;https://www.rabbitmq.com/networking.html&quot;&gt;here&lt;/a&gt;. We naturally applied those recommendations in order to maximize throughput on the backend cluster, and increase capacity to handle large number of connections on gateways.&lt;/p&gt;
+
+&lt;p&gt;We have also enabled HiPE compilation to increase throughput on some clusters and this is giving excellent results.&lt;/p&gt;
+
+&lt;p&gt;Running on AWS, we chose the ‘c’ type for our instances: RabbitMQ can be CPU intensive, for throughput intensive workloads, or when connections churn is high (which happens quite often if you have clients connecting from everywhere). We favored c3 instances (cheaper storage with SSD instance store volumes - requires snapshots for instance crash recovery) but c4 with proper IOPS configuration (gp2 or io1) does the trick (more expansive but data survives server crash or restart).&lt;/p&gt;
+
+&lt;h3 id=&quot;repeatability&quot;&gt;Repeatability&lt;/h3&gt;
+
+&lt;p&gt;The way we decide to deploy and locate gateways is data-driven: we do it depending on current number of customers per region/country, forecast in sells, new projects, and technical factors. Once we are aware of those parameters, it’s important to make the operation of setting up a new gateway as automatic as possible.&lt;/p&gt;
+
+&lt;p&gt;Of course, spinning up a new gateway isn’t just a matter of 1 new server in an AWS region: we have to setup the VPC, VPN connection with backend, proxy servers, and other IT support instances.&lt;/p&gt;
+
+&lt;p&gt;We did it using Hashicorp Terraform: it lets you declare and interact with AWS resources from declaration in simple configuration files. Almost all AWS resources are available, see &lt;a href=&quot;https://www.terraform.io/docs/providers/aws/&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Now if need to spawn a new gateway, it’s a matter of hours.&lt;/p&gt;
+
+&lt;h2 id=&quot;where-we-are-now&quot;&gt;Where we are now&lt;/h2&gt;
+
+&lt;p&gt;We started deploying these solutions in productions in March, and now we have 2 gateways in production (US and Japan), handling tens of thousands of connections.&lt;/p&gt;
+
+&lt;p&gt;Scalability and resiliency improved, and we significantly reduced number of problems we used to have. Also, massive reconnections are much less massive, by design: fewer clients per node, and clients are geographically closer to brokers, which reduces risk of network hicups.&lt;/p&gt;
+
+&lt;p&gt;We also improved maintainability: upgrades are progressively applied accross clusters, and we aren’t tied to a single solution anymore: if we decide to go for another messaging implementation for a particular need, it will be much easier to plug in.&lt;/p&gt;
+
+&lt;p&gt;Finally, we’ve seen new opportunities in this architecture: with repeatability of this solution, we can quickly offer our partners an isolated gateway to connect their clients.&lt;/p&gt;
+
+&lt;h3 id=&quot;next-steps&quot;&gt;Next steps&lt;/h3&gt;
+
+&lt;p&gt;We want to achieve strong high availability, using AWS Route53 latency + health checks based routing. This will answer the question “what happens if the entire cluster of brokers is down?”. A good example can be found &lt;a href=&quot;http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-complex-configs.html&quot;&gt;here&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Split, split again! Internal workloads handled by the core cluster can be further segragated, by sending messages to dedicated message brokers, where relevant. Specifically, some of our workloads are log-oriented, don’t need true real-time processing, and would benefit from several days of data retention. Using something like kafka or kinesis would help in that matter.&lt;/p&gt;
+
+</description>
+        <pubDate>Thu, 25 May 2017 12:00:00 +0200</pubDate>
+        <link>http://0.0.0.0:4000/iot/mqtt/scalability/rabbitmq/2017/05/25/scaling_mqtt.html</link>
+        <guid isPermaLink="true">http://0.0.0.0:4000/iot/mqtt/scalability/rabbitmq/2017/05/25/scaling_mqtt.html</guid>
+        
+        
+        <category>iot</category>
+        
+        <category>mqtt</category>
+        
+        <category>scalability</category>
+        
+        <category>rabbitmq</category>
+        
+      </item>
     
       <item>
         <title>Applying Machine Learning to Air Quality Events Analysis (Part I)</title>
@@ -16,11 +129,11 @@
 .callout {
     float: right;
     margin-left: 5px;
+    width: 200px;
 }
 &lt;/style&gt;
 
-&lt;!-- http://wide-wallpapers.net/download/orion-nebula-in-the-infrared-wide-wallpaper-1920x1200.jpg --&gt;
-&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/airqual_events_class/orion_nebula.jpg&quot; alt=&quot;orion galaxy?&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://0.0.0.0:4000/assets/airqual_events_class/orion_nebula.jpg&quot; alt=&quot;orion galaxy?&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;&lt;br /&gt;&lt;/p&gt;
 
@@ -71,7 +184,7 @@ This kind of event is also depending on external factors like season and locatio
 
 &lt;p&gt;Let’s have a look at below graph: it’s 24 hours in the day of a Foobot. Lot of things happen and it illustrates well the complexity of detecting events, without generating too much noise for the user (not every variation is an event). Some events are brutal changes of values in a short period of time, some last longer and there is a bigger period of time between start and end phases. Some involves all sensors but the 3 last are only reflecting on temperature and humidity.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/airqual_events_class/sensors_values_events.png&quot; alt=&quot;sensors graph&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://0.0.0.0:4000/assets/airqual_events_class/sensors_values_events.png&quot; alt=&quot;sensors graph&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;Finally, air quality event detection is a non trivial problem. It requires more than simple algorithm or heuristics: this is a very good application of using machine learning algorithms.&lt;/p&gt;
 
@@ -129,7 +242,7 @@ The concept of anomaly detection is quite general, but the idea is to detect out
 
 &lt;p&gt;With a 3D representation, it gets clearer how outliers or anomalies will stand out of the crowd: a pack of points reprensenting clusters with most values (below clusters are grouped but you could get groups with a distance between each of them), and suddenly an anomaly, classified in one of the existing clusters but far from the center.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/airqual_events_class/clustering_outlier.png&quot; alt=&quot;clustering&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://0.0.0.0:4000/assets/airqual_events_class/clustering_outlier.png&quot; alt=&quot;clustering&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;To wrap this up, we’re using anamoly detection technique based on K-Means, but we cut the model from its less populated clusters. We’ll then use distance computation between vector to classify and its centroid to decide if it’s an event or not.&lt;/p&gt;
 
@@ -158,15 +271,17 @@ Spark Streaming also allows us to load a K-Means model and to submit vectors to 
 
 &lt;p&gt;Below diagram illustrates this flow&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/airqual_events_class/real_time_detect_diag.png&quot; alt=&quot;real time detection&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://0.0.0.0:4000/assets/airqual_events_class/real_time_detect_diag.png&quot; alt=&quot;real time detection&quot; /&gt;&lt;/p&gt;
 
 &lt;h3 id=&quot;fooboters-own-the-value&quot;&gt;Fooboters own the value&lt;/h3&gt;
 
-&lt;p&gt;Detecting events in a streaming manner has some benefits: our users can be informed immediately, and they can tell us what it is. When an event is detected, it’s transformed into a push notification, that users can open in Foobot mobile app, then select in a list the kind of event he or she thinks was the cause of the event.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://0.0.0.0:4000/assets/airqual_events_class/foobot_app_notif.png&quot; alt=&quot;ingestion&quot; class=&quot;callout&quot; /&gt;&lt;/p&gt;
 
-&lt;p&gt;Fooboters have been more than kind with us: not only we got a massive amount of tags, but they also helped us expending our list, so we could be an amazing one corresponding to real-life situations.&lt;/p&gt;
+&lt;p&gt;Detecting events in a streaming manner has some benefits: our users can be informed immediately, and they can tell us what it is. When an event is detected, it’s transformed into a push notification, that users can open in Foobot mobile app, then select in a category he or she thinks was the root cause of the event. This information is then preciously saved, along with event characteristics.&lt;/p&gt;
 
-&lt;p&gt;From this, we collected an important dataset of tags that we’re able to join with event characteristics, in order to form another training dataset: the one that will help building an air quality events classification model!&lt;/p&gt;
+&lt;p&gt;Fooboters have been more than kind with us: not only we got a massive amount of tags, but they also helped us expending our list of categories. As event types list is not closed - users have the ability to give their own tag if they don’t find one in the list of choices - we are able to add new event classes, or create sub categories to refine events classification.&lt;/p&gt;
+
+&lt;p&gt;With the help of our users, we collected an important dataset of tags that we’re able to join with event characteristics, in order to form another training dataset: the one that will help building an air quality events classification model!&lt;/p&gt;
 
 &lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
 
@@ -174,12 +289,12 @@ Spark Streaming also allows us to load a K-Means model and to submit vectors to 
 
 &lt;p&gt;Detection is non trivial, but we’re fairly satisfied with what we obtained. We regularly monitor accuracy of detected events, and it’s quite interesting to see amount of events and conditions of classifications. We’ve also set configurable thresholds that allow to increase or decrease sensitivity of detection. Still, there is room for improvement; for instance, we didn’t dig too much into detecting several events happening in the same window of time. This would involve managing competing events and states. Probably interesting to look into, but somewhat difficult to compare to single-state-per-device (current) technique in terms of relevance, accuracy, and user friendlyness.&lt;/p&gt;
 
-&lt;p&gt;In a future article we’ll discuss another important part of our indoor air quality events processing pipeline: classification. This will be the occasion to detail our understanding of the topic, both on the user and technical sides. And of course a chance to dig into other data processing and machine learning techniques. Stay tuned!&lt;/p&gt;
+&lt;p&gt;In our next article we’ll discuss the next step in building an air quality event processing pipeline: classification. Of course, collecting all this data reveals its full potential only if we try to find patterns in it, and make our users benefit from our findings. Knowing precisely what’s happening in the air of your home can give you precious information for improving it!&lt;/p&gt;
 
 </description>
-        <pubDate>Thu, 27 Oct 2016 14:00:00 +0200</pubDate>
-        <link>http://localhost:4000/machine/learning/2016/10/27/airqual_events_class_part1.html</link>
-        <guid isPermaLink="true">http://localhost:4000/machine/learning/2016/10/27/airqual_events_class_part1.html</guid>
+        <pubDate>Mon, 23 Jan 2017 16:00:00 +0100</pubDate>
+        <link>http://0.0.0.0:4000/machine/learning/2017/01/23/airqual_events_class_part1.html</link>
+        <guid isPermaLink="true">http://0.0.0.0:4000/machine/learning/2017/01/23/airqual_events_class_part1.html</guid>
         
         
         <category>machine</category>
@@ -197,7 +312,7 @@ Spark Streaming also allows us to load a K-Means model and to submit vectors to 
 }
 &lt;/style&gt;
 
-&lt;p&gt;&lt;img src=&quot;http://localhost:4000assets/data_pipeline/oilpipeline.jpg&quot; alt=&quot;oil pipeline&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://0.0.0.0:4000assets/data_pipeline/oilpipeline.jpg&quot; alt=&quot;oil pipeline&quot; /&gt;&lt;/p&gt;
 
 &lt;h2 id=&quot;what-is-airboxlab-doing-with-foobot-data&quot;&gt;What is Airboxlab doing with Foobot data?&lt;/h2&gt;
 
@@ -237,7 +352,7 @@ Indoor air quality is a matter of comfort and health, hence being alerted too la
   &lt;li&gt;
     &lt;p&gt;&lt;strong&gt;Ingestion&lt;/strong&gt;&lt;/p&gt;
 
-    &lt;p&gt;&lt;img src=&quot;http://localhost:4000assets/data_pipeline/data_pipeline_ingestion.png&quot; alt=&quot;ingestion&quot; /&gt;&lt;/p&gt;
+    &lt;p&gt;&lt;img src=&quot;http://0.0.0.0:4000assets/data_pipeline/data_pipeline_ingestion.png&quot; alt=&quot;ingestion&quot; /&gt;&lt;/p&gt;
 
     &lt;ul&gt;
       &lt;li&gt;
@@ -279,7 +394,7 @@ Indoor air quality is a matter of comfort and health, hence being alerted too la
   &lt;li&gt;
     &lt;p&gt;&lt;strong&gt;Alerting&lt;/strong&gt;&lt;/p&gt;
 
-    &lt;p&gt;&lt;img src=&quot;http://localhost:4000assets/data_pipeline/data_pipeline_alerting.png&quot; alt=&quot;ingestion&quot; /&gt;&lt;/p&gt;
+    &lt;p&gt;&lt;img src=&quot;http://0.0.0.0:4000assets/data_pipeline/data_pipeline_alerting.png&quot; alt=&quot;ingestion&quot; /&gt;&lt;/p&gt;
 
     &lt;p&gt;Alerting is the process of raising an alert when a particular event occurs. That is often related to a sensor data value crossing a standard or user-defined threshold, what we call instant threshold crossing, but can be more complex when it comes to “air quality event” detection. A simple type of event would be a pollution event, one that starts when a pollutant crosses a threshold and ends when it comes back to normal. This implies using mechanisms like windowing and stateful operations to preserve event state, or applying hysteresis for values constantly crossing thresholds up and down.&lt;/p&gt;
 
@@ -301,7 +416,7 @@ Downstream consumers are somehow the same as for alerting.&lt;/p&gt;
   &lt;li&gt;
     &lt;p&gt;&lt;strong&gt;Backup&lt;/strong&gt;&lt;/p&gt;
 
-    &lt;p&gt;&lt;img src=&quot;http://localhost:4000assets/data_pipeline/data_pipeline_backup.png&quot; alt=&quot;ingestion&quot; class=&quot;callout&quot; /&gt;&lt;/p&gt;
+    &lt;p&gt;&lt;img src=&quot;http://0.0.0.0:4000assets/data_pipeline/data_pipeline_backup.png&quot; alt=&quot;ingestion&quot; class=&quot;callout&quot; /&gt;&lt;/p&gt;
 
     &lt;p&gt;Even backup can be done in a near real-time manner: instead of fetching and storing data in an external backup store on a daily basis, why not benefit from streaming pipeline to do it at event processing time. This is how we implemented our incremental and asynchronous backup system. This has several advantages:&lt;/p&gt;
 
@@ -339,7 +454,7 @@ Similarly, if user disconnects from Foobot channel, we don’t want the service 
   &lt;li&gt;&lt;em&gt;easier to scale&lt;/em&gt; a particular integration: one of our integration becomes popular? we can spin up new services only for this type, making the whole architecture cost-efficient.&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;&lt;img src=&quot;http://localhost:4000assets/data_pipeline/data_pipeline_subscribers.png&quot; alt=&quot;subscribers&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://0.0.0.0:4000assets/data_pipeline/data_pipeline_subscribers.png&quot; alt=&quot;subscribers&quot; /&gt;&lt;/p&gt;
 
 &lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
 
@@ -348,8 +463,8 @@ A future series of articles will dive into more specific parts of the pipeline.&
 
 </description>
         <pubDate>Mon, 29 Aug 2016 14:00:00 +0200</pubDate>
-        <link>http://localhost:4000/streaming/microservices/iot/spark/real-time/2016/08/29/streaming-microservices.html</link>
-        <guid isPermaLink="true">http://localhost:4000/streaming/microservices/iot/spark/real-time/2016/08/29/streaming-microservices.html</guid>
+        <link>http://0.0.0.0:4000/streaming/microservices/iot/spark/real-time/2016/08/29/streaming-microservices.html</link>
+        <guid isPermaLink="true">http://0.0.0.0:4000/streaming/microservices/iot/spark/real-time/2016/08/29/streaming-microservices.html</guid>
         
         
         <category>streaming</category>
@@ -621,8 +736,8 @@ Most of these thoughts and advice remain valid for bigger clusters and workloads
 
 </description>
         <pubDate>Tue, 21 Jun 2016 10:00:00 +0200</pubDate>
-        <link>http://localhost:4000/spark/streaming/cluster/ec2/aws/lean/2016/06/21/lean-spark-streaming.html</link>
-        <guid isPermaLink="true">http://localhost:4000/spark/streaming/cluster/ec2/aws/lean/2016/06/21/lean-spark-streaming.html</guid>
+        <link>http://0.0.0.0:4000/spark/streaming/cluster/ec2/aws/lean/2016/06/21/lean-spark-streaming.html</link>
+        <guid isPermaLink="true">http://0.0.0.0:4000/spark/streaming/cluster/ec2/aws/lean/2016/06/21/lean-spark-streaming.html</guid>
         
         
         <category>spark</category>
@@ -683,7 +798,7 @@ Introductions for these methods can be found on &lt;a href=&quot;https://en.wiki
 
 &lt;p&gt;A graphical representation of the iterations can be found in original paper&lt;sup id=&quot;fnref:1:1&quot;&gt;&lt;a href=&quot;#fn:1&quot; class=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt;, and is reproduced below&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;http://localhost:4000assets/louvain/pol.jpg&quot; alt=&quot;iterations&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://0.0.0.0:4000assets/louvain/pol.jpg&quot; alt=&quot;iterations&quot; /&gt;&lt;/p&gt;
 
 &lt;h4 id=&quot;pros&quot;&gt;Pros&lt;/h4&gt;
 
@@ -892,8 +1007,8 @@ Here we use D3.js for the tons of features and graph types it provides, and firs
 &lt;/div&gt;
 </description>
         <pubDate>Fri, 12 Feb 2016 00:00:00 +0100</pubDate>
-        <link>http://localhost:4000/spark/graphx/machine-learning/d3/louvain/2016/02/12/louvain.html</link>
-        <guid isPermaLink="true">http://localhost:4000/spark/graphx/machine-learning/d3/louvain/2016/02/12/louvain.html</guid>
+        <link>http://0.0.0.0:4000/spark/graphx/machine-learning/d3/louvain/2016/02/12/louvain.html</link>
+        <guid isPermaLink="true">http://0.0.0.0:4000/spark/graphx/machine-learning/d3/louvain/2016/02/12/louvain.html</guid>
         
         
         <category>spark</category>
