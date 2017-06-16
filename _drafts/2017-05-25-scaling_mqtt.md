@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Scaling MQTT connections with RabbitMQ"
-date:   2017-05-25 10:00:00
+date:   2017-06-16 08:00:00
 categories: "iot mqtt scalability rabbitmq"
 comments: true
 author: Antoine Galataud
@@ -41,7 +41,7 @@ As a matter of fact, if something goes wrong with the broker, all communications
 
 Also, brokers exposing different protocols to various types of clients need to play with a lot of constraints: you need to tune for both throughput and high number of connections and you're over-exposed to bugs due to the large number of plugins and custom settings you have to put in the game.
 
-Finally, if you open communication channels to partners or external developers, you can't easily isolate environments (lack of isolation for meta-data and messages, can't do clear provisioning depending on number of clients), probability of occurrence of a problem increases dramatically (for instance with bugs from incorrectly coded firmware), and you're rapidly stuck with inextricable compatibility or upgrade issues (like impossibility to server different protocol versions to different clients).
+Finally, if you open communication channels to partners or external developers, you can't easily isolate environments (privisioning, security, compliance, ...) and probability of occurrence of a problem increases dramatically (for instance with bugs from incorrectly coded firmware), and you're rapidly stuck with inextricable compatibility or upgrade issues (like impossibility to server different protocol versions to different clients).
 
 Taking into account the experience we grew with RabbitMQ, and the large set of topologies you can build with it, it was a valid choice for us to help us build our next messaging system.
 

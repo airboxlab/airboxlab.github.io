@@ -6,8 +6,8 @@
 </description>
     <link>http://0.0.0.0:4000/</link>
     <atom:link href="http://0.0.0.0:4000/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Fri, 16 Jun 2017 10:52:02 +0200</pubDate>
-    <lastBuildDate>Fri, 16 Jun 2017 10:52:02 +0200</lastBuildDate>
+    <pubDate>Fri, 16 Jun 2017 11:31:49 +0200</pubDate>
+    <lastBuildDate>Fri, 16 Jun 2017 11:31:49 +0200</lastBuildDate>
     <generator>Jekyll v3.3.1</generator>
     
       <item>
@@ -48,7 +48,7 @@
 
 &lt;p&gt;Also, brokers exposing different protocols to various types of clients need to play with a lot of constraints: you need to tune for both throughput and high number of connections and you’re over-exposed to bugs due to the large number of plugins and custom settings you have to put in the game.&lt;/p&gt;
 
-&lt;p&gt;Finally, if you open communication channels to partners or external developers, you can’t easily isolate environments (lack of isolation for meta-data and messages, can’t do clear provisioning depending on number of clients), probability of occurrence of a problem increases dramatically (for instance with bugs from incorrectly coded firmware), and you’re rapidly stuck with inextricable compatibility or upgrade issues (like impossibility to server different protocol versions to different clients).&lt;/p&gt;
+&lt;p&gt;Finally, if you open communication channels to partners or external developers, you can’t easily isolate environments (privisioning, security, compliance, …) and probability of occurrence of a problem increases dramatically (for instance with bugs from incorrectly coded firmware), and you’re rapidly stuck with inextricable compatibility or upgrade issues (like impossibility to server different protocol versions to different clients).&lt;/p&gt;
 
 &lt;p&gt;Taking into account the experience we grew with RabbitMQ, and the large set of topologies you can build with it, it was a valid choice for us to help us build our next messaging system.&lt;/p&gt;
 
@@ -108,9 +108,9 @@
 &lt;p&gt;Split, split again! Internal workloads handled by the core cluster can be further segragated, by sending messages to dedicated message brokers, where relevant. Specifically, some of our workloads are log-oriented, don’t need true real-time processing, and would benefit from several days of data retention. Using something like kafka or kinesis would help in that matter.&lt;/p&gt;
 
 </description>
-        <pubDate>Thu, 25 May 2017 12:00:00 +0200</pubDate>
-        <link>http://0.0.0.0:4000/iot/mqtt/scalability/rabbitmq/2017/05/25/scaling_mqtt.html</link>
-        <guid isPermaLink="true">http://0.0.0.0:4000/iot/mqtt/scalability/rabbitmq/2017/05/25/scaling_mqtt.html</guid>
+        <pubDate>Fri, 16 Jun 2017 10:00:00 +0200</pubDate>
+        <link>http://0.0.0.0:4000/iot/mqtt/scalability/rabbitmq/2017/06/16/scaling_mqtt.html</link>
+        <guid isPermaLink="true">http://0.0.0.0:4000/iot/mqtt/scalability/rabbitmq/2017/06/16/scaling_mqtt.html</guid>
         
         
         <category>iot</category>
