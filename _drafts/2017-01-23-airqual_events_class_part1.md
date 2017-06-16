@@ -11,10 +11,10 @@ author: Antoine Galataud
 .callout {
     float: right;
     margin-left: 5px;
+    width: 200px;
 }
 </style>
 
-<!-- http://wide-wallpapers.net/download/orion-nebula-in-the-infrared-wide-wallpaper-1920x1200.jpg -->
 ![orion galaxy?]({{ site.url }}/assets/airqual_events_class/orion_nebula.jpg)
 
 <br/>
@@ -149,11 +149,13 @@ Below diagram illustrates this flow
 
 ### Fooboters own the value
 
-Detecting events in a streaming manner has some benefits: our users can be informed immediately, and they can tell us what it is. When an event is detected, it's transformed into a push notification, that users can open in Foobot mobile app, then select in a list the kind of event he or she thinks was the cause of the event.
+![ingestion]({{ site.url }}/assets/airqual_events_class/foobot_app_notif.png){: .callout} 
 
-Fooboters have been more than kind with us: not only we got a massive amount of tags, but they also helped us expending our list, so we could be an amazing one corresponding to real-life situations.
+Detecting events in a streaming manner has some benefits: our users can be informed immediately, and they can tell us what it is. When an event is detected, it's transformed into a push notification, that users can open in Foobot mobile app, then select in a category he or she thinks was the root cause of the event. This information is then preciously saved, along with event characteristics.
 
-From this, we collected an important dataset of tags that we're able to join with event characteristics, in order to form another training dataset: the one that will help building an air quality events classification model!
+Fooboters have been more than kind with us: not only we got a massive amount of tags, but they also helped us expending our list of categories. As event types list is not closed - users have the ability to give their own tag if they don't find one in the list of choices - we are able to add new event classes, or create sub categories to refine events classification. 
+
+With the help of our users, we collected an important dataset of tags that we're able to join with event characteristics, in order to form another training dataset: the one that will help building an air quality events classification model!
 
 ## Conclusion
 
@@ -161,7 +163,7 @@ In this article we've investigated in details some of the internals of indoor ai
 
 Detection is non trivial, but we're fairly satisfied with what we obtained. We regularly monitor accuracy of detected events, and it's quite interesting to see amount of events and conditions of classifications. We've also set configurable thresholds that allow to increase or decrease sensitivity of detection. Still, there is room for improvement; for instance, we didn't dig too much into detecting several events happening in the same window of time. This would involve managing competing events and states. Probably interesting to look into, but somewhat difficult to compare to single-state-per-device (current) technique in terms of relevance, accuracy, and user friendlyness.
 
-In a future article we'll discuss another important part of our indoor air quality events processing pipeline: classification. This will be the occasion to detail our understanding of the topic, both on the user and technical sides. And of course a chance to dig into other data processing and machine learning techniques. Stay tuned!
+In our next article we'll discuss the next step in building an air quality event processing pipeline: classification. Of course, collecting all this data reveals its full potential only if we try to find patterns in it, and make our users benefit from our findings. Knowing precisely what's happening in the air of your home can give you precious information for improving it!
 
 
 
