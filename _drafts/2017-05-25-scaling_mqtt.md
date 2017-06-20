@@ -1,21 +1,11 @@
 ---
 layout: post
 title:  "Scaling MQTT connections with RabbitMQ"
-date:   2017-06-16 08:00:00
+date:   2017-05-25 08:00:00
 categories: "iot mqtt scalability rabbitmq"
 comments: true
 author: Antoine Galataud
 ---
-
-<style type="text/css">
-.callout {
-    float: right;
-    margin-left: 5px;
-    width: 200px;
-}
-</style>
-
-<br/>
 
 ## Suddenly, it failed
 

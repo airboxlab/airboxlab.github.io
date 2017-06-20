@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Tuning Quartz Scheduler for large number of small jobs"
-date:   2017-06-20 10:00:00
+date:   2017-06-20 08:00:00
 categories: "performance scalability scheduler quartz"
 comments: true
 author: Antoine Galataud
@@ -9,9 +9,7 @@ author: Antoine Galataud
 
 ## What we do with Quartz Scheduler
 
-We use [Quartz Scheduler](http://www.quartz-scheduler.org/) since one of our partner asked us if it was possible to run some actions for their devices at a particular time of day. We then extended usage of Quartz to different areas, but the main usage pattern remains to run short-lived jobs that perform a single action.
-
-Our throughput goal is to reach thousands of jobs per second (at busy hours of the day).
+We used [Quartz Scheduler](http://www.quartz-scheduler.org/) in first place to schedule time-based events on a large number of our HVAC devices, in order to trigger changes from one mode to another, and define interactions between modes. We then extended usage of Quartz to different areas, but the main usage pattern remains to run short-lived jobs that perform a single action. 
 
 ## The problem
 
@@ -26,6 +24,8 @@ What happens in reality, for a clustered scheduler, is that one instance will ex
 The impact for our clients was directly visible: instead of seeing desired action triggered a few seconds after desired time, it could take several minutes before kicking in. This can be illustrated by below chart:
 
 ![before sharding]({{ site.url }}/assets/scale_quartz/schedulerlab_14_00_06_06_2017.png)
+
+As you can see, a large part of our end users chose to trigger events on their devices at very common times (top of hour), so we need to handle a huge burst in the number of jobs to execute at specific hours of the day.
 
 ## Sharding to the rescue
 

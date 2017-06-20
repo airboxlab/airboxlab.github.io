@@ -6,23 +6,111 @@
 </description>
     <link>http://0.0.0.0:4000/</link>
     <atom:link href="http://0.0.0.0:4000/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Fri, 16 Jun 2017 14:53:47 +0200</pubDate>
-    <lastBuildDate>Fri, 16 Jun 2017 14:53:47 +0200</lastBuildDate>
+    <pubDate>Tue, 20 Jun 2017 14:23:17 +0200</pubDate>
+    <lastBuildDate>Tue, 20 Jun 2017 14:23:17 +0200</lastBuildDate>
     <generator>Jekyll v3.3.1</generator>
     
       <item>
-        <title>Scaling MQTT connections with RabbitMQ</title>
-        <description>&lt;style type=&quot;text/css&quot;&gt;
-.callout {
-    float: right;
-    margin-left: 5px;
-    width: 200px;
-}
-&lt;/style&gt;
+        <title>Tuning Quartz Scheduler for large number of small jobs</title>
+        <description>&lt;h2 id=&quot;what-we-do-with-quartz-scheduler&quot;&gt;What we do with Quartz Scheduler&lt;/h2&gt;
+
+&lt;p&gt;We used &lt;a href=&quot;http://www.quartz-scheduler.org/&quot;&gt;Quartz Scheduler&lt;/a&gt; in first place to schedule time-based events on a large number of our HVAC devices, in order to trigger changes from one mode to another, and define interactions between modes. We then extended usage of Quartz to different areas, but the main usage pattern remains to run short-lived jobs that perform a single action.&lt;/p&gt;
+
+&lt;h2 id=&quot;the-problem&quot;&gt;The problem&lt;/h2&gt;
+
+&lt;p&gt;Quoted from Quartz documentation: “&lt;em&gt;The clustering feature works best for scaling out long-running and/or cpu-intensive jobs (distributing the work-load over multiple nodes). If you need to scale out to support thousands of short-running (e.g 1 second) jobs, consider partitioning the set of jobs by using multiple distinct schedulers (including multiple clustered schedulers for HA). The scheduler makes use of a cluster-wide lock, a pattern that degrades performance as you add more nodes (when going beyond about three nodes - depending upon your database’s capabilities, etc.).&lt;/em&gt;”&lt;/p&gt;
+
+&lt;p&gt;Indeed, it’s easy to confirm that adding nodes to a cluster doesn’t improve things at all (tested with 4, 5 and 6 nodes).&lt;/p&gt;
+
+&lt;p&gt;Cluster-wide lock is obtained by the &lt;code&gt;QuartzSchedulerThread&lt;/code&gt; using a database lock (&lt;code&gt;SELECT ... FOR UPDATE&lt;/code&gt;). It “reserves” a certain amount of triggers to execute (amount decided by &lt;code&gt;org.quartz.scheduler.batchTriggerAcquisitionMaxCount&lt;/code&gt;), execute them (in parallel, number of worker threads can be configured using &lt;code&gt;org.quartz.threadPool.threadCount&lt;/code&gt;, should be equal to batchTriggerAcquisitionMaxCount), then release the lock.&lt;/p&gt;
+
+&lt;p&gt;What happens in reality, for a clustered scheduler, is that one instance will execute the desired number of triggers while the other will be doing nothing. Clustering in Quarz is for high availability, or for load-balancing long-running jobs, but as stated in the docs, doesn’t help to run high number of short-lived jobs.&lt;/p&gt;
+
+&lt;p&gt;The impact for our clients was directly visible: instead of seeing desired action triggered a few seconds after desired time, it could take several minutes before kicking in. This can be illustrated by below chart:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://0.0.0.0:4000/assets/scale_quartz/schedulerlab_14_00_06_06_2017.png&quot; alt=&quot;before sharding&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;As you can see, a large part of our end users chose to trigger events on their devices at very common times (top of hour), so we need to handle a huge burst in the number of jobs to execute at specific hours of the day.&lt;/p&gt;
+
+&lt;h2 id=&quot;sharding-to-the-rescue&quot;&gt;Sharding to the rescue&lt;/h2&gt;
+
+&lt;p&gt;Jobs sharding isn’t a feature proposed by Quartz, although database structure is ready for that. As proposed in the documentation, the idea is to spawn different scheduler instances, each one responsible for a set of shards.&lt;/p&gt;
+
+&lt;p&gt;Sharding can be done in different manners: creating meaningful shards (product category, company, …) or using hashing based on some key (device UUID, user ID, …). We choose the latest, as it offers best sharding capabilities (no risk to create “fat” shards) and our jobs were already stored with these IDs.&lt;/p&gt;
+
+&lt;p&gt;To ensure sharding will remain efficient in time, especially during re-sharding operations (adding/removing new scheduler instance), it was important to use consistent hashing: using the simple hashing approach &lt;em&gt;hash(k) mod n&lt;/em&gt;, any change of &lt;em&gt;n&lt;/em&gt; will require to move a large number of keys, which can degrade performance a lot during operation. Instead, it’s preferable to use a consistent hashing technique: a “ring” of virtual shards is created first and each node is responsible for a set of partitions. Adding a new node requires to move only &lt;em&gt;1/(n+1)&lt;/em&gt; keys to the new node (scheduler). If number of keys remain equal, time for resharding decreases when number of nodes increases.&lt;/p&gt;
+
+&lt;p&gt;In our case, re-sharding involves updating jobs, triggers and related definitions in DB, so the less time it takes, the better. Here is a small benchmark that illustrates time it takes to move keys (update tables) with the 2 hashing techniques:&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Re-sharding after node addition benchmark (local MySQL, 8800 keys)&lt;/em&gt;&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;nb shards&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;naive hashing&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;consistent hashing&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;2&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;4400 keys moved / 360 sec&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;4290 keys moved / 349 sec&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;3&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;4800 keys moved / 460 sec&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;2440 keys moved / 190 sec&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;4&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;5500 keys moved / 570 sec&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;1820 keys moved / 145 sec&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
 
 &lt;p&gt;&lt;br /&gt;&lt;/p&gt;
 
-&lt;h2 id=&quot;suddenly-it-failed&quot;&gt;Suddenly, it failed&lt;/h2&gt;
+&lt;p&gt;This consistent hashing mechanism has then to be made available to our scheduler API clients, so they can pick the right scheduler instance. To do that, each scheduler registers in our service discovery tool with a custom attribute (we use Consul, so the service registers with a custom tag) that represents its node ID. Then, each client discovers the service using the tag computed from hashing job key.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://0.0.0.0:4000/assets/scale_quartz/scheduler_sharding.png&quot; alt=&quot;sharding&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;In above diagram we see multiple MySQL databases, which is a possible solution for further increasing throughput (although not tested). On our side, we still use the same table structures to store all schedulers data.&lt;/p&gt;
+
+&lt;h2 id=&quot;benchmarking&quot;&gt;Benchmarking&lt;/h2&gt;
+
+&lt;p&gt;Here we’re presenting results from up to 4 schedulers: with more, we faced bottlenecks in downstream processes (benchmarks were done with “real-life” jobs), and we hit the limits of the instance we were running the jobs on (&amp;gt; 90% CPU usage). With 8 schedulers, and if all downstream communications are disabled, we reached &lt;strong&gt;1350 jobs/sec&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://0.0.0.0:4000/assets/scale_quartz/benchmark.png&quot; alt=&quot;benchmark&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;deploying-in-production&quot;&gt;Deploying in production&lt;/h2&gt;
+
+&lt;p&gt;We deployed 3 distinct scheduler instances in our target datacenter. Deployment took the scheduler API down for 4 minutes while resharding operation was in progress. The operation is triggered automatically by the service, if it’s configured with a node ID that has no associated job in database. Adding a new scheduler is automatic and doesn’t require any additional configuration.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://0.0.0.0:4000/assets/scale_quartz/schedulerlab_14_00_12_06_2017.png&quot; alt=&quot;after sharding&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Jobs at this hour now execute within an acceptable time, and most importantly we are confident we can now handle much more and keep execution times low.&lt;/p&gt;
+</description>
+        <pubDate>Tue, 20 Jun 2017 10:00:00 +0200</pubDate>
+        <link>http://0.0.0.0:4000/performance/scalability/scheduler/quartz/2017/06/20/perf_tuning_quartz.html</link>
+        <guid isPermaLink="true">http://0.0.0.0:4000/performance/scalability/scheduler/quartz/2017/06/20/perf_tuning_quartz.html</guid>
+        
+        
+        <category>performance</category>
+        
+        <category>scalability</category>
+        
+        <category>scheduler</category>
+        
+        <category>quartz</category>
+        
+      </item>
+    
+      <item>
+        <title>Scaling MQTT connections with RabbitMQ</title>
+        <description>&lt;h2 id=&quot;suddenly-it-failed&quot;&gt;Suddenly, it failed&lt;/h2&gt;
 
 &lt;p&gt;It happened at the beginning of 2017. Our number of clients had grown steadily so far, and we were confident our current MQTT clusters configuration was strong enough to cope with it for a while.&lt;/p&gt;
 
@@ -108,9 +196,9 @@
 &lt;p&gt;Split, split again! Internal workloads handled by the core cluster can be further segragated, by sending messages to dedicated message brokers, where relevant. Specifically, some of our workloads are log-oriented, don’t need true real-time processing, and would benefit from several days of data retention. Using something like kafka or kinesis would help in that matter.&lt;/p&gt;
 
 </description>
-        <pubDate>Fri, 16 Jun 2017 10:00:00 +0200</pubDate>
-        <link>http://0.0.0.0:4000/iot/mqtt/scalability/rabbitmq/2017/06/16/scaling_mqtt.html</link>
-        <guid isPermaLink="true">http://0.0.0.0:4000/iot/mqtt/scalability/rabbitmq/2017/06/16/scaling_mqtt.html</guid>
+        <pubDate>Thu, 25 May 2017 10:00:00 +0200</pubDate>
+        <link>http://0.0.0.0:4000/iot/mqtt/scalability/rabbitmq/2017/05/25/scaling_mqtt.html</link>
+        <guid isPermaLink="true">http://0.0.0.0:4000/iot/mqtt/scalability/rabbitmq/2017/05/25/scaling_mqtt.html</guid>
         
         
         <category>iot</category>
