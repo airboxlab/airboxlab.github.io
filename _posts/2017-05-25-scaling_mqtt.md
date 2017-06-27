@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Scaling MQTT connections with RabbitMQ"
-date:   2017-05-25 08:00:00
+date:   2017-06-27 06:00:00
 categories: "iot mqtt scalability rabbitmq"
 comments: true
 author: Antoine Galataud
@@ -76,8 +76,6 @@ We started deploying these solutions in productions in March, and now we have 2 
 Scalability and resiliency improved, and we significantly reduced number of problems we used to have. Also, massive reconnections are much less massive, by design: fewer clients per node, and clients are geographically closer to brokers, which reduces risk of network hicups.
 
 We also improved maintainability: upgrades are progressively applied accross clusters, and we aren't tied to a single solution anymore: if we decide to go for another messaging implementation for a particular need, it will be much easier to plug in.
-
-Finally, we've seen new opportunities in this architecture: with repeatability of this solution, we can quickly offer our partners an isolated gateway to connect their clients.
 
 ### Next steps
 

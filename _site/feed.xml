@@ -6,9 +6,110 @@
 </description>
     <link>http://0.0.0.0:4000/</link>
     <atom:link href="http://0.0.0.0:4000/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Tue, 20 Jun 2017 14:23:17 +0200</pubDate>
-    <lastBuildDate>Tue, 20 Jun 2017 14:23:17 +0200</lastBuildDate>
+    <pubDate>Tue, 27 Jun 2017 09:42:18 +0200</pubDate>
+    <lastBuildDate>Tue, 27 Jun 2017 09:42:18 +0200</lastBuildDate>
     <generator>Jekyll v3.3.1</generator>
+    
+      <item>
+        <title>Scaling MQTT connections with RabbitMQ</title>
+        <description>&lt;h2 id=&quot;suddenly-it-failed&quot;&gt;Suddenly, it failed&lt;/h2&gt;
+
+&lt;p&gt;It happened at the beginning of 2017. Our number of clients had grown steadily so far, and we were confident our current MQTT clusters configuration was strong enough to cope with it for a while.&lt;/p&gt;
+
+&lt;p&gt;Wrong! So wrong! While we were quietly preparing for weekend leave, several alarm bells rang: rabbitmq node 1 not responding, then another, finally the entire cluster. Ok, no worries, let’s just restart it. Wrong again! While it’s easy to change a tire on a stopped car, doing it when you’re driving at 200 km/h is another thing: clients trying to automatically reconnect were preventing a smooth restart. After several unsuccessful attempts, lot of sweat, and placing the cluster in a safe mode, we finally managed to get it back to work.&lt;/p&gt;
+
+&lt;h2 id=&quot;after-the-storm-time-to-look-back&quot;&gt;After the storm, time to look back&lt;/h2&gt;
+
+&lt;p&gt;With this painful event, we realized we were still operating our message brokers, and everything around, as if they were handling a few hundreds of clients. Although we knew we would have to strengthen this core part of our infrastructure, it wasn’t showing any sign of weakness. The danger of things working well is you quickly forget them! And in a small but rapidly growing shop like ours, priorities change. Still, reality strikes back to make you face all the things you are missing:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;strong isolation&lt;/strong&gt;: a single message brokers cluster that does everything (internal/external communication) is very convenient at the beginning: it’s cheap and easy to setup. But one piece failing and the entire system is out. Also, upgrading or simply tuning becomes a stressful operation.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;performance tests&lt;/strong&gt;: what are our needs if number of clients double? Are we able to deal with forecasted throughput? What happens under flaky network conditions? What harwdware for that?&lt;/li&gt;
+  &lt;li&gt;clear &lt;strong&gt;disaster recovery procedures&lt;/strong&gt;: a document with some basic steps isn’t enough. Let’s learn from disasters, and shape up a correct recovery plan with realistic scenarios and steps.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;This article focuses on 1st point (but we worked also on the others, performance tests were one of the prerequisites for developing the solution).&lt;/p&gt;
+
+&lt;h2 id=&quot;divide-and-conquer&quot;&gt;Divide and conquer&lt;/h2&gt;
+
+&lt;p&gt;We expose our services through different APIs and protocols, but most of the activity comes from asynchronous messages processing that come from various sources: &lt;em&gt;internal&lt;/em&gt; (microservices communication based on AMQP) and &lt;em&gt;external&lt;/em&gt; (MQTT and STOMP, available for mobile apps, web apps, devices).&lt;/p&gt;
+
+&lt;p&gt;As a matter of fact, if something goes wrong with the broker, all communications stop. And things can go wrong in a lot of ways: broker crash (not so often), massive reconnection event (thousands of devices reconnecting at the same time), or sudden spike of messages in a specific exchange (if consumers aren’t fast enough, messages will pile up and performance can degrade for all the system).&lt;/p&gt;
+
+&lt;p&gt;Also, brokers exposing different protocols to various types of clients need to play with a lot of constraints: you need to tune for both throughput and high number of connections and you’re over-exposed to bugs due to the large number of plugins and custom settings you have to put in the game.&lt;/p&gt;
+
+&lt;p&gt;Finally, if you open communication channels to partners or external developers, you can’t easily isolate environments (privisioning, security, compliance, …) and probability of occurrence of a problem increases dramatically (for instance with bugs from incorrectly coded firmware), and you’re rapidly stuck with inextricable compatibility or upgrade issues (like impossibility to server different protocol versions to different clients).&lt;/p&gt;
+
+&lt;p&gt;Taking into account the experience we grew with RabbitMQ, and the large set of topologies you can build with it, it was a valid choice for us to help us build our next messaging system.&lt;/p&gt;
+
+&lt;h3 id=&quot;splitting-brokers&quot;&gt;Splitting brokers&lt;/h3&gt;
+
+&lt;p&gt;The plan was then to split the broker (actually cluster of brokers but we’re refering to it as a single entity). The plan was to create a &lt;em&gt;backend&lt;/em&gt; cluster to keep backend communications completely internal and expose external channels through &lt;em&gt;gateway&lt;/em&gt; brokers that could be located in different places of the world. But those brokers would have to send messages to each others (between backend and each gateway, not between gateways).&lt;/p&gt;
+
+&lt;p&gt;To do that, RabbitMQ has 2 plugins called &lt;a href=&quot;https://www.rabbitmq.com/federation.html&quot;&gt;federation&lt;/a&gt; and &lt;a href=&quot;https://www.rabbitmq.com/shovel.html&quot;&gt;shovel&lt;/a&gt;. Deciding which one to pick depends on target topology, patterns of message transfer and level of control you need.&lt;/p&gt;
+
+&lt;p&gt;We rolled out the plan in several phases, but are the 2 major steps:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;1 backend cluster + 1 gateway cluster&lt;/strong&gt; with direct messages routing through federation. Below a logical representation of how they communicate:
+&lt;img src=&quot;http://0.0.0.0:4000/assets/scale_mqtt/rabbitmq_split_step1.png&quot; alt=&quot;step 1&quot; /&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;1 backend cluster + X gateway clusters&lt;/strong&gt; with &lt;em&gt;intelligent&lt;/em&gt; routing: when messages need to be routed to more than 1 gateway, it becomes inefficient to send all messages to all gateways. We developped a simple message router that route messages based on known location of the client (and broadcasts in case of doubt).
+&lt;img src=&quot;http://0.0.0.0:4000/assets/scale_mqtt/rabbitmq_split_step2.png&quot; alt=&quot;step 2&quot; /&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Clients are routed using AWS Route53 latency-based configuration.&lt;/p&gt;
+
+&lt;h3 id=&quot;tuning-rabbitmq&quot;&gt;Tuning RabbitMQ&lt;/h3&gt;
+
+&lt;p&gt;It’s possible to tune RabbitMQ for throughput or for large number of connections. This is well documented &lt;a href=&quot;https://www.rabbitmq.com/networking.html&quot;&gt;here&lt;/a&gt;. We naturally applied those recommendations in order to maximize throughput on the backend cluster, and increase capacity to handle large number of connections on gateways.&lt;/p&gt;
+
+&lt;p&gt;We have also enabled HiPE compilation to increase throughput on some clusters and this is giving excellent results.&lt;/p&gt;
+
+&lt;p&gt;Running on AWS, we chose the ‘c’ type for our instances: RabbitMQ can be CPU intensive, for throughput intensive workloads, or when connections churn is high (which happens quite often if you have clients connecting from everywhere). We favored c3 instances (cheaper storage with SSD instance store volumes - requires snapshots for instance crash recovery) but c4 with proper IOPS configuration (gp2 or io1) does the trick (more expansive but data survives server crash or restart).&lt;/p&gt;
+
+&lt;h3 id=&quot;repeatability&quot;&gt;Repeatability&lt;/h3&gt;
+
+&lt;p&gt;The way we decide to deploy and locate gateways is data-driven: we do it depending on current number of customers per region/country, forecast in sells, new projects, and technical factors. Once we are aware of those parameters, it’s important to make the operation of setting up a new gateway as automatic as possible.&lt;/p&gt;
+
+&lt;p&gt;Of course, spinning up a new gateway isn’t just a matter of 1 new server in an AWS region: we have to setup the VPC, VPN connection with backend, proxy servers, and other IT support instances.&lt;/p&gt;
+
+&lt;p&gt;We did it using Hashicorp Terraform: it lets you declare and interact with AWS resources from declaration in simple configuration files. Almost all AWS resources are available, see &lt;a href=&quot;https://www.terraform.io/docs/providers/aws/&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Now if need to spawn a new gateway, it’s a matter of hours.&lt;/p&gt;
+
+&lt;h2 id=&quot;where-we-are-now&quot;&gt;Where we are now&lt;/h2&gt;
+
+&lt;p&gt;We started deploying these solutions in productions in March, and now we have 2 gateways in production (US and Japan), handling tens of thousands of connections.&lt;/p&gt;
+
+&lt;p&gt;Scalability and resiliency improved, and we significantly reduced number of problems we used to have. Also, massive reconnections are much less massive, by design: fewer clients per node, and clients are geographically closer to brokers, which reduces risk of network hicups.&lt;/p&gt;
+
+&lt;p&gt;We also improved maintainability: upgrades are progressively applied accross clusters, and we aren’t tied to a single solution anymore: if we decide to go for another messaging implementation for a particular need, it will be much easier to plug in.&lt;/p&gt;
+
+&lt;h3 id=&quot;next-steps&quot;&gt;Next steps&lt;/h3&gt;
+
+&lt;p&gt;We want to achieve strong high availability, using AWS Route53 latency + health checks based routing. This will answer the question “what happens if the entire cluster of brokers is down?”. A good example can be found &lt;a href=&quot;http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-complex-configs.html&quot;&gt;here&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Split, split again! Internal workloads handled by the core cluster can be further segragated, by sending messages to dedicated message brokers, where relevant. Specifically, some of our workloads are log-oriented, don’t need true real-time processing, and would benefit from several days of data retention. Using something like kafka or kinesis would help in that matter.&lt;/p&gt;
+
+</description>
+        <pubDate>Tue, 27 Jun 2017 08:00:00 +0200</pubDate>
+        <link>http://0.0.0.0:4000/iot/mqtt/scalability/rabbitmq/2017/06/27/scaling_mqtt.html</link>
+        <guid isPermaLink="true">http://0.0.0.0:4000/iot/mqtt/scalability/rabbitmq/2017/06/27/scaling_mqtt.html</guid>
+        
+        
+        <category>iot</category>
+        
+        <category>mqtt</category>
+        
+        <category>scalability</category>
+        
+        <category>rabbitmq</category>
+        
+      </item>
     
       <item>
         <title>Tuning Quartz Scheduler for large number of small jobs</title>
@@ -105,109 +206,6 @@
         <category>scheduler</category>
         
         <category>quartz</category>
-        
-      </item>
-    
-      <item>
-        <title>Scaling MQTT connections with RabbitMQ</title>
-        <description>&lt;h2 id=&quot;suddenly-it-failed&quot;&gt;Suddenly, it failed&lt;/h2&gt;
-
-&lt;p&gt;It happened at the beginning of 2017. Our number of clients had grown steadily so far, and we were confident our current MQTT clusters configuration was strong enough to cope with it for a while.&lt;/p&gt;
-
-&lt;p&gt;Wrong! So wrong! While we were quietly preparing for weekend leave, several alarm bells rang: rabbitmq node 1 not responding, then another, finally the entire cluster. Ok, no worries, let’s just restart it. Wrong again! While it’s easy to change a tire on a stopped car, doing it when you’re driving at 200 km/h is another thing: clients trying to automatically reconnect were preventing a smooth restart. After several unsuccessful attempts, lot of sweat, and placing the cluster in a safe mode, we finally managed to get it back to work.&lt;/p&gt;
-
-&lt;h2 id=&quot;after-the-storm-time-to-look-back&quot;&gt;After the storm, time to look back&lt;/h2&gt;
-
-&lt;p&gt;With this painful event, we realized we were still operating our message brokers, and everything around, as if they were handling a few hundreds of clients. Although we knew we would have to strengthen this core part of our infrastructure, it wasn’t showing any sign of weakness. The danger of things working well is you quickly forget them! And in a small but rapidly growing shop like ours, priorities change. Still, reality strikes back to make you face all the things you are missing:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;strong&gt;strong isolation&lt;/strong&gt;: a single message brokers cluster that does everything (internal/external communication) is very convenient at the beginning: it’s cheap and easy to setup. But one piece failing and the entire system is out. Also, upgrading or simply tuning becomes a stressful operation.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;performance tests&lt;/strong&gt;: what are our needs if number of clients double? Are we able to deal with forecasted throughput? What happens under flaky network conditions? What harwdware for that?&lt;/li&gt;
-  &lt;li&gt;clear &lt;strong&gt;disaster recovery procedures&lt;/strong&gt;: a document with some basic steps isn’t enough. Let’s learn from disasters, and shape up a correct recovery plan with realistic scenarios and steps.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;This article focuses on 1st point (but we worked also on the others, performance tests were one of the prerequisites for developing the solution).&lt;/p&gt;
-
-&lt;h2 id=&quot;divide-and-conquer&quot;&gt;Divide and conquer&lt;/h2&gt;
-
-&lt;p&gt;We expose our services through different APIs and protocols, but most of the activity comes from asynchronous messages processing that come from various sources: &lt;em&gt;internal&lt;/em&gt; (microservices communication based on AMQP) and &lt;em&gt;external&lt;/em&gt; (MQTT and STOMP, available for mobile apps, web apps, devices).&lt;/p&gt;
-
-&lt;p&gt;As a matter of fact, if something goes wrong with the broker, all communications stop. And things can go wrong in a lot of ways: broker crash (not so often), massive reconnection event (thousands of devices reconnecting at the same time), or sudden spike of messages in a specific exchange (if consumers aren’t fast enough, messages will pile up and performance can degrade for all the system).&lt;/p&gt;
-
-&lt;p&gt;Also, brokers exposing different protocols to various types of clients need to play with a lot of constraints: you need to tune for both throughput and high number of connections and you’re over-exposed to bugs due to the large number of plugins and custom settings you have to put in the game.&lt;/p&gt;
-
-&lt;p&gt;Finally, if you open communication channels to partners or external developers, you can’t easily isolate environments (privisioning, security, compliance, …) and probability of occurrence of a problem increases dramatically (for instance with bugs from incorrectly coded firmware), and you’re rapidly stuck with inextricable compatibility or upgrade issues (like impossibility to server different protocol versions to different clients).&lt;/p&gt;
-
-&lt;p&gt;Taking into account the experience we grew with RabbitMQ, and the large set of topologies you can build with it, it was a valid choice for us to help us build our next messaging system.&lt;/p&gt;
-
-&lt;h3 id=&quot;splitting-brokers&quot;&gt;Splitting brokers&lt;/h3&gt;
-
-&lt;p&gt;The plan was then to split the broker (actually cluster of brokers but we’re refering to it as a single entity). The plan was to create a &lt;em&gt;backend&lt;/em&gt; cluster to keep backend communications completely internal and expose external channels through &lt;em&gt;gateway&lt;/em&gt; brokers that could be located in different places of the world. But those brokers would have to send messages to each others (between backend and each gateway, not between gateways).&lt;/p&gt;
-
-&lt;p&gt;To do that, RabbitMQ has 2 plugins called &lt;a href=&quot;https://www.rabbitmq.com/federation.html&quot;&gt;federation&lt;/a&gt; and &lt;a href=&quot;https://www.rabbitmq.com/shovel.html&quot;&gt;shovel&lt;/a&gt;. Deciding which one to pick depends on target topology, patterns of message transfer and level of control you need.&lt;/p&gt;
-
-&lt;p&gt;We rolled out the plan in several phases, but are the 2 major steps:&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;
-    &lt;p&gt;&lt;strong&gt;1 backend cluster + 1 gateway cluster&lt;/strong&gt; with direct messages routing through federation. Below a logical representation of how they communicate:
-&lt;img src=&quot;http://0.0.0.0:4000/assets/scale_mqtt/rabbitmq_split_step1.png&quot; alt=&quot;step 1&quot; /&gt;&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;&lt;strong&gt;1 backend cluster + X gateway clusters&lt;/strong&gt; with &lt;em&gt;intelligent&lt;/em&gt; routing: when messages need to be routed to more than 1 gateway, it becomes inefficient to send all messages to all gateways. We developped a simple message router that route messages based on known location of the client (and broadcasts in case of doubt).
-&lt;img src=&quot;http://0.0.0.0:4000/assets/scale_mqtt/rabbitmq_split_step2.png&quot; alt=&quot;step 2&quot; /&gt;&lt;/p&gt;
-  &lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;Clients are routed using AWS Route53 latency-based configuration.&lt;/p&gt;
-
-&lt;h3 id=&quot;tuning-rabbitmq&quot;&gt;Tuning RabbitMQ&lt;/h3&gt;
-
-&lt;p&gt;It’s possible to tune RabbitMQ for throughput or for large number of connections. This is well documented &lt;a href=&quot;https://www.rabbitmq.com/networking.html&quot;&gt;here&lt;/a&gt;. We naturally applied those recommendations in order to maximize throughput on the backend cluster, and increase capacity to handle large number of connections on gateways.&lt;/p&gt;
-
-&lt;p&gt;We have also enabled HiPE compilation to increase throughput on some clusters and this is giving excellent results.&lt;/p&gt;
-
-&lt;p&gt;Running on AWS, we chose the ‘c’ type for our instances: RabbitMQ can be CPU intensive, for throughput intensive workloads, or when connections churn is high (which happens quite often if you have clients connecting from everywhere). We favored c3 instances (cheaper storage with SSD instance store volumes - requires snapshots for instance crash recovery) but c4 with proper IOPS configuration (gp2 or io1) does the trick (more expansive but data survives server crash or restart).&lt;/p&gt;
-
-&lt;h3 id=&quot;repeatability&quot;&gt;Repeatability&lt;/h3&gt;
-
-&lt;p&gt;The way we decide to deploy and locate gateways is data-driven: we do it depending on current number of customers per region/country, forecast in sells, new projects, and technical factors. Once we are aware of those parameters, it’s important to make the operation of setting up a new gateway as automatic as possible.&lt;/p&gt;
-
-&lt;p&gt;Of course, spinning up a new gateway isn’t just a matter of 1 new server in an AWS region: we have to setup the VPC, VPN connection with backend, proxy servers, and other IT support instances.&lt;/p&gt;
-
-&lt;p&gt;We did it using Hashicorp Terraform: it lets you declare and interact with AWS resources from declaration in simple configuration files. Almost all AWS resources are available, see &lt;a href=&quot;https://www.terraform.io/docs/providers/aws/&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
-
-&lt;p&gt;Now if need to spawn a new gateway, it’s a matter of hours.&lt;/p&gt;
-
-&lt;h2 id=&quot;where-we-are-now&quot;&gt;Where we are now&lt;/h2&gt;
-
-&lt;p&gt;We started deploying these solutions in productions in March, and now we have 2 gateways in production (US and Japan), handling tens of thousands of connections.&lt;/p&gt;
-
-&lt;p&gt;Scalability and resiliency improved, and we significantly reduced number of problems we used to have. Also, massive reconnections are much less massive, by design: fewer clients per node, and clients are geographically closer to brokers, which reduces risk of network hicups.&lt;/p&gt;
-
-&lt;p&gt;We also improved maintainability: upgrades are progressively applied accross clusters, and we aren’t tied to a single solution anymore: if we decide to go for another messaging implementation for a particular need, it will be much easier to plug in.&lt;/p&gt;
-
-&lt;p&gt;Finally, we’ve seen new opportunities in this architecture: with repeatability of this solution, we can quickly offer our partners an isolated gateway to connect their clients.&lt;/p&gt;
-
-&lt;h3 id=&quot;next-steps&quot;&gt;Next steps&lt;/h3&gt;
-
-&lt;p&gt;We want to achieve strong high availability, using AWS Route53 latency + health checks based routing. This will answer the question “what happens if the entire cluster of brokers is down?”. A good example can be found &lt;a href=&quot;http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-complex-configs.html&quot;&gt;here&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;Split, split again! Internal workloads handled by the core cluster can be further segragated, by sending messages to dedicated message brokers, where relevant. Specifically, some of our workloads are log-oriented, don’t need true real-time processing, and would benefit from several days of data retention. Using something like kafka or kinesis would help in that matter.&lt;/p&gt;
-
-</description>
-        <pubDate>Thu, 25 May 2017 10:00:00 +0200</pubDate>
-        <link>http://0.0.0.0:4000/iot/mqtt/scalability/rabbitmq/2017/05/25/scaling_mqtt.html</link>
-        <guid isPermaLink="true">http://0.0.0.0:4000/iot/mqtt/scalability/rabbitmq/2017/05/25/scaling_mqtt.html</guid>
-        
-        
-        <category>iot</category>
-        
-        <category>mqtt</category>
-        
-        <category>scalability</category>
-        
-        <category>rabbitmq</category>
         
       </item>
     
