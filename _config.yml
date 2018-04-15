@@ -12,3 +12,6 @@ github_username:  airboxlab
 markdown: kramdown
 kramdown:
   syntax_highlighter: rouge
+
+plugins:
+  - jekyll-seo-tag

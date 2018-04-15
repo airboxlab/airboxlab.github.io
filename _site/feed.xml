@@ -4,11 +4,11 @@
     <title>Airboxlab Technical Blog</title>
     <description>The guys behind Foobot.Talking here about our achievements, failures &amp; OSS contributions
 </description>
-    <link>http://0.0.0.0:4000/</link>
-    <atom:link href="http://0.0.0.0:4000/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Tue, 27 Jun 2017 09:42:18 +0200</pubDate>
-    <lastBuildDate>Tue, 27 Jun 2017 09:42:18 +0200</lastBuildDate>
-    <generator>Jekyll v3.3.1</generator>
+    <link>http://localhost:4000/</link>
+    <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
+    <pubDate>Sun, 15 Apr 2018 13:20:38 +0200</pubDate>
+    <lastBuildDate>Sun, 15 Apr 2018 13:20:38 +0200</lastBuildDate>
+    <generator>Jekyll v3.7.3</generator>
     
       <item>
         <title>Scaling MQTT connections with RabbitMQ</title>
@@ -53,11 +53,11 @@
 &lt;ol&gt;
   &lt;li&gt;
     &lt;p&gt;&lt;strong&gt;1 backend cluster + 1 gateway cluster&lt;/strong&gt; with direct messages routing through federation. Below a logical representation of how they communicate:
-&lt;img src=&quot;http://0.0.0.0:4000/assets/scale_mqtt/rabbitmq_split_step1.png&quot; alt=&quot;step 1&quot; /&gt;&lt;/p&gt;
+&lt;img src=&quot;http://localhost:4000/assets/scale_mqtt/rabbitmq_split_step1.png&quot; alt=&quot;step 1&quot; /&gt;&lt;/p&gt;
   &lt;/li&gt;
   &lt;li&gt;
     &lt;p&gt;&lt;strong&gt;1 backend cluster + X gateway clusters&lt;/strong&gt; with &lt;em&gt;intelligent&lt;/em&gt; routing: when messages need to be routed to more than 1 gateway, it becomes inefficient to send all messages to all gateways. We developped a simple message router that route messages based on known location of the client (and broadcasts in case of doubt).
-&lt;img src=&quot;http://0.0.0.0:4000/assets/scale_mqtt/rabbitmq_split_step2.png&quot; alt=&quot;step 2&quot; /&gt;&lt;/p&gt;
+&lt;img src=&quot;http://localhost:4000/assets/scale_mqtt/rabbitmq_split_step2.png&quot; alt=&quot;step 2&quot; /&gt;&lt;/p&gt;
   &lt;/li&gt;
 &lt;/ol&gt;
 
@@ -96,9 +96,9 @@
 &lt;p&gt;Split, split again! Internal workloads handled by the core cluster can be further segragated, by sending messages to dedicated message brokers, where relevant. Specifically, some of our workloads are log-oriented, don’t need true real-time processing, and would benefit from several days of data retention. Using something like kafka or kinesis would help in that matter.&lt;/p&gt;
 
 </description>
-        <pubDate>Tue, 27 Jun 2017 08:00:00 +0200</pubDate>
-        <link>http://0.0.0.0:4000/iot/mqtt/scalability/rabbitmq/2017/06/27/scaling_mqtt.html</link>
-        <guid isPermaLink="true">http://0.0.0.0:4000/iot/mqtt/scalability/rabbitmq/2017/06/27/scaling_mqtt.html</guid>
+        <pubDate>Tue, 27 Jun 2017 06:00:00 +0200</pubDate>
+        <link>http://localhost:4000/iot/mqtt/scalability/rabbitmq/2017/06/27/scaling_mqtt.html</link>
+        <guid isPermaLink="true">http://localhost:4000/iot/mqtt/scalability/rabbitmq/2017/06/27/scaling_mqtt.html</guid>
         
         
         <category>iot</category>
@@ -129,7 +129,7 @@
 
 &lt;p&gt;The impact for our clients was directly visible: instead of seeing desired action triggered a few seconds after desired time, it could take several minutes before kicking in. This can be illustrated by below chart:&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;http://0.0.0.0:4000/assets/scale_quartz/schedulerlab_14_00_06_06_2017.png&quot; alt=&quot;before sharding&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/scale_quartz/schedulerlab_14_00_06_06_2017.png&quot; alt=&quot;before sharding&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;As you can see, a large part of our end users chose to trigger events on their devices at very common times (top of hour), so we need to handle a huge burst in the number of jobs to execute at specific hours of the day.&lt;/p&gt;
 
@@ -176,7 +176,7 @@
 
 &lt;p&gt;This consistent hashing mechanism has then to be made available to our scheduler API clients, so they can pick the right scheduler instance. To do that, each scheduler registers in our service discovery tool with a custom attribute (we use Consul, so the service registers with a custom tag) that represents its node ID. Then, each client discovers the service using the tag computed from hashing job key.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;http://0.0.0.0:4000/assets/scale_quartz/scheduler_sharding.png&quot; alt=&quot;sharding&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/scale_quartz/scheduler_sharding.png&quot; alt=&quot;sharding&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;In above diagram we see multiple MySQL databases, which is a possible solution for further increasing throughput (although not tested). On our side, we still use the same table structures to store all schedulers data.&lt;/p&gt;
 
@@ -184,19 +184,19 @@
 
 &lt;p&gt;Here we’re presenting results from up to 4 schedulers: with more, we faced bottlenecks in downstream processes (benchmarks were done with “real-life” jobs), and we hit the limits of the instance we were running the jobs on (&amp;gt; 90% CPU usage). With 8 schedulers, and if all downstream communications are disabled, we reached &lt;strong&gt;1350 jobs/sec&lt;/strong&gt;.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;http://0.0.0.0:4000/assets/scale_quartz/benchmark.png&quot; alt=&quot;benchmark&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/scale_quartz/benchmark.png&quot; alt=&quot;benchmark&quot; /&gt;&lt;/p&gt;
 
 &lt;h2 id=&quot;deploying-in-production&quot;&gt;Deploying in production&lt;/h2&gt;
 
 &lt;p&gt;We deployed 3 distinct scheduler instances in our target datacenter. Deployment took the scheduler API down for 4 minutes while resharding operation was in progress. The operation is triggered automatically by the service, if it’s configured with a node ID that has no associated job in database. Adding a new scheduler is automatic and doesn’t require any additional configuration.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;http://0.0.0.0:4000/assets/scale_quartz/schedulerlab_14_00_12_06_2017.png&quot; alt=&quot;after sharding&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/scale_quartz/schedulerlab_14_00_12_06_2017.png&quot; alt=&quot;after sharding&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;Jobs at this hour now execute within an acceptable time, and most importantly we are confident we can now handle much more and keep execution times low.&lt;/p&gt;
 </description>
         <pubDate>Tue, 20 Jun 2017 10:00:00 +0200</pubDate>
-        <link>http://0.0.0.0:4000/performance/scalability/scheduler/quartz/2017/06/20/perf_tuning_quartz.html</link>
-        <guid isPermaLink="true">http://0.0.0.0:4000/performance/scalability/scheduler/quartz/2017/06/20/perf_tuning_quartz.html</guid>
+        <link>http://localhost:4000/performance/scalability/scheduler/quartz/2017/06/20/perf_tuning_quartz.html</link>
+        <guid isPermaLink="true">http://localhost:4000/performance/scalability/scheduler/quartz/2017/06/20/perf_tuning_quartz.html</guid>
         
         
         <category>performance</category>
@@ -210,186 +210,6 @@
       </item>
     
       <item>
-        <title>Applying Machine Learning to Air Quality Events Analysis (Part I)</title>
-        <description>&lt;style type=&quot;text/css&quot;&gt;
-.callout {
-    float: right;
-    margin-left: 5px;
-    width: 200px;
-}
-&lt;/style&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://0.0.0.0:4000/assets/airqual_events_class/orion_nebula.jpg&quot; alt=&quot;orion galaxy?&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;Why was Dark Vador wearing a mask? When you hear him breathing, it’s obvious he had serious lung problems, at least severe asthma. Maybe he didn’t pay attention to Death Star indoor air quality enough. 
-But who could blame? This was a huge space to monitor, with troopers coming and going all the time, cosmic dust from all galaxies, chemicals and exhaust gazes from spaceships…&lt;/p&gt;
-
-&lt;p&gt;Indoor air quality can harm your internals, we know that. But if we aren’t able to know pollution sources, it gets tricky to avoid them; beyond taking basic actions when air quality degrades, it’d much more interesting to remove the source, change specific bad habits, automatically trigger the appropriate solution. It’s useful to trigger your ventilation every time VOC level is above a threshold, but what if you become aware that it comes from your house cleaning habbits?&lt;/p&gt;
-
-&lt;p&gt;This is one of the subjects we’re working on at Airboxlab, and this article will be the first of a series of 2 describing how we decided to tackle the problem of pollution source awareness and the benefits it could bring. It also relates the mistakes we did along the way, and how we learned from them.&lt;/p&gt;
-
-&lt;h2 id=&quot;first-approach-experiments-and-lessons-learned&quot;&gt;First approach: experiments and lessons learned&lt;/h2&gt;
-
-&lt;p&gt;In the early days we were very enthusiastic: we’d have to monitor 1 or 2 houses for a while, ask users to note what they were doing (cooking, vacuum cleaning, …) while we were monitoring. Even better, we could get super accurate insight by installing extra sensors and monitors.&lt;/p&gt;
-
-&lt;p&gt;When the experiment ended, we collected data and worked in collaboration with the &lt;a href=&quot;http://list.lu&quot;&gt;LIST&lt;/a&gt; to build our models. After a few weeks of work, conclusions came like a cold shower: no way to extract any significant pattern from collected data. Although graphs showed correlation between user activity and sensors response, no model could be built. Attempts to build classification models showed disappointing accuracy.&lt;/p&gt;
-
-&lt;p&gt;However, this wasn’t a show stopper. We learned a lot from this first failed attempt.&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;although accuracy was good and users carefully reported time there were doing things that could impact air quality, experiment was too short in time and data was scarse&lt;/li&gt;
-  &lt;li&gt;dataset was imbalanced: some classes we wanted to learn about had no data at all&lt;/li&gt;
-  &lt;li&gt;conducting experiment with different sensors, in a controlled environment, isn’t a portable approach. Our users wouldn’t be equipped the same way, and they obviously wouldn’t be that disciplined in reporting their actions. The resulting model wouldn’t match our users habits&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;More importantly, we realized from last point that users were doing what we asked them. But our real users, the ones who bought our product and installed the app, would they try that hard to help us collect data? At that time, we weren’t able to ask them about causes because we weren’t telling them when &lt;em&gt;something&lt;/em&gt; happened. Solution at that time was to open the app, select a time range and select a catagory. Actually, some users were already doing it. But without any trigger, it was very hard to have a clue about what happened, when exactly, for how long, etc. Existing tags dataset collected from real users input was inaccurate and improper to learning.&lt;/p&gt;
-
-&lt;p&gt;It became clear initial problem could be divided into 2 distinct ones:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;how can we detect air quality events?&lt;/li&gt;
-  &lt;li&gt;how can we classify them?&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;And that would mean not a single model or pipeline to build, but several. First things first, we started to work on air quality events detection so we could notify users and ask them to tag air quality events.&lt;/p&gt;
-
-&lt;h2 id=&quot;air-quality-events-an-approximate-definition&quot;&gt;Air quality events: an (approximate) definition&lt;/h2&gt;
-
-&lt;p&gt;This first unsuccessful attempt to give meaning to Foobot readings lead us to fundamental questions we eluded from the beginning: what do we want to detect? Air quality events. Ok, but what is it?&lt;/p&gt;
-
-&lt;p&gt;Air quality event definition isn’t as simple as it sounds. One may think of all pollution events that can happen at home, like when you burn your cooking, that will generally translates into a sudden increase of particulate matters (PMs).&lt;/p&gt;
-
-&lt;p&gt;But events aren’t only about pollution, and we wanted to be able to detect more to get. What about opening a window? At first sight, it should be revealed by a change in temperature and/or humidity. But in what direction (increase or decrease)? In what proportion? 
-This kind of event is also depending on external factors like season and location: in winter in New York, opening the window will have a different event signature than during summer, or in a different location like countryside.&lt;/p&gt;
-
-&lt;p&gt;Also, events can be defined by different features, and not only by a sensor value at a specific moment of time: volatility of the value, difference between the minimum and maximum value over a period of time, necessary time to revert to initial value…&lt;/p&gt;
-
-&lt;p&gt;More over, let’s think about sensor value context: a small change in one sensor value on a short period of time may not be significant when seen alone. But coupled with another small change from another sensor, this could get interesting. Even more if all sensors are impacted. And direction also has its role to play (increase vs decrease): a combination of increases and/or decreases may be frequent and not seen as an event, but another combination could be more rare, and worth paying attention to it.&lt;/p&gt;
-
-&lt;p&gt;Let’s have a look at below graph: it’s 24 hours in the day of a Foobot. Lot of things happen and it illustrates well the complexity of detecting events, without generating too much noise for the user (not every variation is an event). Some events are brutal changes of values in a short period of time, some last longer and there is a bigger period of time between start and end phases. Some involves all sensors but the 3 last are only reflecting on temperature and humidity.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://0.0.0.0:4000/assets/airqual_events_class/sensors_values_events.png&quot; alt=&quot;sensors graph&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;Finally, air quality event detection is a non trivial problem. It requires more than simple algorithm or heuristics: this is a very good application of using machine learning algorithms.&lt;/p&gt;
-
-&lt;h2 id=&quot;air-quality-events-detection&quot;&gt;Air Quality Events Detection&lt;/h2&gt;
-
-&lt;h3 id=&quot;oddities-are-in-the-air&quot;&gt;Oddities are in the air&lt;/h3&gt;
-
-&lt;p&gt;Air quality events we want to detect are actually abnormal and most probably infrequent changes in the values sent by Foobot sensors. For instance, when you open the oven, important amount of PMs can be released (if something burnt), or when you open your window, temperature and humidity may change, as well as VOCs, CO2 and PMs.&lt;/p&gt;
-
-&lt;p&gt;We took the following approach: we know we don’t know all combinations of the events we want to detect, and we don’t even know the events we want to detect. Actually, we want to detect and classify much more than a few categories, and the best way is to let users tell us what they do.&lt;/p&gt;
-
-&lt;p&gt;We also want to let users know with no delay that something happen and ask them to tag the event, providing a list of possible categories, but also a free text field so they can create new categories. 2 benefits to this approach:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;users want to be able to react immediately when air quality degrades&lt;/li&gt;
-  &lt;li&gt;reducing time between detection and notification gives users more chances to remember what they were doing at that time. Sending notifications or emails every day in batch wouldn’t be efficient.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;To achieve this, we needed to design and implement 2 technical parts:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;something able to detect anomalies by comparing a vector of values to an existing and already organized set of vectors&lt;/li&gt;
-  &lt;li&gt;a streaming layer to continuously analyze incoming data&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h3 id=&quot;machine-learning-to-the-rescue&quot;&gt;Machine learning to the rescue&lt;/h3&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/Anomaly_detection&quot;&gt;&lt;em&gt;Anomaly detection&lt;/em&gt;&lt;/a&gt; (or &lt;a href=&quot;https://en.wikipedia.org/wiki/Outlier#Detection&quot;&gt;&lt;em&gt;outlier detection&lt;/em&gt;&lt;/a&gt;) is a common problem in data-mining.
-The concept of anomaly detection is quite general, but the idea is to detect outliers (observations very distant to others) from a dataset, and that can be used in a variety of areas like hardware failure detection, intrusion detection systems, or fraud detection.&lt;/p&gt;
-
-&lt;p&gt;There are also different ways to tackle the problem, with a complexity ranging from basic to very complex (neural networks).&lt;/p&gt;
-
-&lt;p&gt;We decided to head into &lt;a href=&quot;https://en.wikipedia.org/wiki/K-means_clustering&quot;&gt;K-Means&lt;/a&gt; which is a clustering technique (unsupervised learning): given a number &lt;em&gt;k&lt;/em&gt;, the algorithm will divide the dataset into &lt;em&gt;k&lt;/em&gt; groups (or &lt;em&gt;clusters&lt;/em&gt;) in a way that minimizes distance between cluster center and data points. K-Means is also relatively fast to train, and its output is easy to understand (compared to other algorithms).&lt;/p&gt;
-
-&lt;p&gt;When applied to the entire dataset, K-Means training will output a model composed of &lt;em&gt;centroids&lt;/em&gt;: basically coordinates of cluster centers. Centroids are computed to minimize distance between themselves and surrounding data points.&lt;/p&gt;
-
-&lt;p&gt;Parameter &lt;em&gt;k&lt;/em&gt; is left to the discretion of the data scientist: depending on clustering task needs, you may want more or less cluster centers. If minimizing distance is your objective, it’s possible to iteratively train models while incrementing &lt;em&gt;k&lt;/em&gt;, and compute average distance of each data point to its centroid for each run: after a specific value of &lt;em&gt;k&lt;/em&gt;, accuracy will stop increasing (plateau).  On the contrary, if you want to rough outline patterns in your data, you may want to keep &lt;em&gt;k&lt;/em&gt; low.&lt;/p&gt;
-
-&lt;h3 id=&quot;anomaly-detection-with-k-means&quot;&gt;Anomaly detection with K-Means&lt;/h3&gt;
-
-&lt;p&gt;Let’s dig into anomaly detection, as we talked about K-Means basics, but it’s not yet clear at this point how it can help to detect anomalies.&lt;/p&gt;
-
-&lt;p&gt;It’s quite simple: every time a data point will be classified with our trained model, the output will be the coordinates of the closest centroid. We can then compute &lt;a href=&quot;https://en.wikipedia.org/wiki/Euclidean_distance&quot;&gt;euclidean distance&lt;/a&gt; between data point vector and centroid vector to see how far it is from the cluster center. Anomaly detection will make us of this distance: if data point is far, it basically means it’s something we didn’t see very often in the training dataset.&lt;/p&gt;
-
-&lt;p&gt;Going a step further, from the model we trained we’ll only select centroids for clusters that classified the more entries. If we take a basic example of 5 clusters, initial training could output something like below:&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;1: (0.1, 0.2, 0.1, 0.5)    =&amp;gt; 100000 entries
-2: (-0.2, 0.1, -0.05, 0.1) =&amp;gt; 50000
-3: ...
-5: (4, -2, 4, 4)           =&amp;gt; 100
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;The more entries are classified in a cluster, the more frequent they appear in the dataset. Differently said, clusters with more entries represent the more frequent patterns in the data set.&lt;/p&gt;
-
-&lt;p&gt;With a 3D representation, it gets clearer how outliers or anomalies will stand out of the crowd: a pack of points reprensenting clusters with most values (below clusters are grouped but you could get groups with a distance between each of them), and suddenly an anomaly, classified in one of the existing clusters but far from the center.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://0.0.0.0:4000/assets/airqual_events_class/clustering_outlier.png&quot; alt=&quot;clustering&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;To wrap this up, we’re using anamoly detection technique based on K-Means, but we cut the model from its less populated clusters. We’ll then use distance computation between vector to classify and its centroid to decide if it’s an event or not.&lt;/p&gt;
-
-&lt;h3 id=&quot;events-and-datapoints&quot;&gt;Events and Datapoints&lt;/h3&gt;
-
-&lt;p&gt;Ok but then, how do we feed the trainer? This is part of the &lt;em&gt;feature selection&lt;/em&gt; process, that makes us pick some values or derivatives of values (like aggregations) but not others from the data set, in order to train the model.&lt;/p&gt;
-
-&lt;p&gt;Being specific here, we’re interested in variations of sensor values over a period of time. Intuitively, sensor values variation between now and a few minutes ago is what can tell better that something is happening as it reflects a change in the air composition. Absolute values alone are not interesting, because, for instance, you could have indoor air with constant high VOC values.&lt;/p&gt;
-
-&lt;p&gt;Finally, while training models with this kind of data we rapidly realized that clusters with less data had coordinates representing the most important variations in sensors values, while the ones with more data were associated with small variations. Selecting only the latter gave us a clustering model that could outline anomalies.&lt;/p&gt;
-
-&lt;h2 id=&quot;detecting-in-near-real-time&quot;&gt;Detecting in near real-time&lt;/h2&gt;
-
-&lt;p&gt;Near real-time detection is where we wanted to go from the beginning. Detecting events with a few hours delay with a batch would have reduced the benefit of it all, as the user couldn’t be notified immediately.&lt;/p&gt;
-
-&lt;p&gt;Here, near real-time detection means continuous stream of datapoints that a job transforms and submits to the classifier. In Spark Streaming, it translates into a sliding window that maintains a state for each device. This state is a representation of the variations of sensor values for the device over a period of time. Spark Streaming offers several operators that comes in handy. See &lt;a href=&quot;http://spark.apache.org/docs/latest/streaming-programming-guide.html#window-operations&quot;&gt;Spark Streaming - Window Operations&lt;/a&gt; for details.
-Spark Streaming also allows us to load a K-Means model and to submit vectors to be classified in a continuous manner.&lt;/p&gt;
-
-&lt;p&gt;Upon reception, datapoints are transformed and some flags are checked to help make better decisions, like wether or not taking datapoint into account, applying custom transformations, etc. Then we submit the state to the K-Means classifier and depending on distance to the closest cluster, we tag it as an indoor air quality event or not.&lt;/p&gt;
-
-&lt;p&gt;Event end is also a matter of clustering: we consider an event as finished if variations between last datapoint received and first event datapoint are classified close to a highly populated cluster centroid.&lt;/p&gt;
-
-&lt;p&gt;Sensitivity of event detection and event closing are depending on the configurable threshold that we compare to each distance &lt;code class=&quot;highlighter-rouge&quot;&gt;euclid_dist(state_vector - centroid)&lt;/code&gt;. In the case of detection, the bigger the threshold is, the less sensitive detection will be. And it’s the exact opposite for event closing. It took us quite some time to find &lt;em&gt;interesting&lt;/em&gt; thresholds: it was all about working with beta testers, checking large amount of detected events, and fine tuning.&lt;/p&gt;
-
-&lt;p&gt;When event ends, not only we can easily retrieve datapoints that caused the event to be triggered, but we can also analyse event life: max and min values, variance, duration… All this data will be extremely useful to understand patterns of indoor air quality events.&lt;/p&gt;
-
-&lt;p&gt;Below diagram illustrates this flow&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://0.0.0.0:4000/assets/airqual_events_class/real_time_detect_diag.png&quot; alt=&quot;real time detection&quot; /&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;fooboters-own-the-value&quot;&gt;Fooboters own the value&lt;/h3&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://0.0.0.0:4000/assets/airqual_events_class/foobot_app_notif.png&quot; alt=&quot;ingestion&quot; class=&quot;callout&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;Detecting events in a streaming manner has some benefits: our users can be informed immediately, and they can tell us what it is. When an event is detected, it’s transformed into a push notification, that users can open in Foobot mobile app, then select in a category he or she thinks was the root cause of the event. This information is then preciously saved, along with event characteristics.&lt;/p&gt;
-
-&lt;p&gt;Fooboters have been more than kind with us: not only we got a massive amount of tags, but they also helped us expending our list of categories. As event types list is not closed - users have the ability to give their own tag if they don’t find one in the list of choices - we are able to add new event classes, or create sub categories to refine events classification.&lt;/p&gt;
-
-&lt;p&gt;With the help of our users, we collected an important dataset of tags that we’re able to join with event characteristics, in order to form another training dataset: the one that will help building an air quality events classification model!&lt;/p&gt;
-
-&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
-
-&lt;p&gt;In this article we’ve investigated in details some of the internals of indoor air quality event detection at Airboxlab. There is a lot more to say about the different approaches we’ve tried, the failures we faced, what we’ve learned.&lt;/p&gt;
-
-&lt;p&gt;Detection is non trivial, but we’re fairly satisfied with what we obtained. We regularly monitor accuracy of detected events, and it’s quite interesting to see amount of events and conditions of classifications. We’ve also set configurable thresholds that allow to increase or decrease sensitivity of detection. Still, there is room for improvement; for instance, we didn’t dig too much into detecting several events happening in the same window of time. This would involve managing competing events and states. Probably interesting to look into, but somewhat difficult to compare to single-state-per-device (current) technique in terms of relevance, accuracy, and user friendlyness.&lt;/p&gt;
-
-&lt;p&gt;In our next article we’ll discuss the next step in building an air quality event processing pipeline: classification. Of course, collecting all this data reveals its full potential only if we try to find patterns in it, and make our users benefit from our findings. Knowing precisely what’s happening in the air of your home can give you precious information for improving it!&lt;/p&gt;
-
-</description>
-        <pubDate>Mon, 23 Jan 2017 16:00:00 +0100</pubDate>
-        <link>http://0.0.0.0:4000/machine/learning/2017/01/23/airqual_events_class_part1.html</link>
-        <guid isPermaLink="true">http://0.0.0.0:4000/machine/learning/2017/01/23/airqual_events_class_part1.html</guid>
-        
-        
-        <category>machine</category>
-        
-        <category>learning</category>
-        
-      </item>
-    
-      <item>
         <title>A streaming pipeline for the IoT with Apache Spark &amp; microservices</title>
         <description>&lt;style type=&quot;text/css&quot;&gt;
 .callout {
@@ -398,7 +218,7 @@ Spark Streaming also allows us to load a K-Means model and to submit vectors to 
 }
 &lt;/style&gt;
 
-&lt;p&gt;&lt;img src=&quot;http://0.0.0.0:4000assets/data_pipeline/oilpipeline.jpg&quot; alt=&quot;oil pipeline&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://localhost:4000assets/data_pipeline/oilpipeline.jpg&quot; alt=&quot;oil pipeline&quot; /&gt;&lt;/p&gt;
 
 &lt;h2 id=&quot;what-is-airboxlab-doing-with-foobot-data&quot;&gt;What is Airboxlab doing with Foobot data?&lt;/h2&gt;
 
@@ -438,7 +258,7 @@ Indoor air quality is a matter of comfort and health, hence being alerted too la
   &lt;li&gt;
     &lt;p&gt;&lt;strong&gt;Ingestion&lt;/strong&gt;&lt;/p&gt;
 
-    &lt;p&gt;&lt;img src=&quot;http://0.0.0.0:4000assets/data_pipeline/data_pipeline_ingestion.png&quot; alt=&quot;ingestion&quot; /&gt;&lt;/p&gt;
+    &lt;p&gt;&lt;img src=&quot;http://localhost:4000assets/data_pipeline/data_pipeline_ingestion.png&quot; alt=&quot;ingestion&quot; /&gt;&lt;/p&gt;
 
     &lt;ul&gt;
       &lt;li&gt;
@@ -480,7 +300,7 @@ Indoor air quality is a matter of comfort and health, hence being alerted too la
   &lt;li&gt;
     &lt;p&gt;&lt;strong&gt;Alerting&lt;/strong&gt;&lt;/p&gt;
 
-    &lt;p&gt;&lt;img src=&quot;http://0.0.0.0:4000assets/data_pipeline/data_pipeline_alerting.png&quot; alt=&quot;ingestion&quot; /&gt;&lt;/p&gt;
+    &lt;p&gt;&lt;img src=&quot;http://localhost:4000assets/data_pipeline/data_pipeline_alerting.png&quot; alt=&quot;ingestion&quot; /&gt;&lt;/p&gt;
 
     &lt;p&gt;Alerting is the process of raising an alert when a particular event occurs. That is often related to a sensor data value crossing a standard or user-defined threshold, what we call instant threshold crossing, but can be more complex when it comes to “air quality event” detection. A simple type of event would be a pollution event, one that starts when a pollutant crosses a threshold and ends when it comes back to normal. This implies using mechanisms like windowing and stateful operations to preserve event state, or applying hysteresis for values constantly crossing thresholds up and down.&lt;/p&gt;
 
@@ -502,7 +322,7 @@ Downstream consumers are somehow the same as for alerting.&lt;/p&gt;
   &lt;li&gt;
     &lt;p&gt;&lt;strong&gt;Backup&lt;/strong&gt;&lt;/p&gt;
 
-    &lt;p&gt;&lt;img src=&quot;http://0.0.0.0:4000assets/data_pipeline/data_pipeline_backup.png&quot; alt=&quot;ingestion&quot; class=&quot;callout&quot; /&gt;&lt;/p&gt;
+    &lt;p&gt;&lt;img src=&quot;http://localhost:4000assets/data_pipeline/data_pipeline_backup.png&quot; alt=&quot;ingestion&quot; class=&quot;callout&quot; /&gt;&lt;/p&gt;
 
     &lt;p&gt;Even backup can be done in a near real-time manner: instead of fetching and storing data in an external backup store on a daily basis, why not benefit from streaming pipeline to do it at event processing time. This is how we implemented our incremental and asynchronous backup system. This has several advantages:&lt;/p&gt;
 
@@ -540,7 +360,7 @@ Similarly, if user disconnects from Foobot channel, we don’t want the service 
   &lt;li&gt;&lt;em&gt;easier to scale&lt;/em&gt; a particular integration: one of our integration becomes popular? we can spin up new services only for this type, making the whole architecture cost-efficient.&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;&lt;img src=&quot;http://0.0.0.0:4000assets/data_pipeline/data_pipeline_subscribers.png&quot; alt=&quot;subscribers&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://localhost:4000assets/data_pipeline/data_pipeline_subscribers.png&quot; alt=&quot;subscribers&quot; /&gt;&lt;/p&gt;
 
 &lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
 
@@ -549,8 +369,8 @@ A future series of articles will dive into more specific parts of the pipeline.&
 
 </description>
         <pubDate>Mon, 29 Aug 2016 14:00:00 +0200</pubDate>
-        <link>http://0.0.0.0:4000/streaming/microservices/iot/spark/real-time/2016/08/29/streaming-microservices.html</link>
-        <guid isPermaLink="true">http://0.0.0.0:4000/streaming/microservices/iot/spark/real-time/2016/08/29/streaming-microservices.html</guid>
+        <link>http://localhost:4000/streaming/microservices/iot/spark/real-time/2016/08/29/streaming-microservices.html</link>
+        <guid isPermaLink="true">http://localhost:4000/streaming/microservices/iot/spark/real-time/2016/08/29/streaming-microservices.html</guid>
         
         
         <category>streaming</category>
@@ -822,8 +642,8 @@ Most of these thoughts and advice remain valid for bigger clusters and workloads
 
 </description>
         <pubDate>Tue, 21 Jun 2016 10:00:00 +0200</pubDate>
-        <link>http://0.0.0.0:4000/spark/streaming/cluster/ec2/aws/lean/2016/06/21/lean-spark-streaming.html</link>
-        <guid isPermaLink="true">http://0.0.0.0:4000/spark/streaming/cluster/ec2/aws/lean/2016/06/21/lean-spark-streaming.html</guid>
+        <link>http://localhost:4000/spark/streaming/cluster/ec2/aws/lean/2016/06/21/lean-spark-streaming.html</link>
+        <guid isPermaLink="true">http://localhost:4000/spark/streaming/cluster/ec2/aws/lean/2016/06/21/lean-spark-streaming.html</guid>
         
         
         <category>spark</category>
@@ -884,7 +704,7 @@ Introductions for these methods can be found on &lt;a href=&quot;https://en.wiki
 
 &lt;p&gt;A graphical representation of the iterations can be found in original paper&lt;sup id=&quot;fnref:1:1&quot;&gt;&lt;a href=&quot;#fn:1&quot; class=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt;, and is reproduced below&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;http://0.0.0.0:4000assets/louvain/pol.jpg&quot; alt=&quot;iterations&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;http://localhost:4000assets/louvain/pol.jpg&quot; alt=&quot;iterations&quot; /&gt;&lt;/p&gt;
 
 &lt;h4 id=&quot;pros&quot;&gt;Pros&lt;/h4&gt;
 
@@ -1072,29 +892,29 @@ Here we use D3.js for the tons of features and graph types it provides, and firs
 &lt;div class=&quot;footnotes&quot;&gt;
   &lt;ol&gt;
     &lt;li id=&quot;fn:1&quot;&gt;
-      &lt;p&gt;&lt;a href=&quot;http://arxiv.org/abs/0803.0476&quot;&gt;Louvain method original paper&lt;/a&gt;&amp;nbsp;&lt;a href=&quot;#fnref:1&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;/a&gt;&amp;nbsp;&lt;a href=&quot;#fnref:1:1&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;sup&gt;2&lt;/sup&gt;&lt;/a&gt;&lt;/p&gt;
+      &lt;p&gt;&lt;a href=&quot;http://arxiv.org/abs/0803.0476&quot;&gt;Louvain method original paper&lt;/a&gt; &lt;a href=&quot;#fnref:1&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;/a&gt; &lt;a href=&quot;#fnref:1:1&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;sup&gt;2&lt;/sup&gt;&lt;/a&gt;&lt;/p&gt;
     &lt;/li&gt;
     &lt;li id=&quot;fn:7&quot;&gt;
-      &lt;p&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/K-means_clustering&quot;&gt;K-Means&lt;/a&gt;&amp;nbsp;&lt;a href=&quot;#fnref:7&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+      &lt;p&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/K-means_clustering&quot;&gt;K-Means&lt;/a&gt; &lt;a href=&quot;#fnref:7&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
     &lt;/li&gt;
     &lt;li id=&quot;fn:2&quot;&gt;
-      &lt;p&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/Haversine_formula&quot;&gt;Haversine formula for geographical distance calculation&lt;/a&gt;&amp;nbsp;&lt;a href=&quot;#fnref:2&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+      &lt;p&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/Haversine_formula&quot;&gt;Haversine formula for geographical distance calculation&lt;/a&gt; &lt;a href=&quot;#fnref:2&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
     &lt;/li&gt;
     &lt;li id=&quot;fn:3&quot;&gt;
-      &lt;p&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/Euclidean_distance&quot;&gt;Euclidean distance&lt;/a&gt;&amp;nbsp;&lt;a href=&quot;#fnref:3&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+      &lt;p&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/Euclidean_distance&quot;&gt;Euclidean distance&lt;/a&gt; &lt;a href=&quot;#fnref:3&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
     &lt;/li&gt;
     &lt;li id=&quot;fn:5&quot;&gt;
-      &lt;p&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/Particulates&quot;&gt;Particulates definition&lt;/a&gt;&amp;nbsp;&lt;a href=&quot;#fnref:5&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+      &lt;p&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/Particulates&quot;&gt;Particulates definition&lt;/a&gt; &lt;a href=&quot;#fnref:5&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
     &lt;/li&gt;
     &lt;li id=&quot;fn:6&quot;&gt;
-      &lt;p&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/Volatile_organic_compound&quot;&gt;Volatile organic coumpounds definition&lt;/a&gt;&amp;nbsp;&lt;a href=&quot;#fnref:6&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+      &lt;p&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/Volatile_organic_compound&quot;&gt;Volatile organic coumpounds definition&lt;/a&gt; &lt;a href=&quot;#fnref:6&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
     &lt;/li&gt;
   &lt;/ol&gt;
 &lt;/div&gt;
 </description>
         <pubDate>Fri, 12 Feb 2016 00:00:00 +0100</pubDate>
-        <link>http://0.0.0.0:4000/spark/graphx/machine-learning/d3/louvain/2016/02/12/louvain.html</link>
-        <guid isPermaLink="true">http://0.0.0.0:4000/spark/graphx/machine-learning/d3/louvain/2016/02/12/louvain.html</guid>
+        <link>http://localhost:4000/spark/graphx/machine-learning/d3/louvain/2016/02/12/louvain.html</link>
+        <guid isPermaLink="true">http://localhost:4000/spark/graphx/machine-learning/d3/louvain/2016/02/12/louvain.html</guid>
         
         
         <category>spark</category>
