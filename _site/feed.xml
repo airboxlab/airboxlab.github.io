@@ -6,168 +6,208 @@
 </description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Wed, 25 Apr 2018 15:59:06 +0200</pubDate>
-    <lastBuildDate>Wed, 25 Apr 2018 15:59:06 +0200</lastBuildDate>
-    <generator>Jekyll v3.7.3</generator>
+    <pubDate>Fri, 21 Sep 2018 21:10:34 +0200</pubDate>
+    <lastBuildDate>Fri, 21 Sep 2018 21:10:34 +0200</lastBuildDate>
+    <generator>Jekyll v3.8.3</generator>
     
       <item>
-        <title>Scaling MQTT connections with RabbitMQ - Part II</title>
+        <title>Data Science at Airboxlab - Part 2</title>
         <description>&lt;style type=&quot;text/css&quot;&gt;
-.callout {
-    float: right;
-    margin-left: 5px;
+.center {
+    display:block;
+    margin: 0 auto;
 }
 &lt;/style&gt;
 
-&lt;p&gt;&lt;img src=&quot;http://localhost:4000assets/scale_mqtt_2/drink-out-of-a-hose.jpg&quot; alt=&quot;firehose&quot; class=&quot;callout&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;This is the second article in a series of 2 (&lt;a href=&quot;/data_science/2018/07/01/data_science_at_abl_p1.html&quot;&gt;1st article here&lt;/a&gt;) about how we see and do data science at &lt;a href=&quot;https://foobot.io&quot;&gt;Airboxlab&lt;/a&gt;. This article delves into technical aspects, and presents data collection processes, pipelines, machine learning and infrastructure we have in place.&lt;/p&gt;
 
-&lt;p&gt;We’ve been running our messaging gateways with a more distributed approach as described in &lt;a href=&quot;part I&quot;&gt;&lt;/a&gt; for more than a year now, and wanted to share problems we faced and solutions we found.&lt;/p&gt;
+&lt;h3 id=&quot;what-we-do&quot;&gt;What we do&lt;/h3&gt;
 
-&lt;p&gt;First of all, let’s face it: it has been a shaky road. After an initial period of a few weeks where everything seemed to run smoothly under control, new incidents and outages started to show up intermittently. This was due to several problems I describe here.
-&lt;br /&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p&gt;Let’s first explain main tasks we’re trying to tackle.&lt;/p&gt;
 
-&lt;h4 id=&quot;aws-ec2-instances-choosing-the-right-type&quot;&gt;AWS EC2 instances: choosing the right type&lt;/h4&gt;
+&lt;p&gt;&lt;img src=&quot;/assets/ds_abl/pipeline_ml.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+&lt;center&gt;&lt;i&gt;Overview of an end-to-end ML pipeline&lt;/i&gt;&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
 
-&lt;p&gt;When we deployed our new version in May 2017, we chose cheap instance types like &lt;em&gt;t2&lt;/em&gt; for our proxies, with the idea of multiplying them in mind.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Correlations &amp;amp; causal inference&lt;/strong&gt;&lt;/p&gt;
 
-&lt;p&gt;It revealed to be a bad choice: &lt;em&gt;t2&lt;/em&gt; network interfaces are flaky and we suffered several hiccups, with massive reconnection events as a result. They are also not well suited for medium to long burst periods, as cpu access is throttled after a few 10s of minutes running above credit line. And we needed that to deal with recovery during massive reconnection events.&lt;/p&gt;
+&lt;p&gt;Looking for correlations, or better, causality, is a discipline that applies to a variety of situations. For instance when there is a doubt about a device feature that may have a side effect on another, or when we want to know what causes users to develop a particular habit or act a specific way. Another interesting application is to find how user habits or external factors like outdoor air pollution reflects on sensor data. A great example of one of our recent study demonstrates a temperature side effect called &lt;a href=&quot;https://foobot.io/resources/off-gassing/&quot;&gt;off-gassing&lt;/a&gt;&lt;/p&gt;
 
-&lt;p&gt;Finally a bunch of weak instances compared to a fewer but stronger ones is strategically a non sense here: more maintenance, less predictability.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Analytics and visualizations&lt;/strong&gt;&lt;/p&gt;
 
-&lt;p&gt;Our current proxies now run on &lt;em&gt;m4&lt;/em&gt; instance family. Since that, network hiccups have disappeared.
-&lt;br /&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p&gt;Probably the most common aspect of data science: extracting value (metrics, KPIs, charts) from data and communicate it to stakeholders. In IoT, monitoring and analysing devices life cycle represents a significant part of this job. For instance, checking effect of a firmware release on a product (e.g has connectvity improved? how many upgrades are failing?). An other less common aspect is reporting about manufacturing: we build our own test equipments for products we manufacture, and of course these small servers (we call them &lt;em&gt;test rigs&lt;/em&gt;, they help testing electrical boards and components directly on the manufacturing assembly line) send us a lot of data from different factories. Consolidating this and detecting problems is crucial.&lt;/p&gt;
 
-&lt;h4 id=&quot;haproxy-timeouts&quot;&gt;HAProxy timeouts&lt;/h4&gt;
+&lt;p&gt;&lt;strong&gt;Machine learning to solve complex problems&lt;/strong&gt;&lt;/p&gt;
 
-&lt;p&gt;At first we’ve let default or too high values for some we didn’t know about. Problem with persistent MQTT connections and network connections from resource-constrained hardware is that you may endup with a lot of idle, half-opened connections that could pile up and prevent legitimate connections to open.&lt;/p&gt;
+&lt;p&gt;Machine learning can be applied where problems start to be hard to solve with basic analytics or simple statistics. Modeling and productizing ML models adds significant overhead in terms of complexity and engineering, so we’re always cautious about how and when to apply ML. However, some of the problems we face require this level of sophistication in order to get an appropriate solution.&lt;/p&gt;
 
-&lt;p&gt;Hopefull for us, HAProxy has a very flexible configuration. And an extensive documentation. It’s possible to configure client, server and other types of timeouts. Here is an extract of one of our configs:&lt;/p&gt;
+&lt;p&gt;One of them is device calibration: we do real time calibration on some of sensors using regressions. A bit trickier, we developed (but still improving) air quality events detection and classification, using clustering, supervised and semi supervised learning techniques.&lt;/p&gt;
 
-&lt;pre&gt;&lt;code class=&quot;language-cfg&quot;&gt;defaults
-    mode    tcp
-    option  abortonclose
-    timeout client      30s
-    timeout client-fin  15s
-    timeout connect     5s
-    timeout server      30s
-    timeout server-fin  15s
-    timeout queue       30s
-    timeout tunnel      30s
-&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Some of our current biggest challenges also involve machine learning, like automatic hardware/software failures detection, maintenance prediction or automatic ventilation systems control (provide clean air without human intervention, no matter what activity is going on).&lt;/p&gt;
 
-&lt;p&gt;Some values may seem a bit aggressive but since MQTT clients are all configured to automatically reconnect, it’s fine.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Stream processing&lt;/strong&gt;&lt;/p&gt;
 
-&lt;p&gt;One important thing to note is HAProxy &lt;em&gt;timeout tunnel&lt;/em&gt; supersedes &lt;em&gt;timeout client&lt;/em&gt; and &lt;em&gt;timeout server&lt;/em&gt;, for persistent connections it’s an important one to set. Also HAProxy doc recommends using &lt;em&gt;timeout client-fin&lt;/em&gt; and &lt;em&gt;timeout server-fin&lt;/em&gt; in conjunction, to close sockets in &lt;em&gt;FIN_WAIT&lt;/em&gt; state faster.&lt;/p&gt;
+&lt;p&gt;Stream processing is inherent to IoT as we often need to react within a few seconds or minutes to events. A traditional batch approach doesn’t suit well in that case. For that purpose we use a stream processing framework along with appropriate techniques (like aggregations on sliding windows) and statistics (like moving averages). We also ship machine learning models in our real time pipeline so we can make predictions on fresh data (e.g. air quality classification).&lt;/p&gt;
 
-&lt;p&gt;Finally, in order to maintain connections open, MQTT clients are using heartbeat messages with interval &amp;lt; 30s.
-&lt;br /&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;h3 id=&quot;how-we-do-it&quot;&gt;How we do it&lt;/h3&gt;
 
-&lt;h4 id=&quot;mqtt-clients-tuning&quot;&gt;MQTT clients tuning&lt;/h4&gt;
+&lt;p&gt;Diving deeper into technical matters, here are details about how data is processed.&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;Clean session &amp;amp; QoS 1&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Data pipelines&lt;/strong&gt;&lt;/p&gt;
 
-&lt;p&gt;&lt;em&gt;clean session&lt;/em&gt; is a MQTT flag that instructs server it can remove everything belonging to the client and connection is closed. We’ve used it to ensure we don’t end up in situations where a RabbitMQ cluster node would refuse a connection because a MQTT queue was still present on an other node (we finally gave up using RabbitMQ clustering, but we may come back to it one day).&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/assets/ds_abl/pipelines_infra.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+&lt;center&gt;&lt;i&gt;Pipelines technical overview&lt;/i&gt;&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
 
-&lt;p&gt;&lt;em&gt;QoS 1&lt;/em&gt; is the intermediate level of guarantee for MQTT messages delivery. It ensures messages are delivered &lt;em&gt;at least once&lt;/em&gt; to the receiver (hence doesn’t guarantee the same message isn’t received several times).&lt;/p&gt;
+&lt;p&gt;We have 2 main types of pipelines: the hot path - &lt;em&gt;near real time processing pipelines&lt;/em&gt; - and the cold path - &lt;em&gt;analytics pipelines&lt;/em&gt; (batches). We generally use the hot path when a response is needed within a few minutes (max 1h), and batches otherwise.&lt;/p&gt;
 
-&lt;p&gt;Also, &lt;em&gt;TTL&lt;/em&gt; on messages is fairly low (never more than 30s) so they are lost when they aren’t consumed fast enough. This to prevent filling up queues on server side.&lt;/p&gt;
+&lt;p&gt;Near real time processing serves the purpose of creating running/moving aggregations, reacting to events and sending alerts, or predicting using models. Batching is about creating new datasets and populating our data warehouse with data that will be used later.&lt;/p&gt;
 
-&lt;p&gt;In order to cope with this client &amp;amp; server technical constraints, we also added a couple of application-level safeguards:&lt;/p&gt;
+&lt;p&gt;The cold path is implemented first using ELT pattern (Extract Load &amp;amp; Transform as opposed to ETL): data we have is sent to our data lake without pre-processing, filtering or formatting of any sort. Schema is applied on read, mainly with transformers jobs that populate the warehouse, or when data analyst requires access to “raw” values. ELT pattern is particularly suitable to IoT as devices can fail, send inconsistent data, and data schemas can change rapidly.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/ds_abl/data_infra.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+&lt;center&gt;&lt;i&gt;ELT infrastructure overview&lt;/i&gt;&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;Pipelines are then created by first dumping into the data lake, then pumping it into our data warehouse or through analytics jobs. As it’s easy to create new data sets and new pipelines, number of tables we have to handle grows rapidly (but we try to compensate with good documentation).&lt;/p&gt;
+
+&lt;p&gt;Most of our datasets are built on top of logs: every change is persisted with a timestamp (event time when available, processing time otherwise), which let’s us investigate things with accuracy.
+Eventually, the amount of data to store is much bigger, but it contains vital information, and we apply patterns like event sourcing to take full advantage of it. Also, most statistical programming language or framework (R, python’s pandas, SQL, Spark) have convenient routines and operators to deal with time series like these (lead/lag, rank, correlation operators, …)&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/ds_abl/aggreg.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+&lt;center&gt;&lt;i&gt;Sample aggregations from logs&lt;/i&gt;&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Collaboration&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;One of our favorite collaboration tool is notebooks. We’re using Spark all the way down the data processing line, and &lt;a href=&quot;https://databricks.com/&quot;&gt;Databricks&lt;/a&gt; for most of our projects. Notebooks offer a perfect environment for sharing ideas, presenting results and demonstrating new analytics or algorithms. It’s also development cycle-friendly as it integrates with source code versioning (git).&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Data products&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;All that we do don’t always ship in production, but most of the time it does. When it comes to productizing, tasks like exposing an API endpoint, or creating a new view in our apps, are required. Recently, data science work we shipped in production include real time air quality classification, sensor calibration functions, and in app analytics.&lt;/p&gt;
+
+&lt;p&gt;Data products are complex artifacts to handle in terms of development, especially when ML is involved, as we’re adding complexity and new potential problem sources (data &amp;amp; models) to something already complex (coding). When it comes to shipping data science work in production, it can get tricky too: validation, user testing, or deployment require careful handling. That’s why we’re relying on a few reliable frameworks (like Spark) and techniques (like cross validation or A/B testing).&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Data as a service&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;A data warehouse is a good solution to apply a schema and extract value from large datasets. It’s also great to provide a simple way for data analysts or business people to interact with data. As there is often a “missing dimension” in your last chart, why not let them explore data and see what they can find? Of course this requires business users to be guided and learn some SQL basics. Alternatively, pre-defined data sources and charts can be a great asset for teams without sufficient technical knowledge to access data directly.&lt;/p&gt;
+
+&lt;p&gt;On our side we’re now using &lt;a href=&quot;https://superset.incubator.apache.org/&quot;&gt;Apache Superset&lt;/a&gt; which provides the best of both worlds, as it brings SQL capabilities with a great way of creating data sources (tables) and charts (slices). It’s easy for non technical users to pick existing assets, modify them, and create their own visualizations.&lt;/p&gt;
+
+&lt;p&gt;Another data exploration channel we’re exploring is accessing our data lake and warehouse (stored in S3) with new tools like &lt;a href=&quot;https://aws.amazon.com/athena/&quot;&gt;AWS Athena&lt;/a&gt;. You can manage a catalog of data sources, schemas, and query data directly from there using SQL without worrying about infrastructure. Powerful.&lt;/p&gt;
+
+&lt;h3 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h3&gt;
+
+&lt;p&gt;In this series of 2 articles, we’ve tried to give an overview of how we use data at Airboxlab and why. So far, this has been beneficial to many projects.&lt;/p&gt;
+
+&lt;p&gt;We are dedicated to continuous improvement and scaling of our data science process. There are big challenges ahead, and expectations are high.&lt;/p&gt;
+
+&lt;p&gt;Data is more than ever fueling products design, experimentations and discoveries, helping us innovate.&lt;/p&gt;
+</description>
+        <pubDate>Fri, 21 Sep 2018 14:00:00 +0200</pubDate>
+        <link>http://localhost:4000/data_science/2018/09/21/data_science_at_abl_p2.html</link>
+        <guid isPermaLink="true">http://localhost:4000/data_science/2018/09/21/data_science_at_abl_p2.html</guid>
+        
+        
+        <category>data_science</category>
+        
+      </item>
+    
+      <item>
+        <title>Data Science at Airboxlab - Part 1</title>
+        <description>&lt;style type=&quot;text/css&quot;&gt;
+.center {
+    display:block;
+    margin: 0 auto;
+}
+&lt;/style&gt;
+
+&lt;h3 id=&quot;data-science-at-airboxlab&quot;&gt;Data Science at Airboxlab&lt;/h3&gt;
+
+&lt;p&gt;This is a series of 2 articles that dives into data science discipline at &lt;a href=&quot;https://foobot.io&quot;&gt;Airboxlab&lt;/a&gt;:&lt;/p&gt;
 
 &lt;ul&gt;
-  &lt;li&gt;important messages are resent to receivers upon connection. Even in case of short disconnection&lt;/li&gt;
-  &lt;li&gt;idempotency and statelessness are enforced: state is preserved in the backend, which decides when and how to send messages. MQTT clients are designed to support receiving same message several times. RabbitMQ only passes messages, doesn’t store them.&lt;/li&gt;
+  &lt;li&gt;1st article (present one) is about the data-driven philosophy we have in our company, and how work is organized around it&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;/data_science/2018/07/01/data_science_at_abl_p2.html&quot;&gt;2nd article&lt;/a&gt; depicts main problems we try to solve by applying data science, and how it is technically designed.&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;&lt;strong&gt;Exponential backoff&lt;/strong&gt;&lt;/p&gt;
+&lt;h3 id=&quot;investing-in-data&quot;&gt;Investing in data&lt;/h3&gt;
 
-&lt;p&gt;MQTT clients may disconnect for different reasons: flky network quality, server-side closed, you name it. MQTT library we wrote is made to take care of reconnecting automatically. In order to avoid self-inflicted DDoS, clients will retry indefinitely but with an exponentially-increasing delay between each attempt every time.&lt;/p&gt;
+&lt;p&gt;Designing air quality monitors has a lot to do with data: real-time air quality readings are useful to our users in many cases: they can act directly whenever air quality degrades, or setup home automations using Nest, Ecobee, IFTTT or other integrations we developed to automate ventilation systems based on air quality. 
+But some key elements are missing: as a user, how do I know what the main pollution source is in my home? What can I do about it and when did air quality really start to degrade? Moreover, how efficient is the solution I have just put in place? These are some of the questions that require long term analysis and accurate responses.&lt;/p&gt;
 
-&lt;p&gt;As we were testing this, we noticed that this principle must be extended up to the reception of the first MQTT heartbeat answer from server: it’s only at that moment we know server is fully operational.
-&lt;br /&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p&gt;There are many other areas where data analysis shines and where it can add value. For example how is air quality affected by common external factors (like outdoor particles, &lt;em&gt;NOx&lt;/em&gt;, weather, …), what habits a user has is able to bring the best solution or worsen air quality. One may also be interested in knowing how sensors behave and age in varying conditions: some sensors require calibration at different phases in their life, and some others react to external factors.&lt;/p&gt;
 
-&lt;h4 id=&quot;rabbitmq-tuning&quot;&gt;RabbitMQ tuning&lt;/h4&gt;
+&lt;p&gt;This article is about how the data science discipline can help us in creating value for our users and how central the discipline is in the development of our products.&lt;/p&gt;
 
-&lt;p&gt;&lt;strong&gt;no more clustering&lt;/strong&gt;&lt;/p&gt;
+&lt;h3 id=&quot;our-gems&quot;&gt;Our gems&lt;/h3&gt;
 
-&lt;p&gt;RabbitMQ clustering let’s you form clusters of nodes with the benefit of possible fail-over in case of node failure, or queues high availability. However it’s not well suited for load-balancing tens of thousands of connections.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/assets/ds_abl/streams.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+&lt;center&gt;&lt;i&gt;Airboxlab data sources&lt;/i&gt;&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
 
-&lt;p&gt;First of all, communication overhead between nodes is significant and requires to keep nodes in the network to prevent latency. Second, recovery and upgrade are far more complex than with a collection of single nodes. 
-Last but not least, RabbitMQ suffers a bug that’s not directly linked to clustering, but gets worse because of it: in case of node shutdown or massive reconnection, thousands of auto-delete queues get evicted. This triggers a Mnesia (distributed DB RabbitMQ is using) lock contention and it can get up to several minutes for the node to recover from that. See &lt;a href=&quot;https://groups.google.com/d/msg/rabbitmq-users/hgRmhpL8Y6o/F7UoGyDsCwAJ&quot;&gt;this dicussion on RabbitMQ users list&lt;/a&gt; and related &lt;a href=&quot;https://github.com/rabbitmq/rabbitmq-server/issues/1566&quot;&gt;bug opened&lt;/a&gt; (not fixed in 3.6 yet).
-&lt;br /&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p&gt;There are multiple data streams ingested by our data platform, the 3 main being the following:&lt;/p&gt;
 
-&lt;h4 id=&quot;os-tuning-sysctl-tcp-stack--network-interfaces&quot;&gt;OS tuning: sysctl, TCP stack &amp;amp; network interfaces&lt;/h4&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;Device’s data&lt;/strong&gt; coming from our units in the wild. Depending on the product, there can be from 5 to 20 sensors continuously sent by devices, to which we can add aggregations, error codes and unprocessed values also computed by the device itself. Some devices (like air purifiers) send commands and status about other components (like change of fan speed)&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;User’s data&lt;/strong&gt; coming from apps and dashboards. Think user profile, user interactions …&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Outdoor data&lt;/strong&gt; integrated from external providers. It includes sources of outdoor pollution and weather.&lt;/li&gt;
+&lt;/ul&gt;
 
-&lt;p&gt;Our current architecture pairs several RabbitMQ nodes with 1 HAProxy instance. HAProxy resources consumption is pretty low for that type of workload so it’s possible to achieve hundreds of thousands of connections with a single HAProxy instance.&lt;/p&gt;
+&lt;p&gt;Additional data coming from different sources are also used on a day to day basis. Some of them have dedicated ingestion pipelines (e.g. server logs from operations), some others are ephemeral (e.g. an archive file containing pollen data for a specific area in order to check a correlation).&lt;/p&gt;
 
-&lt;p&gt;In order to that, there’s a major OS constraint that limits number of outbound connections for a specific IP. This is first controlled by &lt;code class=&quot;highlighter-rouge&quot;&gt;net.ipv4.ip_local_port_range&lt;/code&gt; sysctl option (very low by default on most distributions). But the maximum is &lt;em&gt;65535&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;Compared to other IoT companies, we have kind of an advantage in that we design air quality monitors and air purifiers, but we also develop embedded software for them which sends data to our own services in the cloud, and we are able to update their embedded software (firmware) at anytime if needed. The whole data acquisition process is in our hands. That means that if a team member needs explanations about some new sensor value or if a next generation device needs to send metrics differently, we are able to quickly refer to the person sitting next us.&lt;/p&gt;
 
-&lt;p&gt;There are several ways to go beyond, we chose to use AWS ENIs (Elastic Network Interface): our instance setup script allocates 4 ENIs then configures each network interface. Finally, it can be used n HAProxy configuration as following:&lt;/p&gt;
+&lt;p&gt;As an engineering company with data-driven processes at its heart, data quality is a matter of high importance. Data quality is never overlooked, trade-offs are often in favor of preserving quality. As a result, &lt;strong&gt;our data streams and data lake are well documented, pipelines are written in a way that fosters high quality data sources and sinks, and everyone in the company cares about it&lt;/strong&gt;.&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;backend tcp-out-1883
-    default-server inter 30s rise 2 fall 2
-    timeout check 5s
-    option tcp-check
-    server server1-eni1 10.0.2.1:1883 source 10.0.1.1 check on-marked-down shutdown-sessions
-    server server1-eni2 10.0.2.1:1883 source 10.0.1.2 check on-marked-down shutdown-sessions
-    server server1-eni3 10.0.2.1:1883 source 10.0.1.3 check on-marked-down shutdown-sessions
-    server server1-eni4 10.0.2.1:1883 source 10.0.1.4 check on-marked-down shutdown-sessions
-    server server2-eni1 10.0.2.2:1883 source 10.0.1.1 check on-marked-down shutdown-sessions
-    server server2-eni2 10.0.2.2:1883 source 10.0.1.2 check on-marked-down shutdown-sessions
-    server server2-eni3 10.0.2.2:1883 source 10.0.1.3 check on-marked-down shutdown-sessions
-    server server2-eni4 10.0.2.2:1883 source 10.0.1.4 check on-marked-down shutdown-sessions
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;h3 id=&quot;our-goals&quot;&gt;Our goals&lt;/h3&gt;
 
-&lt;p&gt;where &lt;em&gt;10.0.2.X&lt;/em&gt; are RabbitMQ nodes and &lt;em&gt;10.0.1.X&lt;/em&gt; are HAProxy network interfaces.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/assets/ds_abl/ooda_loop.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+&lt;center&gt;&lt;i&gt;Simplified data-driven decision process&lt;/i&gt;&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
 
-&lt;p&gt;There are also a couple other sysctl options that can be tuned. &lt;a href=&quot;https://www.rabbitmq.com/networking.html&quot;&gt;RabbitMQ documentation&lt;/a&gt; gives some recommendations.
-&lt;br /&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p&gt;Data Science team “customers” are both internal (business, but also tech teams who wants to find ways of improving reliability of our sensors, services or infrastructure), and external (our users, who are our main concern, and external partners, who want to keep track of their unit fleets with various metrics - manufacturing line metrics, sensors drift over long period of time, …).&lt;/p&gt;
 
-&lt;h4 id=&quot;testing-a-load-testing-framework&quot;&gt;Testing: a load testing framework&lt;/h4&gt;
+&lt;p&gt;Data is central in IoT. This makes an important difference when it comes to our day-to-day duties: &lt;strong&gt;extracting value out of data matters because products and features are built on top of it&lt;/strong&gt;. For our CEO, hardware engineers, project managers or sales people, it’s a source of truth for designing products, improving user experience or advertising about our expertise. This isn’t like we had sit on a huge pile of undocumented data sources for years then realized this could be of interest: we cared from day 1. As a consequence, data science is one of the hottest topic in the company, and we work with enlightened people who knows what to expect.&lt;/p&gt;
 
-&lt;p&gt;How can one validate settings at various levels without testing? For this purpose we created a small test framework that interacts with AWS EC2 and spawns desired number of instances, and execute several thousands of MQTT clients on each of them. MQTT client is using &lt;a href=&quot;https://www.eclipse.org/paho/&quot;&gt;Eclipse Paho&lt;/a&gt; library and is configurable (number of clients, ramp up period, interval between messages, QoS level, clean session).&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Data driven decisions&lt;/strong&gt;&lt;/p&gt;
 
-&lt;p&gt;This helped us validating client, server, OS, and software configurations, as well as finding the right amout of CPU/RAM required for the load.
-&lt;br /&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p&gt;Our company sells primarily technology, and services around it. Data is key in the decision process in a wide variety of fields like new sensors assessment and selection, or new features development in mobile and web applications.&lt;/p&gt;
 
-&lt;h4 id=&quot;automating-operations&quot;&gt;Automating operations&lt;/h4&gt;
+&lt;p&gt;Our decision process includes answering &lt;em&gt;data questions&lt;/em&gt; early, with dedicated communication channels, like our internal Slack #data channel where questions are raised and where discussion begins.&lt;/p&gt;
 
-&lt;p&gt;It sounds obvious, but we didn’t have an end-to-end automated way of recreating our messaging gateways infrastructure. We know have ~90% scripted.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Analytics &amp;amp; ML products (user-facing features or not)&lt;/strong&gt;&lt;/p&gt;
 
-&lt;p&gt;It’s of great help during testing phase, as we were able to simply trash a whole set of instances and configurations and restart from scratch. Now we use it for scaling operations.
-&lt;br /&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p&gt;We have around 20+ projects where data science is involved, and often key component of the project. It ranges from in-app analytics to hardware failure detection. Not all projects require the same set of skills or data science assets, and not all involve machine learning. But machine learning is ranking often high in our projects options list as complexity is kicking in and amount of data to deal with gets bigger.&lt;/p&gt;
 
-&lt;h4 id=&quot;high-availability-with-aws-route53&quot;&gt;High Availability with AWS Route53&lt;/h4&gt;
+&lt;p&gt;&lt;strong&gt;Indoor Air Quality expertise&lt;/strong&gt;&lt;/p&gt;
 
-&lt;p&gt;This was one of our goals in first article I wrote: we were first relying on clustering for HA, but it was only able to deal with AWS Availability Zone failures.&lt;/p&gt;
+&lt;p&gt;Air quality is a complex topic and there are tons of things we learn every time we dig into our data sources. We try to build a knowledge database from that so we can make our users benefit from it. It also applies to hardware components we select and ship in our products - especially sensors - as there are lot of different ones, with different behaviours and capabilities, aging mechanism, etc. It’s a great source of information for building new products.&lt;/p&gt;
 
-&lt;p&gt;We implemented HA at a higher level, without RabbitMQ clustering. It’s using AWS Route53 and a combination of geo-location, weight and healtcheck rules to decide where to send clients. This offers both intra and cross region failover.&lt;/p&gt;
+&lt;h3 id=&quot;projects-organization&quot;&gt;Projects organization&lt;/h3&gt;
 
-&lt;p&gt;The whole thing is well described in &lt;a href=&quot;https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-complex-configs.html&quot;&gt;this document&lt;/a&gt;
-&lt;br /&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p&gt;We’re a small shop, so it’s crucial for people working with us to go beyond traditional role boundaries. Regarding data science, scientist is involved in business requirements gathering, data engineering (defining what data, at what frequency, …), productionizing models (e.g. embedding model in a real time pipeline), creating visualizations and communicating results. It’s an intense mission, but it comes with the reward of mastering the whole data life cycle.&lt;/p&gt;
 
-&lt;h2 id=&quot;final-notes&quot;&gt;Final notes&lt;/h2&gt;
+&lt;p&gt;This is also true for business people: while technical people may not be always available to answer data-related questions, it’s better if they can look by themselves. This requires well organized and documented datasets, as well as simplified access to data: saved SQL queries, table views, charts templates… So this can turn into a real efficient process. This is called &lt;strong&gt;data as a service&lt;/strong&gt; and it requires more than some tools or a dashboarding solution: making data available to others inside the company is also about communication.&lt;/p&gt;
 
-&lt;p&gt;We incrementally released this new version of our messaging infrastructure in December 2017 and January 2018. It proved to be a good move as we significantly recuded number of incidents and maintenance time, while improving scalability. There’s still work to do though!&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/assets/ds_abl/ds_workflow.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+&lt;center&gt;&lt;i&gt;Work-flow and ownership&lt;/i&gt;&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
 
-&lt;p&gt;Our next goals are about finalizing automation of gateway provisioning and setup. With that, we will be able to implement auto scaling: our workload doesn’t vary much, but in case of instance failure, automatically spawning and configuring a new can be a major improvement.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;The team.&lt;/strong&gt;&lt;/p&gt;
 
+&lt;p&gt;Our backend team is composed of seasoned developers, who like to work on complex problems and huge datasets. With data science field gaining maturity, and ecosystem evolving rapidly towards more developer-friendly frameworks, it’s now doable for us to tackle complex projects. The most important thing about that is we’re intimate with the whole data process, which &lt;strong&gt;removes the traditional barriers of moving a project from concept phase towards product&lt;/strong&gt;. With the number of projects grows our expertise in analytics and ML.&lt;/p&gt;
+
+&lt;h3 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h3&gt;
+
+&lt;p&gt;In this 1st article we have exposed Airboxlab data science process and vision, from a functional perspective. Next article dives into more technical things, like data pipelines design and types of data-related tasks we’re tackling.&lt;/p&gt;
 </description>
-        <pubDate>Mon, 23 Apr 2018 10:00:00 +0200</pubDate>
-        <link>http://localhost:4000/iot/mqtt/scalability/rabbitmq/haproxy/2018/04/23/scaling_mqtt_part2.html</link>
-        <guid isPermaLink="true">http://localhost:4000/iot/mqtt/scalability/rabbitmq/haproxy/2018/04/23/scaling_mqtt_part2.html</guid>
+        <pubDate>Fri, 21 Sep 2018 13:00:00 +0200</pubDate>
+        <link>http://localhost:4000/data_science/2018/09/21/data_science_at_abl_p1.html</link>
+        <guid isPermaLink="true">http://localhost:4000/data_science/2018/09/21/data_science_at_abl_p1.html</guid>
         
         
-        <category>iot</category>
-        
-        <category>mqtt</category>
-        
-        <category>scalability</category>
-        
-        <category>rabbitmq</category>
-        
-        <category>haproxy</category>
+        <category>data_science</category>
         
       </item>
     
@@ -265,7 +305,7 @@ Last but not least, RabbitMQ suffers a bug that’s not directly linked to clust
 
 &lt;p&gt;There are several ways to go beyond, we chose to use AWS ENIs (Elastic Network Interface): our instance setup script allocates 4 ENIs then configures each network interface. Finally, it can be used n HAProxy configuration as following:&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;backend tcp-out-1883
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;backend tcp-out-1883
     default-server inter 30s rise 2 fall 2
     timeout check 5s
     option tcp-check
@@ -277,8 +317,7 @@ Last but not least, RabbitMQ suffers a bug that’s not directly linked to clust
     server server2-eni2 10.0.2.2:1883 source 10.0.1.2 check on-marked-down shutdown-sessions
     server server2-eni3 10.0.2.2:1883 source 10.0.1.3 check on-marked-down shutdown-sessions
     server server2-eni4 10.0.2.2:1883 source 10.0.1.4 check on-marked-down shutdown-sessions
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;where &lt;em&gt;10.0.2.X&lt;/em&gt; are RabbitMQ nodes and &lt;em&gt;10.0.1.X&lt;/em&gt; are HAProxy network interfaces.&lt;/p&gt;
 
@@ -528,186 +567,6 @@ Last but not least, RabbitMQ suffers a bug that’s not directly linked to clust
         <category>scheduler</category>
         
         <category>quartz</category>
-        
-      </item>
-    
-      <item>
-        <title>Applying Machine Learning to Air Quality Events Analysis (Part I)</title>
-        <description>&lt;style type=&quot;text/css&quot;&gt;
-.callout {
-    float: right;
-    margin-left: 5px;
-    width: 200px;
-}
-&lt;/style&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/airqual_events_class/orion_nebula.jpg&quot; alt=&quot;orion galaxy?&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;Why was Dark Vador wearing a mask? When you hear him breathing, it’s obvious he had serious lung problems, at least severe asthma. Maybe he didn’t pay attention to Death Star indoor air quality enough. 
-But who could blame? This was a huge space to monitor, with troopers coming and going all the time, cosmic dust from all galaxies, chemicals and exhaust gazes from spaceships…&lt;/p&gt;
-
-&lt;p&gt;Indoor air quality can harm your internals, we know that. But if we aren’t able to know pollution sources, it gets tricky to avoid them; beyond taking basic actions when air quality degrades, it’d much more interesting to remove the source, change specific bad habits, automatically trigger the appropriate solution. It’s useful to trigger your ventilation every time VOC level is above a threshold, but what if you become aware that it comes from your house cleaning habbits?&lt;/p&gt;
-
-&lt;p&gt;This is one of the subjects we’re working on at Airboxlab, and this article will be the first of a series of 2 describing how we decided to tackle the problem of pollution source awareness and the benefits it could bring. It also relates the mistakes we did along the way, and how we learned from them.&lt;/p&gt;
-
-&lt;h2 id=&quot;first-approach-experiments-and-lessons-learned&quot;&gt;First approach: experiments and lessons learned&lt;/h2&gt;
-
-&lt;p&gt;In the early days we were very enthusiastic: we’d have to monitor 1 or 2 houses for a while, ask users to note what they were doing (cooking, vacuum cleaning, …) while we were monitoring. Even better, we could get super accurate insight by installing extra sensors and monitors.&lt;/p&gt;
-
-&lt;p&gt;When the experiment ended, we collected data and worked in collaboration with the &lt;a href=&quot;http://list.lu&quot;&gt;LIST&lt;/a&gt; to build our models. After a few weeks of work, conclusions came like a cold shower: no way to extract any significant pattern from collected data. Although graphs showed correlation between user activity and sensors response, no model could be built. Attempts to build classification models showed disappointing accuracy.&lt;/p&gt;
-
-&lt;p&gt;However, this wasn’t a show stopper. We learned a lot from this first failed attempt.&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;although accuracy was good and users carefully reported time there were doing things that could impact air quality, experiment was too short in time and data was scarse&lt;/li&gt;
-  &lt;li&gt;dataset was imbalanced: some classes we wanted to learn about had no data at all&lt;/li&gt;
-  &lt;li&gt;conducting experiment with different sensors, in a controlled environment, isn’t a portable approach. Our users wouldn’t be equipped the same way, and they obviously wouldn’t be that disciplined in reporting their actions. The resulting model wouldn’t match our users habits&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;More importantly, we realized from last point that users were doing what we asked them. But our real users, the ones who bought our product and installed the app, would they try that hard to help us collect data? At that time, we weren’t able to ask them about causes because we weren’t telling them when &lt;em&gt;something&lt;/em&gt; happened. Solution at that time was to open the app, select a time range and select a catagory. Actually, some users were already doing it. But without any trigger, it was very hard to have a clue about what happened, when exactly, for how long, etc. Existing tags dataset collected from real users input was inaccurate and improper to learning.&lt;/p&gt;
-
-&lt;p&gt;It became clear initial problem could be divided into 2 distinct ones:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;how can we detect air quality events?&lt;/li&gt;
-  &lt;li&gt;how can we classify them?&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;And that would mean not a single model or pipeline to build, but several. First things first, we started to work on air quality events detection so we could notify users and ask them to tag air quality events.&lt;/p&gt;
-
-&lt;h2 id=&quot;air-quality-events-an-approximate-definition&quot;&gt;Air quality events: an (approximate) definition&lt;/h2&gt;
-
-&lt;p&gt;This first unsuccessful attempt to give meaning to Foobot readings lead us to fundamental questions we eluded from the beginning: what do we want to detect? Air quality events. Ok, but what is it?&lt;/p&gt;
-
-&lt;p&gt;Air quality event definition isn’t as simple as it sounds. One may think of all pollution events that can happen at home, like when you burn your cooking, that will generally translates into a sudden increase of particulate matters (PMs).&lt;/p&gt;
-
-&lt;p&gt;But events aren’t only about pollution, and we wanted to be able to detect more to get. What about opening a window? At first sight, it should be revealed by a change in temperature and/or humidity. But in what direction (increase or decrease)? In what proportion? 
-This kind of event is also depending on external factors like season and location: in winter in New York, opening the window will have a different event signature than during summer, or in a different location like countryside.&lt;/p&gt;
-
-&lt;p&gt;Also, events can be defined by different features, and not only by a sensor value at a specific moment of time: volatility of the value, difference between the minimum and maximum value over a period of time, necessary time to revert to initial value…&lt;/p&gt;
-
-&lt;p&gt;More over, let’s think about sensor value context: a small change in one sensor value on a short period of time may not be significant when seen alone. But coupled with another small change from another sensor, this could get interesting. Even more if all sensors are impacted. And direction also has its role to play (increase vs decrease): a combination of increases and/or decreases may be frequent and not seen as an event, but another combination could be more rare, and worth paying attention to it.&lt;/p&gt;
-
-&lt;p&gt;Let’s have a look at below graph: it’s 24 hours in the day of a Foobot. Lot of things happen and it illustrates well the complexity of detecting events, without generating too much noise for the user (not every variation is an event). Some events are brutal changes of values in a short period of time, some last longer and there is a bigger period of time between start and end phases. Some involves all sensors but the 3 last are only reflecting on temperature and humidity.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/airqual_events_class/sensors_values_events.png&quot; alt=&quot;sensors graph&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;Finally, air quality event detection is a non trivial problem. It requires more than simple algorithm or heuristics: this is a very good application of using machine learning algorithms.&lt;/p&gt;
-
-&lt;h2 id=&quot;air-quality-events-detection&quot;&gt;Air Quality Events Detection&lt;/h2&gt;
-
-&lt;h3 id=&quot;oddities-are-in-the-air&quot;&gt;Oddities are in the air&lt;/h3&gt;
-
-&lt;p&gt;Air quality events we want to detect are actually abnormal and most probably infrequent changes in the values sent by Foobot sensors. For instance, when you open the oven, important amount of PMs can be released (if something burnt), or when you open your window, temperature and humidity may change, as well as VOCs, CO2 and PMs.&lt;/p&gt;
-
-&lt;p&gt;We took the following approach: we know we don’t know all combinations of the events we want to detect, and we don’t even know the events we want to detect. Actually, we want to detect and classify much more than a few categories, and the best way is to let users tell us what they do.&lt;/p&gt;
-
-&lt;p&gt;We also want to let users know with no delay that something happen and ask them to tag the event, providing a list of possible categories, but also a free text field so they can create new categories. 2 benefits to this approach:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;users want to be able to react immediately when air quality degrades&lt;/li&gt;
-  &lt;li&gt;reducing time between detection and notification gives users more chances to remember what they were doing at that time. Sending notifications or emails every day in batch wouldn’t be efficient.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;To achieve this, we needed to design and implement 2 technical parts:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;something able to detect anomalies by comparing a vector of values to an existing and already organized set of vectors&lt;/li&gt;
-  &lt;li&gt;a streaming layer to continuously analyze incoming data&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h3 id=&quot;machine-learning-to-the-rescue&quot;&gt;Machine learning to the rescue&lt;/h3&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/Anomaly_detection&quot;&gt;&lt;em&gt;Anomaly detection&lt;/em&gt;&lt;/a&gt; (or &lt;a href=&quot;https://en.wikipedia.org/wiki/Outlier#Detection&quot;&gt;&lt;em&gt;outlier detection&lt;/em&gt;&lt;/a&gt;) is a common problem in data-mining.
-The concept of anomaly detection is quite general, but the idea is to detect outliers (observations very distant to others) from a dataset, and that can be used in a variety of areas like hardware failure detection, intrusion detection systems, or fraud detection.&lt;/p&gt;
-
-&lt;p&gt;There are also different ways to tackle the problem, with a complexity ranging from basic to very complex (neural networks).&lt;/p&gt;
-
-&lt;p&gt;We decided to head into &lt;a href=&quot;https://en.wikipedia.org/wiki/K-means_clustering&quot;&gt;K-Means&lt;/a&gt; which is a clustering technique (unsupervised learning): given a number &lt;em&gt;k&lt;/em&gt;, the algorithm will divide the dataset into &lt;em&gt;k&lt;/em&gt; groups (or &lt;em&gt;clusters&lt;/em&gt;) in a way that minimizes distance between cluster center and data points. K-Means is also relatively fast to train, and its output is easy to understand (compared to other algorithms).&lt;/p&gt;
-
-&lt;p&gt;When applied to the entire dataset, K-Means training will output a model composed of &lt;em&gt;centroids&lt;/em&gt;: basically coordinates of cluster centers. Centroids are computed to minimize distance between themselves and surrounding data points.&lt;/p&gt;
-
-&lt;p&gt;Parameter &lt;em&gt;k&lt;/em&gt; is left to the discretion of the data scientist: depending on clustering task needs, you may want more or less cluster centers. If minimizing distance is your objective, it’s possible to iteratively train models while incrementing &lt;em&gt;k&lt;/em&gt;, and compute average distance of each data point to its centroid for each run: after a specific value of &lt;em&gt;k&lt;/em&gt;, accuracy will stop increasing (plateau).  On the contrary, if you want to rough outline patterns in your data, you may want to keep &lt;em&gt;k&lt;/em&gt; low.&lt;/p&gt;
-
-&lt;h3 id=&quot;anomaly-detection-with-k-means&quot;&gt;Anomaly detection with K-Means&lt;/h3&gt;
-
-&lt;p&gt;Let’s dig into anomaly detection, as we talked about K-Means basics, but it’s not yet clear at this point how it can help to detect anomalies.&lt;/p&gt;
-
-&lt;p&gt;It’s quite simple: every time a data point will be classified with our trained model, the output will be the coordinates of the closest centroid. We can then compute &lt;a href=&quot;https://en.wikipedia.org/wiki/Euclidean_distance&quot;&gt;euclidean distance&lt;/a&gt; between data point vector and centroid vector to see how far it is from the cluster center. Anomaly detection will make us of this distance: if data point is far, it basically means it’s something we didn’t see very often in the training dataset.&lt;/p&gt;
-
-&lt;p&gt;Going a step further, from the model we trained we’ll only select centroids for clusters that classified the more entries. If we take a basic example of 5 clusters, initial training could output something like below:&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;1: (0.1, 0.2, 0.1, 0.5)    =&amp;gt; 100000 entries
-2: (-0.2, 0.1, -0.05, 0.1) =&amp;gt; 50000
-3: ...
-5: (4, -2, 4, 4)           =&amp;gt; 100
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;The more entries are classified in a cluster, the more frequent they appear in the dataset. Differently said, clusters with more entries represent the more frequent patterns in the data set.&lt;/p&gt;
-
-&lt;p&gt;With a 3D representation, it gets clearer how outliers or anomalies will stand out of the crowd: a pack of points reprensenting clusters with most values (below clusters are grouped but you could get groups with a distance between each of them), and suddenly an anomaly, classified in one of the existing clusters but far from the center.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/airqual_events_class/clustering_outlier.png&quot; alt=&quot;clustering&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;To wrap this up, we’re using anamoly detection technique based on K-Means, but we cut the model from its less populated clusters. We’ll then use distance computation between vector to classify and its centroid to decide if it’s an event or not.&lt;/p&gt;
-
-&lt;h3 id=&quot;events-and-datapoints&quot;&gt;Events and Datapoints&lt;/h3&gt;
-
-&lt;p&gt;Ok but then, how do we feed the trainer? This is part of the &lt;em&gt;feature selection&lt;/em&gt; process, that makes us pick some values or derivatives of values (like aggregations) but not others from the data set, in order to train the model.&lt;/p&gt;
-
-&lt;p&gt;Being specific here, we’re interested in variations of sensor values over a period of time. Intuitively, sensor values variation between now and a few minutes ago is what can tell better that something is happening as it reflects a change in the air composition. Absolute values alone are not interesting, because, for instance, you could have indoor air with constant high VOC values.&lt;/p&gt;
-
-&lt;p&gt;Finally, while training models with this kind of data we rapidly realized that clusters with less data had coordinates representing the most important variations in sensors values, while the ones with more data were associated with small variations. Selecting only the latter gave us a clustering model that could outline anomalies.&lt;/p&gt;
-
-&lt;h2 id=&quot;detecting-in-near-real-time&quot;&gt;Detecting in near real-time&lt;/h2&gt;
-
-&lt;p&gt;Near real-time detection is where we wanted to go from the beginning. Detecting events with a few hours delay with a batch would have reduced the benefit of it all, as the user couldn’t be notified immediately.&lt;/p&gt;
-
-&lt;p&gt;Here, near real-time detection means continuous stream of datapoints that a job transforms and submits to the classifier. In Spark Streaming, it translates into a sliding window that maintains a state for each device. This state is a representation of the variations of sensor values for the device over a period of time. Spark Streaming offers several operators that comes in handy. See &lt;a href=&quot;http://spark.apache.org/docs/latest/streaming-programming-guide.html#window-operations&quot;&gt;Spark Streaming - Window Operations&lt;/a&gt; for details.
-Spark Streaming also allows us to load a K-Means model and to submit vectors to be classified in a continuous manner.&lt;/p&gt;
-
-&lt;p&gt;Upon reception, datapoints are transformed and some flags are checked to help make better decisions, like wether or not taking datapoint into account, applying custom transformations, etc. Then we submit the state to the K-Means classifier and depending on distance to the closest cluster, we tag it as an indoor air quality event or not.&lt;/p&gt;
-
-&lt;p&gt;Event end is also a matter of clustering: we consider an event as finished if variations between last datapoint received and first event datapoint are classified close to a highly populated cluster centroid.&lt;/p&gt;
-
-&lt;p&gt;Sensitivity of event detection and event closing are depending on the configurable threshold that we compare to each distance &lt;code class=&quot;highlighter-rouge&quot;&gt;euclid_dist(state_vector - centroid)&lt;/code&gt;. In the case of detection, the bigger the threshold is, the less sensitive detection will be. And it’s the exact opposite for event closing. It took us quite some time to find &lt;em&gt;interesting&lt;/em&gt; thresholds: it was all about working with beta testers, checking large amount of detected events, and fine tuning.&lt;/p&gt;
-
-&lt;p&gt;When event ends, not only we can easily retrieve datapoints that caused the event to be triggered, but we can also analyse event life: max and min values, variance, duration… All this data will be extremely useful to understand patterns of indoor air quality events.&lt;/p&gt;
-
-&lt;p&gt;Below diagram illustrates this flow&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/airqual_events_class/real_time_detect_diag.png&quot; alt=&quot;real time detection&quot; /&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;fooboters-own-the-value&quot;&gt;Fooboters own the value&lt;/h3&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/airqual_events_class/foobot_app_notif.png&quot; alt=&quot;ingestion&quot; class=&quot;callout&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;Detecting events in a streaming manner has some benefits: our users can be informed immediately, and they can tell us what it is. When an event is detected, it’s transformed into a push notification, that users can open in Foobot mobile app, then select in a category he or she thinks was the root cause of the event. This information is then preciously saved, along with event characteristics.&lt;/p&gt;
-
-&lt;p&gt;Fooboters have been more than kind with us: not only we got a massive amount of tags, but they also helped us expending our list of categories. As event types list is not closed - users have the ability to give their own tag if they don’t find one in the list of choices - we are able to add new event classes, or create sub categories to refine events classification.&lt;/p&gt;
-
-&lt;p&gt;With the help of our users, we collected an important dataset of tags that we’re able to join with event characteristics, in order to form another training dataset: the one that will help building an air quality events classification model!&lt;/p&gt;
-
-&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
-
-&lt;p&gt;In this article we’ve investigated in details some of the internals of indoor air quality event detection at Airboxlab. There is a lot more to say about the different approaches we’ve tried, the failures we faced, what we’ve learned.&lt;/p&gt;
-
-&lt;p&gt;Detection is non trivial, but we’re fairly satisfied with what we obtained. We regularly monitor accuracy of detected events, and it’s quite interesting to see amount of events and conditions of classifications. We’ve also set configurable thresholds that allow to increase or decrease sensitivity of detection. Still, there is room for improvement; for instance, we didn’t dig too much into detecting several events happening in the same window of time. This would involve managing competing events and states. Probably interesting to look into, but somewhat difficult to compare to single-state-per-device (current) technique in terms of relevance, accuracy, and user friendlyness.&lt;/p&gt;
-
-&lt;p&gt;In our next article we’ll discuss the next step in building an air quality event processing pipeline: classification. Of course, collecting all this data reveals its full potential only if we try to find patterns in it, and make our users benefit from our findings. Knowing precisely what’s happening in the air of your home can give you precious information for improving it!&lt;/p&gt;
-
-</description>
-        <pubDate>Mon, 23 Jan 2017 16:00:00 +0100</pubDate>
-        <link>http://localhost:4000/machine/learning/2017/01/23/airqual_events_class_part1.html</link>
-        <guid isPermaLink="true">http://localhost:4000/machine/learning/2017/01/23/airqual_events_class_part1.html</guid>
-        
-        
-        <category>machine</category>
-        
-        <category>learning</category>
         
       </item>
     
@@ -999,16 +858,14 @@ That’s one of the main strengths of Spark, you can develop and test your whole
 &lt;p&gt;Jobs are started on worker nodes and will produce logs in &lt;code&gt;$SPARK_HOME/work/&lt;/code&gt;. Each application jar version will also be stored on each worker running it. If you run a lot of them, disk space will decrease.
 Below are cleanup tasks that can be scheduled with &lt;code&gt;cron&lt;/code&gt; on each worker node and that removes logs and jars after 30 days. &lt;strong&gt;Warning&lt;/strong&gt;: this assumes you redeploy at least every 30 days!&lt;/p&gt;
 
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;find /root/spark/work/ -type f -name &lt;span class=&quot;s2&quot;&gt;&quot;std*&quot;&lt;/span&gt; -mtime +30 -delete
-find /root/spark/work/ -type f -name &lt;span class=&quot;s2&quot;&gt;&quot;*.jar&quot;&lt;/span&gt; -mtime +30 -delete
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;find /root/spark/work/ &lt;span class=&quot;nt&quot;&gt;-type&lt;/span&gt; f &lt;span class=&quot;nt&quot;&gt;-name&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;std*&quot;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-mtime&lt;/span&gt; +30 &lt;span class=&quot;nt&quot;&gt;-delete&lt;/span&gt;
+find /root/spark/work/ &lt;span class=&quot;nt&quot;&gt;-type&lt;/span&gt; f &lt;span class=&quot;nt&quot;&gt;-name&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;*.jar&quot;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-mtime&lt;/span&gt; +30 &lt;span class=&quot;nt&quot;&gt;-delete&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Also, Spark AWS deployment comes with a Hadoop cluster that also needs maintenance. Hadoop logs cleanup task can be scheduled the same way:&lt;/p&gt;
 
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;find /mnt/ephemeral-hdfs/logs -name &lt;span class=&quot;s2&quot;&gt;&quot;hadoop*.log.201*&quot;&lt;/span&gt; -type f -mtime +10 -delete
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;find /mnt/ephemeral-hdfs/logs &lt;span class=&quot;nt&quot;&gt;-name&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;hadoop*.log.201*&quot;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-type&lt;/span&gt; f &lt;span class=&quot;nt&quot;&gt;-mtime&lt;/span&gt; +10 &lt;span class=&quot;nt&quot;&gt;-delete&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;h4 id=&quot;system-failures-handling&quot;&gt;System failures handling&lt;/h4&gt;
 
@@ -1087,17 +944,15 @@ Both last data received and jobs meta data are checkpointed. This means that if 
 
 &lt;p&gt;This was previously done with following piece of code&lt;/p&gt;
 
-&lt;div class=&quot;language-scala highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;sys&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;ShutdownHookThread&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+&lt;div class=&quot;language-scala highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;sys&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;ShutdownHookThread&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
   &lt;span class=&quot;n&quot;&gt;ssc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;stop&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
 &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;But since 1.4 you can also use the following property&lt;/p&gt;
 
-&lt;div class=&quot;language-properties highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;py&quot;&gt;spark.streaming.stopGracefullyOnShutdown&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;true&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;div class=&quot;language-properties highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;py&quot;&gt;spark.streaming.stopGracefullyOnShutdown&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;true&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;h3 id=&quot;tuning&quot;&gt;Tuning&lt;/h3&gt;
 
@@ -1113,29 +968,28 @@ See &lt;a href=&quot;http://spark.apache.org/docs/latest/streaming-programming-g
 
 &lt;p&gt;Here is a sample driver submission script&lt;/p&gt;
 
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;SPARK_HOME&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'/root/spark'&lt;/span&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;SPARK_HOME&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'/root/spark'&lt;/span&gt;
 &lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;SPARK_MASTER&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'spark://host:6066'&lt;/span&gt;
 
 &lt;span class=&quot;nv&quot;&gt;$SPARK_HOME&lt;/span&gt;/bin/spark-submit &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
- --class com.foobot.stream.DatapointStream &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
- --master &lt;span class=&quot;nv&quot;&gt;$SPARK_MASTER&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
- --deploy-mode cluster &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
- --supervise &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
- --executor-memory 1536m &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
- --total-executor-cores 6 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
- --driver-memory 1G &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
- --driver-java-options &lt;span class=&quot;s2&quot;&gt;&quot;-XX:MaxPermSize=512m&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
- --conf spark.streaming.blockInterval&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;500 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
- --conf spark.streaming.concurrentJobs&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;6 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
- --conf spark.cleaner.ttl&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;1800 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
- --conf spark.executor.logs.rolling.strategy&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;time&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
- --conf spark.executor.logs.rolling.time.interval&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;daily &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
- --conf spark.executor.logs.rolling.maxRetainedFiles&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;10 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
- --conf spark.streaming.receiver.maxRate&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;30 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+ &lt;span class=&quot;nt&quot;&gt;--class&lt;/span&gt; com.foobot.stream.DatapointStream &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+ &lt;span class=&quot;nt&quot;&gt;--master&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$SPARK_MASTER&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+ &lt;span class=&quot;nt&quot;&gt;--deploy-mode&lt;/span&gt; cluster &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+ &lt;span class=&quot;nt&quot;&gt;--supervise&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+ &lt;span class=&quot;nt&quot;&gt;--executor-memory&lt;/span&gt; 1536m &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+ &lt;span class=&quot;nt&quot;&gt;--total-executor-cores&lt;/span&gt; 6 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+ &lt;span class=&quot;nt&quot;&gt;--driver-memory&lt;/span&gt; 1G &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+ &lt;span class=&quot;nt&quot;&gt;--driver-java-options&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;-XX:MaxPermSize=512m&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+ &lt;span class=&quot;nt&quot;&gt;--conf&lt;/span&gt; spark.streaming.blockInterval&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;500 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+ &lt;span class=&quot;nt&quot;&gt;--conf&lt;/span&gt; spark.streaming.concurrentJobs&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;6 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+ &lt;span class=&quot;nt&quot;&gt;--conf&lt;/span&gt; spark.cleaner.ttl&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;1800 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+ &lt;span class=&quot;nt&quot;&gt;--conf&lt;/span&gt; spark.executor.logs.rolling.strategy&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;time&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+ &lt;span class=&quot;nt&quot;&gt;--conf&lt;/span&gt; spark.executor.logs.rolling.time.interval&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;daily &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+ &lt;span class=&quot;nt&quot;&gt;--conf&lt;/span&gt; spark.executor.logs.rolling.maxRetainedFiles&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;10 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+ &lt;span class=&quot;nt&quot;&gt;--conf&lt;/span&gt; spark.streaming.receiver.maxRate&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;30 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
  /home/ec2-user/spark-drivers/spark-driver-datapoint.jar &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
  &lt;span class=&quot;nv&quot;&gt;$1&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
 
@@ -1253,66 +1107,60 @@ Introductions for these methods can be found on &lt;a href=&quot;https://en.wiki
 
 &lt;p&gt;Let’s start with fetching a Pair RDD that will have a key defined by the unique device identifier (UUID), and value being an array of the average sensor values (here taking only PM2.5&lt;sup id=&quot;fnref:5&quot;&gt;&lt;a href=&quot;#fn:5&quot; class=&quot;footnote&quot;&gt;5&lt;/a&gt;&lt;/sup&gt;, although it would be interesting to include VOC&lt;sup id=&quot;fnref:6&quot;&gt;&lt;a href=&quot;#fn:6&quot; class=&quot;footnote&quot;&gt;6&lt;/a&gt;&lt;/sup&gt; too), plus geolocation of device as a (latitude, longitude) tuple. For this article, we took a sample of connected devices, and the last 30 minutes of data for each.&lt;/p&gt;
 
-&lt;div class=&quot;language-scala highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;loaded&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;RDD&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;String&lt;/span&gt;, &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Array&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Double&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;, &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Double&lt;/span&gt;, &lt;span class=&quot;kt&quot;&gt;Double&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)))]&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;//some function that fetches data
+&lt;div class=&quot;language-scala highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;loaded&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;RDD&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;String&lt;/span&gt;, &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Array&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Double&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;, &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Double&lt;/span&gt;, &lt;span class=&quot;kt&quot;&gt;Double&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)))]&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;//some function that fetches data
 &lt;/span&gt;
 &lt;span class=&quot;c1&quot;&gt;//(UUID, (Latitude, Longitude))
 &lt;/span&gt;&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;geoList&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;RDD&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;String&lt;/span&gt;,&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Double&lt;/span&gt;,&lt;span class=&quot;kt&quot;&gt;Double&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)]&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;...&lt;/span&gt;  
 
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Now that we have our values, we will compute average and standard deviation for sensor values, and normalize them.
 Note that normalization isn’t necessary here as our input array contains only PM values.
 Definition of &lt;code&gt;Utils&lt;/code&gt; can be found on &lt;a href=&quot;https://github.com/airboxlab/Louvain_sample&quot;&gt;our github&lt;/a&gt;&lt;/p&gt;
 
-&lt;div class=&quot;language-scala highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;Utils._&lt;/span&gt;
+&lt;div class=&quot;language-scala highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;Utils._&lt;/span&gt;
 &lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;means&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;stdevs&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;meansAndStdevs&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;loaded&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;map&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;_&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt;
 &lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;normalized&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;loaded&lt;/span&gt;
   &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;map&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
     &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sensorValues&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;geoloc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;normalize&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sensorValues&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;means&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;stdevs&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;geoloc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt;
   &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Then we define graph vertices, by associating each UUID with a unique long identifier (from &lt;code&gt;hashCode()&lt;/code&gt;). 
 Long identifiers are required by Spark GraphX API.&lt;/p&gt;
 
-&lt;div class=&quot;language-scala highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;vertices&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;normalized&lt;/span&gt;
+&lt;div class=&quot;language-scala highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;vertices&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;normalized&lt;/span&gt;
   &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;map&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sensorValues&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;geoloc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sensorValues&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;geoloc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;uuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;hashCode&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;toLong&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
   
 &lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;vertexIds&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;RDD&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Long&lt;/span&gt;, &lt;span class=&quot;kt&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)]&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;vertices&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;map&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;uuid&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_3&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;uuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Now we definie edges. We artificially link Foobots by checking their geographical distance. 
 We define edge weight as a function of euclidean distance between 2 devices average sensor values.&lt;/p&gt;
 
-&lt;div class=&quot;language-scala highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;edges&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;RDD&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Edge&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Long&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]]&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;vertices&lt;/span&gt;
+&lt;div class=&quot;language-scala highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;edges&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;RDD&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Edge&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Long&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]]&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;vertices&lt;/span&gt;
   &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cartesian&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vertices&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
   &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;filter&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;uuid2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;equals&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;//no loop
 &lt;/span&gt;  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;filter&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;uuid2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;geoDistance&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;uuid2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;//geo distance must be &amp;lt; 10km
 &lt;/span&gt;  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;map&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;uuid2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Edge&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_3&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;uuid2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_3&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;euclideanDistance&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;uuid2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)).&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;toLong&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;And then, we generate the graph:&lt;/p&gt;
 
-&lt;div class=&quot;language-scala highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;graph&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Graph&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vertexIds&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;edges&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;div class=&quot;language-scala highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;graph&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Graph&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vertexIds&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;edges&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Now that we have a graph, we can run Louvain algorithm on it. Our reference implementation can be found &lt;a href=&quot;https://github.com/Sotera/spark-distributed-louvain-modularity&quot;&gt;here&lt;/a&gt;.
 We slightly modified it, mainly to keep stages data in memory so we don’t require HDFS.&lt;/p&gt;
 
-&lt;div class=&quot;language-scala highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;runner&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;InMemoryLouvainRunner&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+&lt;div class=&quot;language-scala highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;runner&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;InMemoryLouvainRunner&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
 &lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;louvainGraph&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Graph&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;VertexState&lt;/span&gt;, &lt;span class=&quot;kt&quot;&gt;Long&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;runner&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;run&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;graph&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Time for a little reverse mapping game: remember we mapped UUIDs with Long identifiers. We want to get UUIDs back.
 We then map each vertex id in edges (source and destination) with their corresponding UUID.&lt;/p&gt;
 
-&lt;div class=&quot;language-scala highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;resolvedVertices&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;louvainGraph&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vertices&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;join&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vertexIds&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+&lt;div class=&quot;language-scala highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;resolvedVertices&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;louvainGraph&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vertices&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;join&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vertexIds&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
   &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;map&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vxId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;state&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;uuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;state&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
 
 &lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;resolvedEdges&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;louvainGraph&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;edges&lt;/span&gt;
@@ -1321,12 +1169,11 @@ We then map each vertex id in edges (source and destination) with their correspo
   &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;map&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vxSrcId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vxDstId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;linkWeight&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;srcUuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vxDstId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;linkWeight&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;srcUuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
   &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;join&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vertexIds&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
   &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;map&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vxDstId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;linkWeight&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;srcUuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dstUuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;srcUuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dstUuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;linkWeight&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Here is the final step: output the result as a JSON file that will be used later to plot our results in graphs.&lt;/p&gt;
 
-&lt;div class=&quot;language-scala highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;//Helper classes
+&lt;div class=&quot;language-scala highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;//Helper classes
 &lt;/span&gt;&lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;JsNode&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;communityId&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;polLevel&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Double&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
 &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;JsLink&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;source&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;target&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
 &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;JsGraph&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;nodes&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Array&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;JsNode&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;links&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Array&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;JsLink&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;])&lt;/span&gt;
@@ -1352,8 +1199,7 @@ We then map each vertex id in edges (source and destination) with their correspo
 
 &lt;span class=&quot;c1&quot;&gt;//Output to file
 &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;mapper&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;writeValue&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;File&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;/var/www/html/communities.json&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;JsGraph&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;geoNodes&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;jsonEdges&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;&lt;br /&gt;&lt;/p&gt;
 
