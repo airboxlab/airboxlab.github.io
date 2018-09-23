@@ -19,7 +19,7 @@ author: Antoine Galataud
 This is a series of 2 articles that dives into data science discipline at [Airboxlab](https://foobot.io):
 
 - 1st article (present one) is about the data-driven philosophy we have in our company, and how work is organized around it
-- [2nd article]({{ site.baseurl }}/data_science/2018/07/01/data_science_at_abl_p2.html) depicts main problems we try to solve by applying data science, and how it is technically designed. 
+- [2nd article]({{ site.baseurl }}/data_science/2018/09/21/data_science_at_abl_p2.html) depicts main problems we try to solve by applying data science, and how it is technically designed. 
 
 ### Investing in data
 
