@@ -43,7 +43,7 @@ bring in better performance.
 ## HVAC components control optimization: context
 
 According to [US Energy Information Agency](https://www.eia.gov/consumption/commercial/reports/2012/energyusage/), HVAC
-systems were responsible for not less than 40% of energy consumption in commercial buildings in 2012. Which such a 
+systems were responsible for not less than 40% of energy consumption in commercial buildings in 2012. With such a 
 significant footprint, everyone has an interest in optimizing their control and operations.
 
 Below diagram gives a simplified description of such HVAC system, of _VAV_ type, as we find in many buildings in US,
