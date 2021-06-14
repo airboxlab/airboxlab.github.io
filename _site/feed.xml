@@ -4,11 +4,614 @@
     <title>Airboxlab Technical Blog</title>
     <description>The guys behind Foobot.Talking here about our achievements, failures &amp; OSS contributions
 </description>
-    <link>http://localhost:4000/</link>
-    <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Fri, 21 Sep 2018 21:10:34 +0200</pubDate>
-    <lastBuildDate>Fri, 21 Sep 2018 21:10:34 +0200</lastBuildDate>
-    <generator>Jekyll v3.8.3</generator>
+    <link>https://airboxlab.github.io//</link>
+    <atom:link href="https://airboxlab.github.io//feed.xml" rel="self" type="application/rss+xml" />
+    <pubDate>Mon, 14 Jun 2021 14:07:05 +0200</pubDate>
+    <lastBuildDate>Mon, 14 Jun 2021 14:07:05 +0200</lastBuildDate>
+    <generator>Jekyll v4.2.0</generator>
+    
+      <item>
+        <title>Nine months of AI-based control optimization on a modern office building HVAC</title>
+        <description>&lt;style type=&quot;text/css&quot;&gt;
+.center {
+    display:block;
+    margin: 0 auto;
+}
+.double-left {
+    width:49%;
+    display:block;
+    float:left;
+    margin: 0 auto;
+    margin-right: 10px;
+}
+.add-margin-right {
+    margin-right: 20px;
+}
+.double {
+    width:49%;
+    margin: 0 auto;
+}
+.image-foot {
+    font-size:10pt;
+}
+ul {
+  display: table;
+}
+&lt;/style&gt;
+
+&lt;h2 id=&quot;foobot-smart-air-building-sab-project&quot;&gt;Foobot Smart Air Building (SAB) project&lt;/h2&gt;
+
+&lt;p&gt;In October 2020, SAB artificial intelligent agents took control over a 15000 m² commercial building HVAC system. This building, located in Northern Europe, was a real challenge:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;a recent (2015), awarded construction. It obtained the &lt;i&gt;DGNB Platinum&lt;/i&gt; construction certification.&lt;/li&gt;
+  &lt;li&gt;a modern building management system (BMS), with fancy, state-of-the-art control sequences&lt;/li&gt;
+  &lt;li&gt;a low energy consumption baseload for the HVAC system: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;32 kWh/m²·year&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Within a few weeks, we rolled out the SAB HVAC optimization workflow:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;building characteristics and energy &lt;b&gt;data collection&lt;/b&gt;, along with facility managers interview to get a better understanding of known pain points&lt;/li&gt;
+  &lt;li&gt;&lt;b&gt;digital twin acquisition&lt;/b&gt;, by crafting a building model calibrated against actual building energy data&lt;/li&gt;
+  &lt;li&gt;&lt;b&gt;smart agents training&lt;/b&gt;, by using the digital twin as safe, accurate training environment&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;This method allowed us, within a short time frame, to:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;present several optimization strategies, backed by solid energy savings estimates&lt;/li&gt;
+  &lt;li&gt;discuss and validate the best strategies&lt;/li&gt;
+  &lt;li&gt;design and apply a tailor-made test plan&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;After test plan was fully executed and initial results in line with expectations, our customer gave us the green light for 24/7 control.&lt;/p&gt;
+
+&lt;h2 id=&quot;day-1---a-good-slash&quot;&gt;Day 1 - a good slash&lt;/h2&gt;
+
+&lt;p&gt;Our smart agents’ performance is monitored using opensource tools like Grafana, and aggregated performance Key Performance Indicators (KPI) are continuously computed to track savings, comfort and AQI over the course of several months and years.&lt;/p&gt;
+
+&lt;p&gt;In early October 2020, we gave our agents the go-live and watched🍿&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/sab_after_9_months/day_1.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+&lt;center&gt;&lt;i class=&quot;image-foot&quot;&gt;fig. 1: SAB AI agents performance comparison over a 4 days period (source: Grafana dashboard)&lt;/i&gt;&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;This 7th of October 2020, there was a drastic cut in HVAC energy consumption. All HVAC energy uses (AHU electricity and per-floor heating, showed with different colors in stacked bars chart) were significantly reduced despite similar weather conditions compared to previous, non-SAB days.&lt;/p&gt;
+
+&lt;p&gt;What it demonstrated:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;HVAC was running at design conditions all the time. Air flow rate was too high for building heating and air renewal needs&lt;/li&gt;
+  &lt;li&gt;there was too much reheat at floor level. Supplied air temperature was too cold, leading to waste of heating at each floor&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;after-9-months&quot;&gt;After 9 months&lt;/h2&gt;
+
+&lt;p&gt;The first few days went good. But this isn’t enough to demonstrate efficiency of a solution. You need, … time.&lt;/p&gt;
+
+&lt;p&gt;Today, we release some key metrics that show how SAB agents did their job. Starting with the classic Energy v.s. Heating Degree Day scatter and linear regression.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/sab_after_9_months/e_hdd_fit.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+&lt;center&gt;&lt;i class=&quot;image-foot&quot;&gt;fig. 2: Energy / Heating Degree Day fit&lt;/i&gt;&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;From this first chart, we see SAB is overperforming in every situation, mild or cold weather. The regression slope is steeper for the BMS as HDD increases; it can be interpreted as the HVAC sensitivity to weather, and SAB agents are much less sensitive than the BMS.&lt;/p&gt;
+
+&lt;p&gt;To get a better understanding on each method performance, we can use a piecewise regression (a.k.a segmented regression) to identify some patterns&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/sab_after_9_months/e_w_fit.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+&lt;center&gt;&lt;i class=&quot;image-foot&quot;&gt;fig. 3: Piecewise energy / weather fit&lt;/i&gt;&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;This time, x axis uses daily mean outdoor temperature. What we observe:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Energy Use Intensity is confirmed smaller&lt;/li&gt;
+  &lt;li&gt;heating change point is close to same between BMS and SAB control, at about 10°C. This means that heating needs to kick in only when outdoor temperature is 10°C or below.&lt;/li&gt;
+  &lt;li&gt;baseload (horizontal part of the regression) is also improved with SAB: HVAC system, under optimal weather conditions, runs with less&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;takeaways&quot;&gt;Takeaways&lt;/h2&gt;
+
+&lt;p&gt;The figure: &lt;b&gt;a 54% cut in HVAC spending, with no compromise on thermal comfort or indoor air quality&lt;/b&gt;.&lt;/p&gt;
+
+&lt;p&gt;What we learned:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;every building is different, and every tenant has his/her own settings and preferences. You can advise to change set points and tell people to wear a sweater, or you can use a smart system. In present case, thermostat set points weren’t changed and are respected 98% of the time. Air quality is near perfect, with measured CO2 below 900ppm 100% of the time.&lt;/li&gt;
+  &lt;li&gt;a successful project requires solid foundations: by giving precise estimates and several optimisation choices to our customers, expectations are set. In present case, actual savings show a 5-10% error with estimates (for winter months, savings were estimated at 50%)&lt;/li&gt;
+  &lt;li&gt;visibility is key: we built an alerting and monitoring system that we and our customers use every day. It goes from standard HVAC health checks (like prescribed by ASHRAE guideline 36 for VAV systems) to tailor-made alerts, with auto-remediation, and real-time monitoring. All building sensors data, as well as KPIs, are visible to everyone involved in the project&lt;/li&gt;
+  &lt;li&gt;reactivity and security are not optional: if something goes wrong, you need to know it immediately and react as fast as possible. This leads to automating everything. As a consequence, all our control loops deployment pipelines are fully automated, isolated and secured.&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        <pubDate>Mon, 14 Jun 2021 02:00:00 +0200</pubDate>
+        <link>https://airboxlab.github.io//hvac/control/ai/reinforcement_learning/2021/06/14/sab_after_9.html</link>
+        <guid isPermaLink="true">https://airboxlab.github.io//hvac/control/ai/reinforcement_learning/2021/06/14/sab_after_9.html</guid>
+        
+        
+        <category>hvac</category>
+        
+        <category>control</category>
+        
+        <category>ai</category>
+        
+        <category>reinforcement_learning</category>
+        
+      </item>
+    
+      <item>
+        <title>HVAC processes control: can AI help?</title>
+        <description>&lt;style type=&quot;text/css&quot;&gt;
+.center {
+    display:block;
+    margin: 0 auto;
+}
+.double-left {
+    width:49%;
+    display:block;
+    float:left;
+    margin: 0 auto;
+    margin-right: 10px;
+}
+.add-margin-right {
+    margin-right: 20px;
+}
+.double {
+    width:49%;
+    margin: 0 auto;
+}
+.image-foot {
+    font-size:10pt;
+}
+ul {
+  display: table;
+}
+&lt;/style&gt;
+
+&lt;p&gt;Through a series of examples, this article deals with limitations of classic controllers and control strategies in 
+&lt;em&gt;Heating, Ventilation and Air Conditioning&lt;/em&gt; (HVAC) systems, and draws a comparison with &lt;em&gt;intelligent agents&lt;/em&gt; (supported
+by artificial intelligence techniques) and their benefits. As such, we take as a basis of comparison a common HVAC
+system type (&lt;em&gt;Variable Air Volume&lt;/em&gt; or VAV) and show where classic control technics fall short while intelligent agents
+bring in better performance.&lt;/p&gt;
+
+&lt;h2 id=&quot;hvac-components-control-optimization-context&quot;&gt;HVAC components control optimization: context&lt;/h2&gt;
+
+&lt;p&gt;According to &lt;a href=&quot;https://www.eia.gov/consumption/commercial/reports/2012/energyusage/&quot;&gt;US Energy Information Agency&lt;/a&gt;, HVAC
+systems were responsible for not less than 40% of energy consumption in commercial buildings in 2012. With such a 
+significant footprint, everyone has an interest in optimizing their control and operations.&lt;/p&gt;
+
+&lt;p&gt;Below diagram gives a simplified description of such HVAC system, of &lt;em&gt;VAV&lt;/em&gt; type, as we find in many buildings in US,
+Europe and Asia since 1980 onwards. This type of system, as its name suggests, varies the amount of air to meet heating,
+cooling and air renewal demands in building spaces. While its installation cost is higher than previous generation 
+(namely, &lt;em&gt;Constant Air Volume&lt;/em&gt;), it has replaced it advantageously since it brings better comfort guarantees and less
+energy expenses. We encounter this in medium to large size buildings mainly, in every kind of facilities.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/pid_vs_ai/ncc_hvac_schematics.svg&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+&lt;center&gt;&lt;i class=&quot;image-foot&quot;&gt;fig. 1: simplified schematics of a typical Variable Air Volume (VAV) HVAC system, with central mechanical cooling and hot water reheat&lt;/i&gt;&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;As we can observe, a VAV is a centralized system: most of the ventilation, cooling and heating happens in one place, and
+this requires to be configured and operated to meet all demands. By intuition, one can already imagine the challenges
+that such systems face: a single (or a handful of) equipment of any kind must satisfy potentially dozens of open spaces,
+cell offices, meeting rooms, … This requires proper sizing, configuration and control.&lt;/p&gt;
+
+&lt;p&gt;To do so, HVAC industry relies on processes, hardware and techniques that, for some of them, are decades-old. Given
+investment costs to design and promote new equipment or control techniques, but also to replace those already installed,
+there is some inertia, legitimate to some extent. But as we’ll discuss in next sections, optimisation or removal of
+existing limitations don’t require many capital expenditure anymore. Modern, software-based approaches can
+bring dramatic improvements without a full-fledged retrofit.&lt;/p&gt;
+
+&lt;h2 id=&quot;shortcomings-of-classic-controllers-in-hvac-systems&quot;&gt;Shortcomings of classic controllers in HVAC systems&lt;/h2&gt;
+
+&lt;p&gt;To understand what can go wrong, let’s begin our short study by describing classic control systems and strategies in
+HVAC systems, backed by concrete examples of sub-optimal control in an actual building.&lt;/p&gt;
+
+&lt;h3 id=&quot;a-classic-controller-case-study-proportional-integral-derivative&quot;&gt;A classic controller case study: Proportional-Integral-Derivative&lt;/h3&gt;
+
+&lt;p&gt;Proportional-Integral-Derivative, or &lt;em&gt;PID&lt;/em&gt;, are the three calculation terms employed in this type of controller to
+obtain a process control loop. For many decades, it’s the go-to in industrial processes, and HVAC systems are no
+exception.&lt;/p&gt;
+
+&lt;p&gt;However, they have known limitations, that are common to all PID controllers or more specific to HVAC-related processes.
+Below we summarize some of them, in order to build a first intuition on what could be optimized.&lt;/p&gt;
+
+&lt;h4 id=&quot;typical-limitations-of-a-pid&quot;&gt;Typical limitations of a PID&lt;/h4&gt;
+
+&lt;p&gt;Let’s take an example with an actual PID controller used to vary supply air fan speed in a VAV system. A common control
+strategy is to make the most-open VAV box damper position reach 90%. So this PID has the maximum of all dampers position
+as input, a fixed set point of 90%, and outputs fan speed.&lt;/p&gt;
+
+&lt;p&gt;The first limitation is intrinsically coming from how PID works: it requires a margin in the set point to produce stable
+results when the controlled process is mechanical (e.g. fan speed can’t go higher than 100% or lower than 0%). When the 
+limit of process range is reached, errors accumulate but the controlled process can’t go further in the same direction. 
+This is known as &lt;a href=&quot;https://en.wikipedia.org/wiki/Integral_windup&quot;&gt;integral windup&lt;/a&gt;. When it comes to fan control, a 
+typical strategy is then to fix the set point below range limit, usually 90%.&lt;/p&gt;
+
+&lt;p&gt;The second limitation is also inherent to PID internals: a large change in set point or in input value will produce
+excessive change in the output (mostly due to derivative part of the PID: on a large change, derivative term will be
+very large). A common solution is to use ramping either on set point or on PID input (in some “enhanced” controllers).
+This produces very slow responses, on a fan start-up that means a long delay before reaching the set point. This can be
+observed on below chart, where it takes more than 30min for the PID to reach the set point.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/pid_vs_ai/pid_fan_rampup.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+&lt;center&gt;&lt;i class=&quot;image-foot&quot;&gt;fig. 2: supply fan speed controlled by a PID and most-open VAV damper position (used as PID input) show a slow 
+ramp-up of about 30min&lt;/i&gt;&lt;/center&gt;
+
+&lt;p&gt;Note: ramping is still necessary to deal with mechanical constraints, a common rule is to avoid changes larger than 10%
+per minute on fan speed.&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;A third limitation comes from &lt;a href=&quot;https://en.wikipedia.org/wiki/PID_controller#Loop_tuning&quot;&gt;PID gains tuning&lt;/a&gt; which is a
+tedious and time-consuming process. Even when controllers come with pre-defined and safe tunings for a particular class
+of equipment, the HVAC engineer will have to reconfigure them to reach good performance, since each ventilation system
+is unique. However, this tuning, performed once for all (HVAC configurations are only partially revised from time to
+time), has about zero chance to cover all operating conditions. This results in typical PID problems like &lt;em&gt;overshooting&lt;/em&gt;
+,
+&lt;em&gt;oscillations&lt;/em&gt; or &lt;em&gt;hunting&lt;/em&gt;. This can be observed in chart below, where the desired set point is still fixed at 90%&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/pid_vs_ai/pid_fan_oscillations.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+&lt;center&gt;&lt;i class=&quot;image-foot&quot;&gt;fig. 3: supply fan speed controlled by a PID subject to large oscillations&lt;/i&gt;&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;Last but not least, PID controllers are often driven by a single input: in our case, most-open VAV damper position.
+However, is this really the goal of a supply fan or did we just find a proxy to accommodate with controller
+specifications? The actual real goal is to maintain good thermal and air quality comfort in occupied spaces, while
+minimizing energy consumption.&lt;/p&gt;
+
+&lt;p&gt;While the proxy target of 90% can satisfy first part, it has no consideration for energy
+savings. How does this translate? This is very usual to find one damper open at 90% while others are way below. This isn’t
+just a PID problem (or more specifically, just with the PID controlling the fan), but it’s natural to have zones with
+less air demand than others, and zones that are almost always in demand (also known as rogue zones). With a PID, one
+can’t do anything about that. Figure 4 illustrates this problem, where a large difference occurs between damper
+positions.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/pid_vs_ai/pid_dampers_position.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+&lt;center&gt;&lt;i class=&quot;image-foot&quot;&gt;fig. 4: supply fan control strategy leading to large differences between VAV boxes dampers position&lt;/i&gt;&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;if-only-i-had-known-that-before&quot;&gt;“If only I had known that before…”&lt;/h4&gt;
+
+&lt;p&gt;A PID is only reacting: for a given change in input, it will vary its output to keep as close as possible to its set
+point. It has no way to anticipate changes or take proactive actions, since it has neither explicit nor inferred knowledge of
+the controlled system. Moreover, its single input gives it a very partial view of the process at hand.&lt;/p&gt;
+
+&lt;p&gt;With such &lt;em&gt;observer model&lt;/em&gt;, anticipation isn’t possible, while simple intuitions could be used to save bits of energy
+here and there. A simple example: when HVAC scheduled end of operations is in sight, one could be tempted to slowly
+reduce heating or cooling equipment use but not too much to reach end time between desired spaces set points. This is
+something a PID can’t do.&lt;/p&gt;
+
+&lt;p&gt;If we generalise this example, &lt;strong&gt;the optimal system should learn building thermal dynamics and discover best control
+strategies&lt;/strong&gt;. There are many, and they depend on building use and characteristics.&lt;/p&gt;
+
+&lt;h3 id=&quot;design-conditions-versus-reality&quot;&gt;Design conditions versus reality&lt;/h3&gt;
+
+&lt;p&gt;As stated in &lt;em&gt;Pacific Northwest National Laboratory&lt;/em&gt;
+report &lt;a href=&quot;https://www.pnnl.gov/main/publications/external/technical_reports/pnnl-22072.pdf&quot;&gt;Energy Savings for Occupancy-Based Control (OBC) of Variable-Air-Volume (VAV) Systems&lt;/a&gt;:&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Each terminal box has a minimum air-flow rate that ensures the ventilation requirements of the occupants of the zone served are met. This minimum air-flow rate is maintained at a constant value based on the design occupancy of the zone, which often corresponds to the maximum occupancy, because measurements of actual occupancy are not currently used to adjust the flow rate. […] In practice, control system integrators and installers often set the cooling minimum air-flow rate for ventilation to between 30% and 50% of the maximum air-flow rate of the terminal box.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;The process of &lt;em&gt;Testing, Adjusting and Balancing&lt;/em&gt; (TAB) of a building HVAC system is meant to deliver sufficient amount
+of air, and make sure there will be enough heating and cooling capacity. All the calculation and testing is performed
+using building &lt;em&gt;design conditions&lt;/em&gt;. In practice, it is undertaken when building is still unoccupied, during one or a
+handful of days (so during a particular season, with specific weather conditions). It doesn’t cover the actual use of
+the building, which will vary over the course of its life: daily changes - with spaces more or less occupied depending
+on the hour of the day - and more profound and permanent changes, like when exceptional conditions arise (Covid-19 and 
+its cascade of lockdowns), or simply because tenants’ activity changes.&lt;/p&gt;
+
+&lt;p&gt;Another source of HVAC system misconfiguration and excessive energy use is the small and repetitive adjustments made 
+over time by people who are responsible for occupants comfort, or to deal with system instability (operational conditions not
+tested during initial setup). While it seems natural they make everything they can to guarantee satisfactory living
+conditions, this often results in more energy wasted due to narrowed operational behaviour (e.g. raising minimum set
+points).&lt;/p&gt;
+
+&lt;h3 id=&quot;non-linearity-in-controlled-systems&quot;&gt;Non-linearity in controlled systems&lt;/h3&gt;
+
+&lt;p&gt;HVAC systems are (highly) non-linear: they will respond non-linearly depending on controlled equipment, command
+magnitude, and current state of the system (for instance: cooling or heating mode).&lt;/p&gt;
+
+&lt;p&gt;A classic example can be drawn from &lt;a href=&quot;https://en.wikipedia.org/wiki/Affinity_laws&quot;&gt;fan affinity laws&lt;/a&gt;: &lt;em&gt;pressure is
+proportional to the square of shaft speed&lt;/em&gt;. Basically, as fan speed increases, pressure developed by the fan increases
+twice faster. This is only from a theoretical perspective though, and many factors will add to make this pressure/speed
+relationship even less linear. What does it mean for a classic controller like a PID? It won’t care, since it has no
+knowledge of this, and will vary the output without taking into account that it’s already in the high end or low end of
+the range.&lt;/p&gt;
+
+&lt;p&gt;Another example of non-linear system is heat exchanger, that is used in several HVAC components (heat recovery, hot
+water heating plates, …). Heat exchange efficiency varies depending on the fluid flow rate between which heat transfer
+occurs. How much heat exchange efficiency is non-linear depends on equipment capacity, often rated using a
+&lt;em&gt;heat transfer coefficient&lt;/em&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;i class=&quot;image-foot&quot;&gt;fig. 5: heat transfer efficiency at various flows and T° eff.&lt;/i&gt;
+&lt;img src=&quot;/assets/pid_vs_ai/heat_exchange_eff.png&quot; alt=&quot;sources&quot; class=&quot;double-left&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;In fig.
+5 (&lt;a href=&quot;https://files.danfoss.com/download/Heating/Whitepapers/VFGBC302_optimum-control-of-hex_170407_hires.pdf&quot;&gt;reference&lt;/a&gt;)
+, we can see relationship between percentage flow and percentage of heat transferred, for a range of thermal efficiency
+between 0.05 and 1 (ideal).&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Notes&lt;/em&gt;:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;code&gt;P/P&lt;sub&gt;max&lt;/sub&gt;&lt;/code&gt;: percentage of heat transferred&lt;/li&gt;
+  &lt;li&gt;&lt;code&gt;m/m&lt;sub&gt;max&lt;/sub&gt;&lt;/code&gt;: percentage flow&lt;/li&gt;
+  &lt;li&gt;thermal efficiency is the ratio between maximum difference in temperature between primary inlet (heating) and
+secondary inlet  (heated) fluids, and difference in temperature between primary inlet fluid and primary outlet (
+returned to heating system) fluids (equation: &lt;code&gt;&amp;eta;&lt;sub&gt;th&lt;/sub&gt; = (T&lt;sub&gt;11&lt;/sub&gt; - T&lt;sub&gt;12&lt;/sub&gt;) / (T&lt;sub&gt;
+11&lt;/sub&gt; - T&lt;sub&gt;21&lt;/sub&gt;)&lt;/code&gt;).&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;
+Using a linear controller, like a PID to control for instance a heating valve is thus going to provide a sub-optimal performance.&lt;/p&gt;
+
+&lt;p&gt;An HVAC system is composed of many non-linear sub-systems, some interacting together with complex relationships.
+&lt;strong&gt;It is therefore very limiting to use a linear controller to control equipment that responds non-linearly and have
+interactions on many systems.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;supply-air-temperature-sat-and-the-open-loop-problem&quot;&gt;Supply Air Temperature (SAT) and the open loop problem&lt;/h3&gt;
+
+&lt;p&gt;Another common control point in HVAC systems, that is often a target for control optimisation is Supply Air
+Temperature (SAT). SAT at air handling unit level is commonly controlled using a temperature set point. In general, 
+the set point must be set, so cooled air arriving at the air terminals is cold enough
+to meet cooling demand (but reheated at terminal unit level when necessary). In humid climate, the set point is often
+set low so to dehumidify (thanks to condensation) the air and avoid moisture problems.&lt;/p&gt;
+
+&lt;p&gt;What do we need to optimise here? SAT set point will have a significant influence on energy consumed by mechanical
+cooling, reheat and also supply fan. In order to minimize energy consumption, this set point can be varied using a 
+&lt;em&gt;reset&lt;/em&gt; strategy (commonly referred to as &lt;em&gt;SAT set point reset&lt;/em&gt; strategy).&lt;/p&gt;
+
+&lt;h4 id=&quot;why-is-an-open-loop-a-problem&quot;&gt;Why is an open loop a problem?&lt;/h4&gt;
+
+&lt;p&gt;Although &lt;a href=&quot;https://cbe.berkeley.edu/wp-content/uploads/2019/03/Raftery-CostResponsiveReset-May2017.pdf&quot;&gt;many SAT set point reset strategies exist&lt;/a&gt;
+, it is still very common to find outdoor air temperature-based reset strategy (&lt;em&gt;OA reset&lt;/em&gt;) used, even in recent
+buildings. The assumption is often made, in cold or mild climates that don’t have high cooling loads, a more
+sophisticated approach wouldn’t worth the pain. It’s only partially true because a too cold air will require more
+reheat, hence also wasting heating energy. Outdoor air temperature-based reset is an &lt;em&gt;open loop problem&lt;/em&gt;: a linear
+relationship is assumed between outdoor air temperature and need for cooling. In practice, a linear equation computes
+SAT set point based only on outdoor air temperature, without taking into account the actual indoor conditions, leading
+to cold complaints problems and high reheat wastes.&lt;/p&gt;
+
+&lt;h4 id=&quot;any-better-yet&quot;&gt;Any better yet?&lt;/h4&gt;
+
+&lt;p&gt;What about more sophisticated strategies then? They are based on heuristics (like the &lt;em&gt;Trim and Respond&lt;/em&gt; logic recently
+advertised in &lt;em&gt;ASHRAE guideline 36&lt;/em&gt;) that vary the set point based on cooling demand: air terminal dampers position
+and/or cooling valves position is used as input to compute an increase or a decrease of the SAT set point. While it
+brings some indubitable benefits, this has some drawbacks too: such an approach requires thorough tuning and testing (
+many variables at stake, like number of ignored requests, thresholds to consider for cooling demand, …) on a
+significant period of time (to meet enough variate conditions) and it doesn’t take into account another highly
+non-linear aspect: while SAT set point increases to reduce chilled water use, supply fan speed will increase to respond
+to unsatisfied cooling needs (if the supply fan speed is variable and also reset, based on static pressure for instance)
+. &lt;br /&gt;
+Hence, supply fan electricity use will increase, but this method can’t tell when increasing SAT set point stops being
+advantageous.&lt;/p&gt;
+
+&lt;p&gt;As we’ve seen, there are many ways HVAC system operations can drift from their intended performance. We scratched the
+surface of some challenges HVAC engineers, but also building owners and facility managers, struggle with to keep
+occupants satisfied while minimising energy consumption of HVAC systems, which accounts in average for 40% of the total
+building energy consumption. We’ll now see why and how &lt;em&gt;Artificial Intelligence&lt;/em&gt; (AI) can bring to help taking back
+control.&lt;/p&gt;
+
+&lt;h2 id=&quot;what-does-ai-bring-to-hvac-control&quot;&gt;What does AI bring to HVAC control?&lt;/h2&gt;
+
+&lt;p&gt;For almost a decade now, we find usage of AI in all corners of our digital life: image classification, speech
+recognition and synthesis, even fake videos generation. A special class of AI technique has drawn attention starting in
+2015, called &lt;em&gt;Deep Reinforcement Learning&lt;/em&gt; (DRL). It differs from “classic” deep learning techniques in that an agent is
+trained by interacting with its environment, learning from its mistakes and successes (quantified by a “reward” or a 
+“penalty” given to the agent on every action). It has shown incredible successes
+with trained agents beating human experts at games like Go or Starcraft, and is used in autonomous vehicles, robotics,
+and industry.&lt;/p&gt;
+
+&lt;p&gt;There are some important, fundamental, differences with other learning techniques that make it particularly attractive
+for use in process control:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;it can learn in simulated environments, hence data quantity and quality is not a problem. Successful application of 
+deep learning has always been limited by lack of good quality data. DRL does not have this limitation.&lt;/li&gt;
+  &lt;li&gt;it learns to control: a DRL agent interacts with its environment while trying to maximize the rewards it gets from the
+actions it performs. This gives it the ability to test, learn and optimise to their best some control strategies that
+no human could ever discover.&lt;/li&gt;
+  &lt;li&gt;a domain specialist can encode expert knowledge in the simulated environment and in the reward function to guide the
+agent towards expected performance. For instance in a multi-objectives problem, one can choose to reward the agent
+more on one objective than another.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;There are many other differences, some of which are specific to current problem at hand in this article. As a matter of
+fact, HVAC systems are an excellent target for control optimization using DRL, and this is an active topic of research:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;DeepMind demonstrated this on Google data-centers. There are no official numbers, but Google is now using it generally
+to reduce their energy costs. See for instance &lt;a href=&quot;https://deepmind.com/blog/article/deepmind-ai-reduces-google-data-centre-cooling-bill-40&quot;&gt;DeepMind AI Reduces Google Data Centre Cooling Bill by 40%
+&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;Scientific research on the topic has been very active, as reflects number of papers produced since 2017. A good
+example of such a paper
+is &lt;a href=&quot;https://ywang393.expressions.syr.edu/wp-content/uploads/2016/07/Deep-reinforcement-learning-for-HVAC-control-in-smart-buildings.pdf&quot;&gt;Deep Reinforcement Learning for Building HVAC Control&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Let’s now detail most important features and compare them with classic HVAC system controllers.&lt;/p&gt;
+
+&lt;h3 id=&quot;seeing-more-than-a-single-input&quot;&gt;Seeing more than a single input&lt;/h3&gt;
+
+&lt;p&gt;A DRL agent can be fed with as many environment observations as wanted (only limited by CPU and memory required to train
+and serve the learned control policy). This means it can “see” current indoor temperatures, outdoor conditions,
+mechanical and operation status of the system, … Everything that can have an influence of the relevance of its
+decisions.&lt;/p&gt;
+
+&lt;p&gt;This makes a significant difference with a classic controller, that usually takes only 1 input. Even if this input is an
+aggregation of several observations, this is often insufficient to take an optimal decision. For instance, how to tell
+the difference between a damper opened because of a heat demand or a cold demand? This can make a significant difference
+in the response to give, depending on a chiller or a heater operational status, and heat exchange properties.&lt;/p&gt;
+
+&lt;h3 id=&quot;learning-system-dynamics&quot;&gt;Learning system dynamics&lt;/h3&gt;
+
+&lt;p&gt;Every building is unique and has its own characteristics in terms of thermal inertia, systems implementation, or
+occupancy patterns. More than just learning to cool the air when temperature is high, a DRL agent will learn intrinsic
+thermal dynamics of the building, and will be able to give a response in the “correct proportion”, without
+overshooting or undershooting.&lt;/p&gt;
+
+&lt;p&gt;A simple example of this is fan speed control with holistic knowledge of the environment state: while PID control
+strategy described in previous section only looks at most-open damper, DRL agent “knows” about actual thermal conditions
+and all other dampers positions. It can therefore adapt its response appropriately. If there is only 1 zone in demand, it’s 
+not the same thing as 2 or 3, as a greater air volume is needed as number of zones increases. A PID would have hard
+time not hunting, and as it would take time to stabilise, the system would already be in a different, transient state.&lt;/p&gt;
+
+&lt;p&gt;A benefit of this holistic approach to HVAC control is that one can effectively reduce use of over-sized
+equipment, or simply configured to run with very defensive set points. When classic controllers give unsatisfactory
+results when system state is at extremes, or simply during transitions, a DRL agent has learned to deal with them
+through virtual decades of different, randomised environment conditions.&lt;/p&gt;
+
+&lt;p&gt;Here is a concrete example of these benefits: a HVAC system equipped with a &lt;em&gt;heat recovery machine&lt;/em&gt; saves on heating and
+cooling energy by transferring sensible (or total, including latent) heat from return air ducts to supply ones. Heat
+transfer efficiency depends on equipment characteristics and air flow rate: basically, the faster the air moves, the
+less heat (or cold) can be transferred. A classic controller has no way to take advantage of this property, and will
+inevitably push more air as heating or cooling demand increases. A DRL agent controlling the fan will learn that
+minimising air flow will improve heat recovery.&lt;/p&gt;
+
+&lt;p&gt;Below graph shows such difference in approach, which leads to a supply air temperature difference of about 5 degrees
+between classic and AI control.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/pid_vs_ai/sat_oat_bms_vs_ai.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+&lt;center&gt;&lt;i class=&quot;image-foot&quot;&gt;fig. 6: difference between supply air temperature when Building Management System (BMS) has 
+control (03:00 to 07:00) compared to when AI has control (from 07:00 onwards): a much higher, hence energy efficient 
+supply air temperature&lt;/i&gt;&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;anticipation&quot;&gt;Anticipation&lt;/h3&gt;
+
+&lt;p&gt;A DRL agent learns from a reward it gets on every decision it makes. During the training, every action leads to a state
+of the system, which is used to compute this reward. The purpose of the training (or teaching) is to make the agent 
+&lt;em&gt;maximize the sum of its rewards&lt;/em&gt;. So not every single reward separately, but a couple of them. Intuitively, this
+introduces a very fundamental: we are more interested in the overall result than by each decision taken separately, so
+the control strategies the agent can discover are very different.&lt;/p&gt;
+
+&lt;p&gt;Some concrete examples:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;agent may take decision that seems bad (in terms of instant reward) but that will lead to much better results on
+consecutive ones. For instance, to minimize power demand when energy price is highest, agent may decide to cool spaces
+in advance, lowering electricity demand when actual cooling demand should be highest (afternoon).&lt;/li&gt;
+  &lt;li&gt;along with learned building thermal dynamics, anticipation of HVAC end of operations (when scheduled) can lead to
+interesting strategies: agent will learn to reduce equipment use by just the right proportion until end time is
+reached, while maintaining desired comfort. A classic control would just push things as usual, as it has no knowledge
+of thermal dynamics or schedules.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Anticipation, as an inherent feature of reinforcement learning, also brings a difference with other AI and deep learning
+techniques like forecast. In time series forecast, a model is trained to predict next few minutes or hours of one or
+more variables given some observations. This can be used to predict, for instance, what the indoor temperature will be
+given past indoor, outdoor and system conditions. With such technique, each decision goes isolated from each other, and
+there is no simple way to build strategies that span multiple control steps.&lt;/p&gt;
+
+&lt;h3 id=&quot;testing-hypotheses-and-strategies-in-days-not-months&quot;&gt;Testing hypotheses and strategies in days, not months&lt;/h3&gt;
+
+&lt;p&gt;When a building HVAC system requires a partial or entire retrofit, the project takes from several months to years before
+achievement. As it involves hardware changes, and very important expenses, an &lt;em&gt;energy performance audit&lt;/em&gt; is conducted to
+assess current building strengths and weaknesses, and prescribe upgrades that would be the most cost effective 
+(depending on goals, but &lt;em&gt;return on investment&lt;/em&gt; is often key).&lt;/p&gt;
+
+&lt;p&gt;This is where simulation can take place: using a detailed building model, calibrated against historical energy
+consumption, auditors can test various scenarios and simulate their efficiency. It offers a way to make educated, data
+driven decisions, and not relying only on experience. The exact same basis can be used to train a deep reinforcement
+learning agent to control HVAC equipment: since the building model that serves as training environment is calibrated,
+not only the agent is learning from a realistic environment, but its achievements and performance will have solid
+ground.&lt;/p&gt;
+
+&lt;p&gt;Figure 7 shows an overview of a &lt;em&gt;digital twin&lt;/em&gt; acquisition process (calibrated building model) used to train deep 
+reinforcement learning agents to obtain optimal HVAC control policies, that can be later deployed to control actual 
+building HVAC system.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/pid_vs_ai/hvac_training_workflow.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+&lt;center&gt;&lt;i class=&quot;image-foot&quot;&gt;fig. 7: a digital twin acquisition, DRL agent training and deployment workflow overview&lt;/i&gt;&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;The comparison with classic retrofit projects stops here though: when it will often take months or even years to
+finalize an HVAC hardware upgrade, a DRL control policy can be deployed in days. Apart from the obvious improvement in
+duration, such work-flow is a real plus for building owners and property managers, since it relies on:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;a clear and standardised modelling and calibration process (e.g. calibration is backed by ASHRAE guideline 14)&lt;/li&gt;
+  &lt;li&gt;a cost-effective simulation process to test strategies&lt;/li&gt;
+  &lt;li&gt;an additional and valuable asset (the building model itself) that concentrates all necessary information about the
+building, for present and future projects&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Simulation engines, as a source of training data for deep reinforcement learning, have other key benefits compared to other solutions:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;they produce an infinite stream of data of excellent quality (historical data can be sparse, noisy, hard to interpret
+and parse, sometimes unusable)&lt;/li&gt;
+  &lt;li&gt;they give a holistic view of building conditions: you can simulate indoor air quality (rarely available in building
+historical data), randomized conditions, etc.&lt;/li&gt;
+  &lt;li&gt;agent can be prepared to worst case scenarios: extreme weather, HVAC faults, … Something that is hard to get
+otherwise.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Figures 8a and 8b illustrate HVAC optimization proposals one can easily test in a couple of days using a calibrated model
+and DRL.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/pid_vs_ai/sim_bench_bar.png&quot; alt=&quot;sources&quot; class=&quot;double-left&quot; /&gt;
+&lt;img src=&quot;/assets/pid_vs_ai/sim_bench_tab.png&quot; alt=&quot;sources&quot; class=&quot;double&quot; /&gt;&lt;/p&gt;
+&lt;div style=&quot;margin-top:80px; width:100%&quot;&gt;
+&lt;center&gt;&lt;i class=&quot;image-foot&quot;&gt;fig. 8a,b: results in percent savings on a benchmark between classic control and AI-based solutions&lt;/i&gt;&lt;/center&gt;
+&lt;/div&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;There’s also a clear difference with forecast-based techniques, which can only rely on historical data from the
+building. Historical data from Building Management System (BMS) or other sources is often scarce, if ever present. With
+scarce data, you are limited to what the model can learn from, so the number of potential strategies will be small. If
+you don’t have enough data, the only thing you can do is… wait! Several months at least, because the model needs to be
+trained on different weather conditions to produce satisfactory results. Imagine you collect only data during summer,
+what happens in winter when the model is proposed with unseen conditions is likely to be arbitrary decisions. If we
+generalize, it’s very likely that a forecast model will take years to be self-sufficient, the time it takes to collect
+enough data.&lt;/p&gt;
+
+&lt;h3 id=&quot;additional-benefits&quot;&gt;Additional benefits&lt;/h3&gt;
+
+&lt;p&gt;Something that is harder to quantify, but has reasonable logical ground, is that making control more stable increases
+mechanical equipment lifespan. By anticipating needs and taking only one action every few minutes, AI can help avoiding
+turning equipment on and off constantly, but most importantly solves poor programming control logics.&lt;/p&gt;
+
+&lt;p&gt;Taking fan speed control as an example, we saw already in previous examples some diseases a fan can suffer from,
+like large oscillations throughout the day, likely because of its controller characteristics but also due to how its
+input varies: static pressure reset or most-open damper control strategies can bring instability. As a result, the fan
+speeds up and slows down throughout the day, wasting energy in acceleration and deceleration, some of which is simply
+expelled as heat. This added to the constraint supported by the fan belt, will eventually decrease fan lifespan.&lt;/p&gt;
+
+&lt;p&gt;On the other hand, AI, thanks to its anticipation capability, doesn’t need to constantly react to changes in input. With a
+multimillion time steps training, and practical training constraints, a reinforcement learning agent learns to keep
+control stable and to avoid large changes. HVAC equipment, with thousands of dollars cost for each piece, is preserved
+longer.&lt;/p&gt;
+
+&lt;h3 id=&quot;results-in-an-actual-building&quot;&gt;Results in an actual building&lt;/h3&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/pid_vs_ai/hdd_bms_ai_lr.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+&lt;center&gt;&lt;i class=&quot;image-foot&quot;&gt;fig. 9: performance comparison between control provided by AI and by BMS, 
+ based on 18°C-based normalised Heating Degree Days (HDD) over a 90 days period&lt;/i&gt;&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;Above chart shows results obtained by multiple deep reinforcement learning agents that took control of HVAC equipment in
+an actual commercial building. From day 1, they have been efficient and proved to adapt well to changing conditions.
+Taking denormalized results on this 3 months period (100% of the period), they obtained &lt;strong&gt;47% savings in $&lt;/strong&gt; compared to
+previous years utilities bills data. Using normalized results (typical office hours), savings were up to &lt;strong&gt;65%&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;In this article, we’ve seen how artificial intelligence, and deep reinforcement learning in particular, is well 
+suited for HVAC control optimizations. With a cost-effective and robust process based on building models, calibration and 
+teaching in simulated environment, efficient control policies can be discovered to achieve significant savings.&lt;/p&gt;
+</description>
+        <pubDate>Sun, 24 Jan 2021 01:00:00 +0100</pubDate>
+        <link>https://airboxlab.github.io//hvac/control/ai/reinforcement_learning/2021/01/24/smart_control.html</link>
+        <guid isPermaLink="true">https://airboxlab.github.io//hvac/control/ai/reinforcement_learning/2021/01/24/smart_control.html</guid>
+        
+        
+        <category>hvac</category>
+        
+        <category>control</category>
+        
+        <category>ai</category>
+        
+        <category>reinforcement_learning</category>
+        
+      </item>
     
       <item>
         <title>Data Science at Airboxlab - Part 2</title>
@@ -105,8 +708,8 @@ Eventually, the amount of data to store is much bigger, but it contains vital in
 &lt;p&gt;Data is more than ever fueling products design, experimentations and discoveries, helping us innovate.&lt;/p&gt;
 </description>
         <pubDate>Fri, 21 Sep 2018 14:00:00 +0200</pubDate>
-        <link>http://localhost:4000/data_science/2018/09/21/data_science_at_abl_p2.html</link>
-        <guid isPermaLink="true">http://localhost:4000/data_science/2018/09/21/data_science_at_abl_p2.html</guid>
+        <link>https://airboxlab.github.io//data_science/2018/09/21/data_science_at_abl_p2.html</link>
+        <guid isPermaLink="true">https://airboxlab.github.io//data_science/2018/09/21/data_science_at_abl_p2.html</guid>
         
         
         <category>data_science</category>
@@ -128,7 +731,7 @@ Eventually, the amount of data to store is much bigger, but it contains vital in
 
 &lt;ul&gt;
   &lt;li&gt;1st article (present one) is about the data-driven philosophy we have in our company, and how work is organized around it&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;/data_science/2018/07/01/data_science_at_abl_p2.html&quot;&gt;2nd article&lt;/a&gt; depicts main problems we try to solve by applying data science, and how it is technically designed.&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;/data_science/2018/09/21/data_science_at_abl_p2.html&quot;&gt;2nd article&lt;/a&gt; depicts main problems we try to solve by applying data science, and how it is technically designed.&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;h3 id=&quot;investing-in-data&quot;&gt;Investing in data&lt;/h3&gt;
@@ -203,8 +806,8 @@ But some key elements are missing: as a user, how do I know what the main pollut
 &lt;p&gt;In this 1st article we have exposed Airboxlab data science process and vision, from a functional perspective. Next article dives into more technical things, like data pipelines design and types of data-related tasks we’re tackling.&lt;/p&gt;
 </description>
         <pubDate>Fri, 21 Sep 2018 13:00:00 +0200</pubDate>
-        <link>http://localhost:4000/data_science/2018/09/21/data_science_at_abl_p1.html</link>
-        <guid isPermaLink="true">http://localhost:4000/data_science/2018/09/21/data_science_at_abl_p1.html</guid>
+        <link>https://airboxlab.github.io//data_science/2018/09/21/data_science_at_abl_p1.html</link>
+        <guid isPermaLink="true">https://airboxlab.github.io//data_science/2018/09/21/data_science_at_abl_p1.html</guid>
         
         
         <category>data_science</category>
@@ -220,7 +823,7 @@ But some key elements are missing: as a user, how do I know what the main pollut
 }
 &lt;/style&gt;
 
-&lt;p&gt;&lt;img src=&quot;http://localhost:4000assets/scale_mqtt_2/drink-out-of-a-hose.jpg&quot; alt=&quot;firehose&quot; class=&quot;callout&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://airboxlab.github.io/assets/scale_mqtt_2/drink-out-of-a-hose.jpg&quot; alt=&quot;firehose&quot; class=&quot;callout&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;We’ve been running our messaging gateways with a more distributed approach as described in &lt;a href=&quot;part I&quot;&gt;&lt;/a&gt; for more than a year now, and wanted to share problems we faced and solutions we found.&lt;/p&gt;
 
@@ -301,11 +904,11 @@ Last but not least, RabbitMQ suffers a bug that’s not directly linked to clust
 
 &lt;p&gt;Our current architecture pairs several RabbitMQ nodes with 1 HAProxy instance. HAProxy resources consumption is pretty low for that type of workload so it’s possible to achieve hundreds of thousands of connections with a single HAProxy instance.&lt;/p&gt;
 
-&lt;p&gt;In order to that, there’s a major OS constraint that limits number of outbound connections for a specific IP. This is first controlled by &lt;code class=&quot;highlighter-rouge&quot;&gt;net.ipv4.ip_local_port_range&lt;/code&gt; sysctl option (very low by default on most distributions). But the maximum is &lt;em&gt;65535&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;In order to that, there’s a major OS constraint that limits number of outbound connections for a specific IP. This is first controlled by &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;net.ipv4.ip_local_port_range&lt;/code&gt; sysctl option (very low by default on most distributions). But the maximum is &lt;em&gt;65535&lt;/em&gt;&lt;/p&gt;
 
 &lt;p&gt;There are several ways to go beyond, we chose to use AWS ENIs (Elastic Network Interface): our instance setup script allocates 4 ENIs then configures each network interface. Finally, it can be used n HAProxy configuration as following:&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;backend tcp-out-1883
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;backend tcp-out-1883
     default-server inter 30s rise 2 fall 2
     timeout check 5s
     option tcp-check
@@ -355,8 +958,8 @@ Last but not least, RabbitMQ suffers a bug that’s not directly linked to clust
 
 </description>
         <pubDate>Mon, 23 Apr 2018 10:00:00 +0200</pubDate>
-        <link>http://localhost:4000/iot/mqtt/scalability/rabbitmq/haproxy/2018/04/23/scaling_mqtt_part2.html</link>
-        <guid isPermaLink="true">http://localhost:4000/iot/mqtt/scalability/rabbitmq/haproxy/2018/04/23/scaling_mqtt_part2.html</guid>
+        <link>https://airboxlab.github.io//iot/mqtt/scalability/rabbitmq/haproxy/2018/04/23/scaling_mqtt_part2.html</link>
+        <guid isPermaLink="true">https://airboxlab.github.io//iot/mqtt/scalability/rabbitmq/haproxy/2018/04/23/scaling_mqtt_part2.html</guid>
         
         
         <category>iot</category>
@@ -414,11 +1017,11 @@ Last but not least, RabbitMQ suffers a bug that’s not directly linked to clust
 &lt;ol&gt;
   &lt;li&gt;
     &lt;p&gt;&lt;strong&gt;1 backend cluster + 1 gateway cluster&lt;/strong&gt; with direct messages routing through federation. Below a logical representation of how they communicate:
-&lt;img src=&quot;http://localhost:4000/assets/scale_mqtt/rabbitmq_split_step1.png&quot; alt=&quot;step 1&quot; /&gt;&lt;/p&gt;
+&lt;img src=&quot;https://airboxlab.github.io//assets/scale_mqtt/rabbitmq_split_step1.png&quot; alt=&quot;step 1&quot; /&gt;&lt;/p&gt;
   &lt;/li&gt;
   &lt;li&gt;
     &lt;p&gt;&lt;strong&gt;1 backend cluster + X gateway clusters&lt;/strong&gt; with &lt;em&gt;intelligent&lt;/em&gt; routing: when messages need to be routed to more than 1 gateway, it becomes inefficient to send all messages to all gateways. We developped a simple message router that route messages based on known location of the client (and broadcasts in case of doubt).
-&lt;img src=&quot;http://localhost:4000/assets/scale_mqtt/rabbitmq_split_step2.png&quot; alt=&quot;step 2&quot; /&gt;&lt;/p&gt;
+&lt;img src=&quot;https://airboxlab.github.io//assets/scale_mqtt/rabbitmq_split_step2.png&quot; alt=&quot;step 2&quot; /&gt;&lt;/p&gt;
   &lt;/li&gt;
 &lt;/ol&gt;
 
@@ -458,8 +1061,8 @@ Last but not least, RabbitMQ suffers a bug that’s not directly linked to clust
 
 </description>
         <pubDate>Tue, 27 Jun 2017 06:00:00 +0200</pubDate>
-        <link>http://localhost:4000/iot/mqtt/scalability/rabbitmq/2017/06/27/scaling_mqtt.html</link>
-        <guid isPermaLink="true">http://localhost:4000/iot/mqtt/scalability/rabbitmq/2017/06/27/scaling_mqtt.html</guid>
+        <link>https://airboxlab.github.io//iot/mqtt/scalability/rabbitmq/2017/06/27/scaling_mqtt.html</link>
+        <guid isPermaLink="true">https://airboxlab.github.io//iot/mqtt/scalability/rabbitmq/2017/06/27/scaling_mqtt.html</guid>
         
         
         <category>iot</category>
@@ -490,7 +1093,7 @@ Last but not least, RabbitMQ suffers a bug that’s not directly linked to clust
 
 &lt;p&gt;The impact for our clients was directly visible: instead of seeing desired action triggered a few seconds after desired time, it could take several minutes before kicking in. This can be illustrated by below chart:&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/scale_quartz/schedulerlab_14_00_06_06_2017.png&quot; alt=&quot;before sharding&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://airboxlab.github.io//assets/scale_quartz/schedulerlab_14_00_06_06_2017.png&quot; alt=&quot;before sharding&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;As you can see, a large part of our end users chose to trigger events on their devices at very common times (top of hour), so we need to handle a huge burst in the number of jobs to execute at specific hours of the day.&lt;/p&gt;
 
@@ -537,7 +1140,7 @@ Last but not least, RabbitMQ suffers a bug that’s not directly linked to clust
 
 &lt;p&gt;This consistent hashing mechanism has then to be made available to our scheduler API clients, so they can pick the right scheduler instance. To do that, each scheduler registers in our service discovery tool with a custom attribute (we use Consul, so the service registers with a custom tag) that represents its node ID. Then, each client discovers the service using the tag computed from hashing job key.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/scale_quartz/scheduler_sharding.png&quot; alt=&quot;sharding&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://airboxlab.github.io//assets/scale_quartz/scheduler_sharding.png&quot; alt=&quot;sharding&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;In above diagram we see multiple MySQL databases, which is a possible solution for further increasing throughput (although not tested). On our side, we still use the same table structures to store all schedulers data.&lt;/p&gt;
 
@@ -545,19 +1148,19 @@ Last but not least, RabbitMQ suffers a bug that’s not directly linked to clust
 
 &lt;p&gt;Here we’re presenting results from up to 4 schedulers: with more, we faced bottlenecks in downstream processes (benchmarks were done with “real-life” jobs), and we hit the limits of the instance we were running the jobs on (&amp;gt; 90% CPU usage). With 8 schedulers, and if all downstream communications are disabled, we reached &lt;strong&gt;1350 jobs/sec&lt;/strong&gt;.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/scale_quartz/benchmark.png&quot; alt=&quot;benchmark&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://airboxlab.github.io//assets/scale_quartz/benchmark.png&quot; alt=&quot;benchmark&quot; /&gt;&lt;/p&gt;
 
 &lt;h2 id=&quot;deploying-in-production&quot;&gt;Deploying in production&lt;/h2&gt;
 
 &lt;p&gt;We deployed 3 distinct scheduler instances in our target datacenter. Deployment took the scheduler API down for 4 minutes while resharding operation was in progress. The operation is triggered automatically by the service, if it’s configured with a node ID that has no associated job in database. Adding a new scheduler is automatic and doesn’t require any additional configuration.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/scale_quartz/schedulerlab_14_00_12_06_2017.png&quot; alt=&quot;after sharding&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://airboxlab.github.io//assets/scale_quartz/schedulerlab_14_00_12_06_2017.png&quot; alt=&quot;after sharding&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;Jobs at this hour now execute within an acceptable time, and most importantly we are confident we can now handle much more and keep execution times low.&lt;/p&gt;
 </description>
         <pubDate>Tue, 20 Jun 2017 10:00:00 +0200</pubDate>
-        <link>http://localhost:4000/performance/scalability/scheduler/quartz/2017/06/20/perf_tuning_quartz.html</link>
-        <guid isPermaLink="true">http://localhost:4000/performance/scalability/scheduler/quartz/2017/06/20/perf_tuning_quartz.html</guid>
+        <link>https://airboxlab.github.io//performance/scalability/scheduler/quartz/2017/06/20/perf_tuning_quartz.html</link>
+        <guid isPermaLink="true">https://airboxlab.github.io//performance/scalability/scheduler/quartz/2017/06/20/perf_tuning_quartz.html</guid>
         
         
         <category>performance</category>
@@ -579,7 +1182,7 @@ Last but not least, RabbitMQ suffers a bug that’s not directly linked to clust
 }
 &lt;/style&gt;
 
-&lt;p&gt;&lt;img src=&quot;http://localhost:4000assets/data_pipeline/oilpipeline.jpg&quot; alt=&quot;oil pipeline&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://airboxlab.github.io/assets/data_pipeline/oilpipeline.jpg&quot; alt=&quot;oil pipeline&quot; /&gt;&lt;/p&gt;
 
 &lt;h2 id=&quot;what-is-airboxlab-doing-with-foobot-data&quot;&gt;What is Airboxlab doing with Foobot data?&lt;/h2&gt;
 
@@ -619,7 +1222,7 @@ Indoor air quality is a matter of comfort and health, hence being alerted too la
   &lt;li&gt;
     &lt;p&gt;&lt;strong&gt;Ingestion&lt;/strong&gt;&lt;/p&gt;
 
-    &lt;p&gt;&lt;img src=&quot;http://localhost:4000assets/data_pipeline/data_pipeline_ingestion.png&quot; alt=&quot;ingestion&quot; /&gt;&lt;/p&gt;
+    &lt;p&gt;&lt;img src=&quot;https://airboxlab.github.io/assets/data_pipeline/data_pipeline_ingestion.png&quot; alt=&quot;ingestion&quot; /&gt;&lt;/p&gt;
 
     &lt;ul&gt;
       &lt;li&gt;
@@ -661,7 +1264,7 @@ Indoor air quality is a matter of comfort and health, hence being alerted too la
   &lt;li&gt;
     &lt;p&gt;&lt;strong&gt;Alerting&lt;/strong&gt;&lt;/p&gt;
 
-    &lt;p&gt;&lt;img src=&quot;http://localhost:4000assets/data_pipeline/data_pipeline_alerting.png&quot; alt=&quot;ingestion&quot; /&gt;&lt;/p&gt;
+    &lt;p&gt;&lt;img src=&quot;https://airboxlab.github.io/assets/data_pipeline/data_pipeline_alerting.png&quot; alt=&quot;ingestion&quot; /&gt;&lt;/p&gt;
 
     &lt;p&gt;Alerting is the process of raising an alert when a particular event occurs. That is often related to a sensor data value crossing a standard or user-defined threshold, what we call instant threshold crossing, but can be more complex when it comes to “air quality event” detection. A simple type of event would be a pollution event, one that starts when a pollutant crosses a threshold and ends when it comes back to normal. This implies using mechanisms like windowing and stateful operations to preserve event state, or applying hysteresis for values constantly crossing thresholds up and down.&lt;/p&gt;
 
@@ -683,7 +1286,7 @@ Downstream consumers are somehow the same as for alerting.&lt;/p&gt;
   &lt;li&gt;
     &lt;p&gt;&lt;strong&gt;Backup&lt;/strong&gt;&lt;/p&gt;
 
-    &lt;p&gt;&lt;img src=&quot;http://localhost:4000assets/data_pipeline/data_pipeline_backup.png&quot; alt=&quot;ingestion&quot; class=&quot;callout&quot; /&gt;&lt;/p&gt;
+    &lt;p&gt;&lt;img src=&quot;https://airboxlab.github.io/assets/data_pipeline/data_pipeline_backup.png&quot; alt=&quot;ingestion&quot; class=&quot;callout&quot; /&gt;&lt;/p&gt;
 
     &lt;p&gt;Even backup can be done in a near real-time manner: instead of fetching and storing data in an external backup store on a daily basis, why not benefit from streaming pipeline to do it at event processing time. This is how we implemented our incremental and asynchronous backup system. This has several advantages:&lt;/p&gt;
 
@@ -721,7 +1324,7 @@ Similarly, if user disconnects from Foobot channel, we don’t want the service 
   &lt;li&gt;&lt;em&gt;easier to scale&lt;/em&gt; a particular integration: one of our integration becomes popular? we can spin up new services only for this type, making the whole architecture cost-efficient.&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;&lt;img src=&quot;http://localhost:4000assets/data_pipeline/data_pipeline_subscribers.png&quot; alt=&quot;subscribers&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://airboxlab.github.io/assets/data_pipeline/data_pipeline_subscribers.png&quot; alt=&quot;subscribers&quot; /&gt;&lt;/p&gt;
 
 &lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
 
@@ -730,8 +1333,8 @@ A future series of articles will dive into more specific parts of the pipeline.&
 
 </description>
         <pubDate>Mon, 29 Aug 2016 14:00:00 +0200</pubDate>
-        <link>http://localhost:4000/streaming/microservices/iot/spark/real-time/2016/08/29/streaming-microservices.html</link>
-        <guid isPermaLink="true">http://localhost:4000/streaming/microservices/iot/spark/real-time/2016/08/29/streaming-microservices.html</guid>
+        <link>https://airboxlab.github.io//streaming/microservices/iot/spark/real-time/2016/08/29/streaming-microservices.html</link>
+        <guid isPermaLink="true">https://airboxlab.github.io//streaming/microservices/iot/spark/real-time/2016/08/29/streaming-microservices.html</guid>
         
         
         <category>streaming</category>
@@ -944,8 +1547,8 @@ Both last data received and jobs meta data are checkpointed. This means that if 
 
 &lt;p&gt;This was previously done with following piece of code&lt;/p&gt;
 
-&lt;div class=&quot;language-scala highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;sys&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;ShutdownHookThread&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-  &lt;span class=&quot;n&quot;&gt;ssc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;stop&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+&lt;div class=&quot;language-scala highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;sys&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;ShutdownHookThread&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nv&quot;&gt;ssc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;stop&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
 &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
@@ -998,8 +1601,8 @@ Most of these thoughts and advice remain valid for bigger clusters and workloads
 
 </description>
         <pubDate>Tue, 21 Jun 2016 10:00:00 +0200</pubDate>
-        <link>http://localhost:4000/spark/streaming/cluster/ec2/aws/lean/2016/06/21/lean-spark-streaming.html</link>
-        <guid isPermaLink="true">http://localhost:4000/spark/streaming/cluster/ec2/aws/lean/2016/06/21/lean-spark-streaming.html</guid>
+        <link>https://airboxlab.github.io//spark/streaming/cluster/ec2/aws/lean/2016/06/21/lean-spark-streaming.html</link>
+        <guid isPermaLink="true">https://airboxlab.github.io//spark/streaming/cluster/ec2/aws/lean/2016/06/21/lean-spark-streaming.html</guid>
         
         
         <category>spark</category>
@@ -1035,7 +1638,7 @@ Introductions for these methods can be found on &lt;a href=&quot;https://en.wiki
 
 &lt;h2 id=&quot;louvain-algorithm&quot;&gt;Louvain algorithm&lt;/h2&gt;
 
-&lt;p&gt;Louvain method was originally described&lt;sup id=&quot;fnref:1&quot;&gt;&lt;a href=&quot;#fn:1&quot; class=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt; by Vincent D. Blondel, Jean-Loup Guillaume, Renaud Lambiotte and Etienne Lefebvre. The algorithm took the name of the &lt;em&gt;Université catholique de Louvain&lt;/em&gt; in Belgium, where the 4 authors are researchers.&lt;/p&gt;
+&lt;p&gt;Louvain method was originally described&lt;sup id=&quot;fnref:1&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:1&quot; class=&quot;footnote&quot; rel=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt; by Vincent D. Blondel, Jean-Loup Guillaume, Renaud Lambiotte and Etienne Lefebvre. The algorithm took the name of the &lt;em&gt;Université catholique de Louvain&lt;/em&gt; in Belgium, where the 4 authors are researchers.&lt;/p&gt;
 
 &lt;p&gt;It aims at maximizing modularity using heuristic.&lt;/p&gt;
 
@@ -1058,9 +1661,9 @@ Introductions for these methods can be found on &lt;a href=&quot;https://en.wiki
 
 &lt;p&gt;First, the method looks for small communities by optimizing modularity locally. Second, it aggregates nodes belonging to the same community and builds a new network. Nodes of this network are the aggregated ones built during 2nd phase. It iterates until modularity value is optimized.&lt;/p&gt;
 
-&lt;p&gt;A graphical representation of the iterations can be found in original paper&lt;sup id=&quot;fnref:1:1&quot;&gt;&lt;a href=&quot;#fn:1&quot; class=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt;, and is reproduced below&lt;/p&gt;
+&lt;p&gt;A graphical representation of the iterations can be found in original paper&lt;sup id=&quot;fnref:1:1&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:1&quot; class=&quot;footnote&quot; rel=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt;, and is reproduced below&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;http://localhost:4000assets/louvain/pol.jpg&quot; alt=&quot;iterations&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;https://airboxlab.github.io/assets/louvain/pol.jpg&quot; alt=&quot;iterations&quot; /&gt;&lt;/p&gt;
 
 &lt;h4 id=&quot;pros&quot;&gt;Pros&lt;/h4&gt;
 
@@ -1073,7 +1676,7 @@ Introductions for these methods can be found on &lt;a href=&quot;https://en.wiki
 
 &lt;ul&gt;
   &lt;li&gt;Iterative process can hide small communities found during intermediate phases. The result may be a coarse-grained high level representation of communities, which may not have the granularity needed for analysis. Hopefully, the nature of the algorithm makes it simple to save intermediate phases’ results so we can analyze different communities structures at different levels&lt;/li&gt;
-  &lt;li&gt;Heuristic used to initialize phases and find local maximums can lead to not reproducible and not always optimized results. But this is the same with all data algorithms relying on heuristic (K-Means&lt;sup id=&quot;fnref:7&quot;&gt;&lt;a href=&quot;#fn:7&quot; class=&quot;footnote&quot;&gt;2&lt;/a&gt;&lt;/sup&gt; for instance)&lt;/li&gt;
+  &lt;li&gt;Heuristic used to initialize phases and find local maximums can lead to not reproducible and not always optimized results. But this is the same with all data algorithms relying on heuristic (K-Means&lt;sup id=&quot;fnref:7&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:7&quot; class=&quot;footnote&quot; rel=&quot;footnote&quot;&gt;2&lt;/a&gt;&lt;/sup&gt; for instance)&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;h4 id=&quot;applications&quot;&gt;Applications&lt;/h4&gt;
@@ -1095,8 +1698,8 @@ Introductions for these methods can be found on &lt;a href=&quot;https://en.wiki
 &lt;p&gt;As a consequence, we will draw artificial links (or edges) between them, based on following criteria:&lt;/p&gt;
 
 &lt;ul&gt;
-  &lt;li&gt;geographical distance&lt;sup id=&quot;fnref:2&quot;&gt;&lt;a href=&quot;#fn:2&quot; class=&quot;footnote&quot;&gt;3&lt;/a&gt;&lt;/sup&gt; between devices&lt;/li&gt;
-  &lt;li&gt;euclidean distance&lt;sup id=&quot;fnref:3&quot;&gt;&lt;a href=&quot;#fn:3&quot; class=&quot;footnote&quot;&gt;4&lt;/a&gt;&lt;/sup&gt; between average pollutant values of devices&lt;/li&gt;
+  &lt;li&gt;geographical distance&lt;sup id=&quot;fnref:2&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:2&quot; class=&quot;footnote&quot; rel=&quot;footnote&quot;&gt;3&lt;/a&gt;&lt;/sup&gt; between devices&lt;/li&gt;
+  &lt;li&gt;euclidean distance&lt;sup id=&quot;fnref:3&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:3&quot; class=&quot;footnote&quot; rel=&quot;footnote&quot;&gt;4&lt;/a&gt;&lt;/sup&gt; between average pollutant values of devices&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;p&gt;Same thing for edges weights: as stated in modularity definition, weight of edges is taken into account and is playing a role in nodes (or vertices) grouping.&lt;/p&gt;
@@ -1105,12 +1708,12 @@ Introductions for these methods can be found on &lt;a href=&quot;https://en.wiki
 
 &lt;p&gt;For the purpose of this article, we choose to define weight by using the distance between pollutant values of devices: the closer values are, the bigger weight will be.&lt;/p&gt;
 
-&lt;p&gt;Let’s start with fetching a Pair RDD that will have a key defined by the unique device identifier (UUID), and value being an array of the average sensor values (here taking only PM2.5&lt;sup id=&quot;fnref:5&quot;&gt;&lt;a href=&quot;#fn:5&quot; class=&quot;footnote&quot;&gt;5&lt;/a&gt;&lt;/sup&gt;, although it would be interesting to include VOC&lt;sup id=&quot;fnref:6&quot;&gt;&lt;a href=&quot;#fn:6&quot; class=&quot;footnote&quot;&gt;6&lt;/a&gt;&lt;/sup&gt; too), plus geolocation of device as a (latitude, longitude) tuple. For this article, we took a sample of connected devices, and the last 30 minutes of data for each.&lt;/p&gt;
+&lt;p&gt;Let’s start with fetching a Pair RDD that will have a key defined by the unique device identifier (UUID), and value being an array of the average sensor values (here taking only PM2.5&lt;sup id=&quot;fnref:5&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:5&quot; class=&quot;footnote&quot; rel=&quot;footnote&quot;&gt;5&lt;/a&gt;&lt;/sup&gt;, although it would be interesting to include VOC&lt;sup id=&quot;fnref:6&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:6&quot; class=&quot;footnote&quot; rel=&quot;footnote&quot;&gt;6&lt;/a&gt;&lt;/sup&gt; too), plus geolocation of device as a (latitude, longitude) tuple. For this article, we took a sample of connected devices, and the last 30 minutes of data for each.&lt;/p&gt;
 
-&lt;div class=&quot;language-scala highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;loaded&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;RDD&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;String&lt;/span&gt;, &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Array&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Double&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;, &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Double&lt;/span&gt;, &lt;span class=&quot;kt&quot;&gt;Double&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)))]&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;//some function that fetches data
-&lt;/span&gt;
-&lt;span class=&quot;c1&quot;&gt;//(UUID, (Latitude, Longitude))
-&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;geoList&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;RDD&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;String&lt;/span&gt;,&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Double&lt;/span&gt;,&lt;span class=&quot;kt&quot;&gt;Double&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)]&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;...&lt;/span&gt;  
+&lt;div class=&quot;language-scala highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;loaded&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;RDD&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;String&lt;/span&gt;, &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Array&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Double&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;, &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Double&lt;/span&gt;, &lt;span class=&quot;kt&quot;&gt;Double&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)))]&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;//some function that fetches data&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;//(UUID, (Latitude, Longitude))&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;geoList&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;RDD&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;String&lt;/span&gt;,&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Double&lt;/span&gt;,&lt;span class=&quot;kt&quot;&gt;Double&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)]&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;...&lt;/span&gt;  
 
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
@@ -1119,86 +1722,86 @@ Note that normalization isn’t necessary here as our input array contains only 
 Definition of &lt;code&gt;Utils&lt;/code&gt; can be found on &lt;a href=&quot;https://github.com/airboxlab/Louvain_sample&quot;&gt;our github&lt;/a&gt;&lt;/p&gt;
 
 &lt;div class=&quot;language-scala highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;Utils._&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;means&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;stdevs&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;meansAndStdevs&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;loaded&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;map&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;_&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;normalized&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;loaded&lt;/span&gt;
-  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;map&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sensorValues&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;geoloc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;normalize&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sensorValues&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;means&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;stdevs&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;geoloc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt;
+&lt;span class=&quot;nf&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;means&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;stdevs&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;meansAndStdevs&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;loaded&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;map&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;_&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;_2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;_1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;normalized&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;loaded&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;map&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nf&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sensorValues&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;geoloc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;normalize&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sensorValues&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;means&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;stdevs&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;geoloc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt;
   &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Then we define graph vertices, by associating each UUID with a unique long identifier (from &lt;code&gt;hashCode()&lt;/code&gt;). 
 Long identifiers are required by Spark GraphX API.&lt;/p&gt;
 
-&lt;div class=&quot;language-scala highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;vertices&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;normalized&lt;/span&gt;
-  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;map&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sensorValues&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;geoloc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sensorValues&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;geoloc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;uuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;hashCode&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;toLong&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;div class=&quot;language-scala highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;vertices&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;normalized&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;map&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sensorValues&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;geoloc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sensorValues&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;geoloc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;uuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;hashCode&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;toLong&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
   
-&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;vertexIds&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;RDD&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Long&lt;/span&gt;, &lt;span class=&quot;kt&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)]&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;vertices&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;map&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;uuid&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_3&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;uuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;vertexIds&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;RDD&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Long&lt;/span&gt;, &lt;span class=&quot;kt&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)]&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;vertices&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;map&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;uuid&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;uuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;_2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;_3&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;uuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;_1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Now we definie edges. We artificially link Foobots by checking their geographical distance. 
 We define edge weight as a function of euclidean distance between 2 devices average sensor values.&lt;/p&gt;
 
-&lt;div class=&quot;language-scala highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;edges&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;RDD&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Edge&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Long&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]]&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;vertices&lt;/span&gt;
-  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cartesian&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vertices&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;filter&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;uuid2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;equals&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;//no loop
-&lt;/span&gt;  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;filter&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;uuid2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;geoDistance&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;uuid2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;//geo distance must be &amp;lt; 10km
-&lt;/span&gt;  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;map&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;uuid2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Edge&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_3&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;uuid2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_3&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;euclideanDistance&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;uuid2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)).&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;toLong&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;div class=&quot;language-scala highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;edges&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;RDD&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Edge&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Long&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]]&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;vertices&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;cartesian&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vertices&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;filter&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;uuid2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;uuid1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;_1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;equals&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;uuid2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;_1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;//no loop&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;filter&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;uuid2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;geoDistance&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;uuid1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;_2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;_2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;uuid2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;_2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;_2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;//geo distance must be &amp;lt; 10km&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;map&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;uuid2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Edge&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;uuid1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;_2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;_3&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;uuid2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;_2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;_3&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;euclideanDistance&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;uuid1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;_2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;_1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;uuid2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;_2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;_1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)).&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;toLong&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;And then, we generate the graph:&lt;/p&gt;
 
-&lt;div class=&quot;language-scala highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;graph&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Graph&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vertexIds&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;edges&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+&lt;div class=&quot;language-scala highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;graph&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Graph&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vertexIds&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;edges&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Now that we have a graph, we can run Louvain algorithm on it. Our reference implementation can be found &lt;a href=&quot;https://github.com/Sotera/spark-distributed-louvain-modularity&quot;&gt;here&lt;/a&gt;.
 We slightly modified it, mainly to keep stages data in memory so we don’t require HDFS.&lt;/p&gt;
 
-&lt;div class=&quot;language-scala highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;runner&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;InMemoryLouvainRunner&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;louvainGraph&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Graph&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;VertexState&lt;/span&gt;, &lt;span class=&quot;kt&quot;&gt;Long&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;runner&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;run&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;graph&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+&lt;div class=&quot;language-scala highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;runner&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;InMemoryLouvainRunner&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;5&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;louvainGraph&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Graph&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;VertexState&lt;/span&gt;, &lt;span class=&quot;kt&quot;&gt;Long&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;runner&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;run&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;graph&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Time for a little reverse mapping game: remember we mapped UUIDs with Long identifiers. We want to get UUIDs back.
 We then map each vertex id in edges (source and destination) with their corresponding UUID.&lt;/p&gt;
 
-&lt;div class=&quot;language-scala highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;resolvedVertices&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;louvainGraph&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vertices&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;join&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vertexIds&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;map&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vxId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;state&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;uuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;state&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;div class=&quot;language-scala highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;resolvedVertices&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;louvainGraph&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;vertices&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;join&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vertexIds&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;map&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vxId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;state&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;uuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;state&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
 
-&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;resolvedEdges&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;louvainGraph&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;edges&lt;/span&gt;
-  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;map&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;edge&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;edge&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;srcId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;edge&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dstId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;edge&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;attr&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;join&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vertexIds&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;map&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vxSrcId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vxDstId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;linkWeight&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;srcUuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vxDstId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;linkWeight&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;srcUuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;join&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vertexIds&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;map&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vxDstId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;linkWeight&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;srcUuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dstUuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;srcUuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dstUuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;linkWeight&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;resolvedEdges&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;louvainGraph&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;edges&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;map&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;edge&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;edge&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;srcId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;edge&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;dstId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;edge&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;attr&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;join&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vertexIds&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;map&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vxSrcId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vxDstId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;linkWeight&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;srcUuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vxDstId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;linkWeight&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;srcUuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;join&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vertexIds&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;map&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vxDstId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;linkWeight&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;srcUuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dstUuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;srcUuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dstUuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;linkWeight&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Here is the final step: output the result as a JSON file that will be used later to plot our results in graphs.&lt;/p&gt;
 
-&lt;div class=&quot;language-scala highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;//Helper classes
-&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;JsNode&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;communityId&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;polLevel&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Double&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+&lt;div class=&quot;language-scala highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;//Helper classes&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;JsNode&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;communityId&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;polLevel&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Double&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
 &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;JsLink&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;source&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;target&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
 &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;JsGraph&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;nodes&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Array&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;JsNode&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;links&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Array&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;JsLink&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;])&lt;/span&gt;
 
-&lt;span class=&quot;c1&quot;&gt;//Transform vertices
-&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;geoNodes&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Array&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;JsNode&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;resolvedVertices&lt;/span&gt;
-  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;join&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;geoList&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;map&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-     &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;state&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lat&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;lon&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)))&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt;
-       &lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;strLat&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;strLon&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;strLoc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lat&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;lon&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-       &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;strLat&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;strLon&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;scaledWeight&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;state&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;nodeWeight&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)))&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;//Transform vertices&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;geoNodes&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Array&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;JsNode&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;resolvedVertices&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;join&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;geoList&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;map&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+     &lt;span class=&quot;nf&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;state&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lat&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;lon&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)))&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt;
+       &lt;span class=&quot;nf&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;strLat&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;strLon&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;strLoc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lat&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;lon&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+       &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;strLat&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;strLon&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;scaledWeight&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;state&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;nodeWeight&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)))&lt;/span&gt;
   &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;join&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;loaded&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;map&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;strLat&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;strLon&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;weight&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;values&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;loc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))))&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;hashCode&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;toInt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;strLat&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;strLon&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;weight&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;values&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;map&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;geoNode&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;JsNode&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;${geoNode._2} ${geoNode._3}&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;geoNode&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;geoNode&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_4&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;toInt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;geoNode&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_5&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;distinct&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
-  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;collect&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;join&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;loaded&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;map&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;strLat&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;strLon&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;weight&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;values&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;loc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))))&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;uuid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;hashCode&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;toInt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;strLat&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;strLon&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;weight&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;values&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;map&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;geoNode&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;JsNode&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;s&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;${geoNode._2} ${geoNode._3}&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;geoNode&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;_1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;geoNode&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;_4&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;toInt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;geoNode&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;_5&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;distinct&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;collect&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
 
-&lt;span class=&quot;c1&quot;&gt;//Transform edges
-&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;jsonEdges&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Array&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;JsLink&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;louvainGraph&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;edges&lt;/span&gt;
-  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;map&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;edge&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;JsLink&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;edge&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;srcId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;toInt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;edge&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dstId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;toInt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;scaledWeight&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;edge&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;attr&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;toInt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;collect&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;//Transform edges&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;jsonEdges&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Array&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;JsLink&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;louvainGraph&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;edges&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;map&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;edge&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;JsLink&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;edge&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;srcId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;toInt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;edge&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;dstId&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;toInt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;scaledWeight&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;edge&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;attr&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;toInt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;collect&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
 
-&lt;span class=&quot;c1&quot;&gt;//Output to file
-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;mapper&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;writeValue&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;File&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;/var/www/html/communities.json&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;JsGraph&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;geoNodes&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;jsonEdges&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;//Output to file&lt;/span&gt;
+&lt;span class=&quot;nv&quot;&gt;mapper&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;writeValue&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;File&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;/var/www/html/communities.json&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;JsGraph&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;geoNodes&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;jsonEdges&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;&lt;br /&gt;&lt;/p&gt;
@@ -1237,32 +1840,32 @@ Here we use D3.js for the tons of features and graph types it provides, and firs
 
 &lt;hr /&gt;
 
-&lt;div class=&quot;footnotes&quot;&gt;
+&lt;div class=&quot;footnotes&quot; role=&quot;doc-endnotes&quot;&gt;
   &lt;ol&gt;
-    &lt;li id=&quot;fn:1&quot;&gt;
-      &lt;p&gt;&lt;a href=&quot;http://arxiv.org/abs/0803.0476&quot;&gt;Louvain method original paper&lt;/a&gt; &lt;a href=&quot;#fnref:1&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;/a&gt; &lt;a href=&quot;#fnref:1:1&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;sup&gt;2&lt;/sup&gt;&lt;/a&gt;&lt;/p&gt;
+    &lt;li id=&quot;fn:1&quot; role=&quot;doc-endnote&quot;&gt;
+      &lt;p&gt;&lt;a href=&quot;http://arxiv.org/abs/0803.0476&quot;&gt;Louvain method original paper&lt;/a&gt; &lt;a href=&quot;#fnref:1&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt; &lt;a href=&quot;#fnref:1:1&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;sup&gt;2&lt;/sup&gt;&lt;/a&gt;&lt;/p&gt;
     &lt;/li&gt;
-    &lt;li id=&quot;fn:7&quot;&gt;
-      &lt;p&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/K-means_clustering&quot;&gt;K-Means&lt;/a&gt; &lt;a href=&quot;#fnref:7&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;li id=&quot;fn:7&quot; role=&quot;doc-endnote&quot;&gt;
+      &lt;p&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/K-means_clustering&quot;&gt;K-Means&lt;/a&gt; &lt;a href=&quot;#fnref:7&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
     &lt;/li&gt;
-    &lt;li id=&quot;fn:2&quot;&gt;
-      &lt;p&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/Haversine_formula&quot;&gt;Haversine formula for geographical distance calculation&lt;/a&gt; &lt;a href=&quot;#fnref:2&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;li id=&quot;fn:2&quot; role=&quot;doc-endnote&quot;&gt;
+      &lt;p&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/Haversine_formula&quot;&gt;Haversine formula for geographical distance calculation&lt;/a&gt; &lt;a href=&quot;#fnref:2&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
     &lt;/li&gt;
-    &lt;li id=&quot;fn:3&quot;&gt;
-      &lt;p&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/Euclidean_distance&quot;&gt;Euclidean distance&lt;/a&gt; &lt;a href=&quot;#fnref:3&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;li id=&quot;fn:3&quot; role=&quot;doc-endnote&quot;&gt;
+      &lt;p&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/Euclidean_distance&quot;&gt;Euclidean distance&lt;/a&gt; &lt;a href=&quot;#fnref:3&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
     &lt;/li&gt;
-    &lt;li id=&quot;fn:5&quot;&gt;
-      &lt;p&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/Particulates&quot;&gt;Particulates definition&lt;/a&gt; &lt;a href=&quot;#fnref:5&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;li id=&quot;fn:5&quot; role=&quot;doc-endnote&quot;&gt;
+      &lt;p&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/Particulates&quot;&gt;Particulates definition&lt;/a&gt; &lt;a href=&quot;#fnref:5&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
     &lt;/li&gt;
-    &lt;li id=&quot;fn:6&quot;&gt;
-      &lt;p&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/Volatile_organic_compound&quot;&gt;Volatile organic coumpounds definition&lt;/a&gt; &lt;a href=&quot;#fnref:6&quot; class=&quot;reversefootnote&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;li id=&quot;fn:6&quot; role=&quot;doc-endnote&quot;&gt;
+      &lt;p&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/Volatile_organic_compound&quot;&gt;Volatile organic coumpounds definition&lt;/a&gt; &lt;a href=&quot;#fnref:6&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
     &lt;/li&gt;
   &lt;/ol&gt;
 &lt;/div&gt;
 </description>
         <pubDate>Fri, 12 Feb 2016 00:00:00 +0100</pubDate>
-        <link>http://localhost:4000/spark/graphx/machine-learning/d3/louvain/2016/02/12/louvain.html</link>
-        <guid isPermaLink="true">http://localhost:4000/spark/graphx/machine-learning/d3/louvain/2016/02/12/louvain.html</guid>
+        <link>https://airboxlab.github.io//spark/graphx/machine-learning/d3/louvain/2016/02/12/louvain.html</link>
+        <guid isPermaLink="true">https://airboxlab.github.io//spark/graphx/machine-learning/d3/louvain/2016/02/12/louvain.html</guid>
         
         
         <category>spark</category>
