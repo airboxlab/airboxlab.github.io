@@ -40,7 +40,7 @@ The detection of an event, meaning the kind sensor deviation that constitue it, 
 
 Thanks this feature and to our user base we were able to collects tens of thousands of labeled events.
 
-## Data analisys
+## Data analysis
 
 Now lets introduce some basic techniques for data segmentation and classification, that we used to visualize labeled _air quality events_.
 
