@@ -18,40 +18,40 @@ author: Antoine Galataud, Inouk Bourgon
 
 Foobot designs and manufactures indoor air quality monitors since 2013. These monitors are connected to a cloud platform that collects and process sensor readings from around the world; customers can visualize their data from mobile or web interfaces. Foobots have been used in homes, offices and research context.
 
-As a sensor device manufacturer, our goal isn't only to provide a _thermometer_ for air quality, the end goal is to reduce exposure to air pollution for our customers. For that we have been involved in the engineering of several air purifier lines over the years. We also noticed it is key for users understand the actions that leaded to poorer air indoor. When one understands where pollution comes from, (s)he can perform remediation actions, or set an automated way to deal with it.
+As a sensor device manufacturer, our goal isn't only to provide a _thermometer_ for air quality, the end goal is to reduce exposure to air pollution for our customers. For that we have been involved in the engineering of several air purifier lines over the years. We also perceived that it is key for users to understand what actions lead to poorer air indoor. When one understands where pollution comes from, (s)he can perform remediation actions, or set an automated way to deal with it.
 
 ## Identify pollution sources
 
-Air quality is complex and it is always challenging to identify a root cause when air pollution rises. It can be due to outdoor events, like wild fires or traffic pollution, but often, the pollution source is indoor. Within dwellings, there are a number of air quality events triggered by inhabitants. Our actions and behaviours indoor impact the air quality we live in; for the better, when we switch on the cooking hood, or for the worth when we are cleaning the bathroom with hash chemicals.
+Air quality is complex, and it is always challenging to identify a root cause when air pollution rises. It can be due to outdoor events, like wildfires or traffic pollution, but often, the pollution source is indoor. Within dwellings, there are a number of air quality events triggered by inhabitants. Our actions and behaviors indoor impact the air quality we live in; for the better, when we switch on the cooking hood, or for the worth when we are cleaning the bathroom with harsh chemicals.
 
-Foobot home sensors measures four environmental parameters: fine particulates (PM), volatile organic compounds (VOC), temperature and relative humidity. The challenge in creating a feature that can show user a root cause for a pollution event is to identify a unsique _signature_ over these 4 measured environmental parameters.
+Foobot home sensors measures four environmental parameters: fine particulates (PM), volatile organic compounds (VOC), temperature and relative humidity. The challenge in creating a feature that can show user a root cause for a pollution event is to identify a unsique _signature_ over these 4 environmental parameters measured.
 
-This article describes the process we followed to collect a dataset and to setup an automated air quality event classification process.
+This article describes the process we followed to collect a dataset and to setup an automated air quality event classifier.
 
 ### Crowd collected dataset
 
-We created a feature for our users to label their data. It allowed enrolled users to receive a push notification each time an air quality event was detected. The push notification opens Foobot mobile app where users were able to choose the action that was carried on, or to enter free text.
+We created a feature for our users to label their data. It allowed enrolled users to receive a push notification each time an air quality event was detected. The push notification opens up Foobot mobile app where users were able to choose the action that was carried on, or to enter free text.
 
 ![sources]({{ site.baseurl }}/assets/viz_aqe/iphone_classify.png){: .center }
 <center><i>Push notification for classification</i></center>
 <br/>
 
-The detection of an event, meaning the kind sensor deviation that constitue it, and the timing to trigger a push notification to a user is a topic on its own. It took us several iterations to maximize the number of responses and to avoid bothering users for non-event, or for events that happened too long ago and they weren't able to identify anymore.
+The detection of an event, meaning the kind sensor deviation that constitute it, and the timing to trigger a push notification to a user is a topic on its own. It took us several iterations to maximize the number of responses and to avoid bothering users for non-event, or for events that happened too long ago and that they couldn't to identify anymore.
 
-Thanks this feature and to our user base we were able to collects tens of thousands of labeled events.
+Thanks to this feature and the users enrolled we were able to collects tens of thousands of labeled events.
 
 ## Data analysis
 
-Now lets introduce some basic techniques for data segmentation and classification, that we used to visualize labeled _air quality events_.
+Now let's introduce some basic techniques for data segmentation and classification we used to visualize labeled _air quality events_.
 
 ### Dataset description
 
 The dataset that is used for the purpose of this article is a subset of Foobot full dataset. It contains _extracted features_ from sensor data time series and other continuous and categorical features, as well as associated tags given by users. These labels will be, used as classes to train a classifier. Selected samples are from devices and users located in the US and Europe.
 
 For the sake of simplicity and readability we'll only detail 3 specific labels, though we have proven our method to work with quite a few others:
-- _cooking_ consequence of a cooking action. This is one of the most common source of indoor air pollution, and it is quite challenging to detect accurately because of the variety of event types it amalgamates: frying, oven cooking, steaming, for example.
-- _air renewal_ opening a door, a window, switching On some kind of ventilation. It appeared important to be able to detect remediation events. Either to reward users or to just to be able to prevent an automated system to ask user to perform an action already carried. We could also derive an airing score out of this metric.
-- _presence_ people coming and going in the space. Wether someone is around or not is important for an automated system to decides what to communicate to the end user. It was also an interesting challenge since the Foobot home sensor doesn't feature a CO2 sensor.
+- __Cooking__ consequence of a cooking action. This is one of the most common source of indoor air pollution. It is quite challenging to detect accurately because of the variety of event types it amalgamates. eg: frying, oven cooking, steaming.
+- __Air renewal__ opening a door, a window, switching ON some kind of ventilation. It appeared important to be able to detect remediation events. Either to reward users or to just to be able to prevent an automated system from asking users to perform an action already performed. We could also derive an airing score out of this metric.
+- __Presence__ people coming and going in the space. Whether someone is around or not is important for an automated system to decides what to communicate to an end user. It was also an interesting challenge since the Foobot home sensor doesn't feature a CO2 sensor.
 
 ### Tools
 
@@ -59,17 +59,17 @@ This short analysis uses [Spark](https://spark.apache.org) (mostly for data extr
 
 ### Overview
 
-Intuitively, air quality events will have different "signatures", that is they will be expressed differently in data. For instance, cooking could be a source of particulate matters, while air renewal can translate into change in temperature, humidity and/or volatile organic compounds (VOC). That are just a few examples to build our intuition, there are many others.
+Intuitively, air quality events will have different "signatures", that is they will be expressed differently in data. For instance, cooking could be a source of particulate matters, while air renewal can translate into change in temperature, humidity and/or volatile organic compounds (VOC). These are just a few examples to build our intuition, there are many others.
 
 To get a first feeling of how they show up in data, let's see how _difference between maximum and minimum value around event time_* is characterized
 
-<div style='font-size:12px;margin-bottom:15px'>*feature extraction in time windows isn't discussed in this article</div>
+<div style='font-size:12px;margin-bottom:15px'>*feature extraction in time windows isn't detailed in this article</div>
 
 ![sources]({{ site.baseurl }}/assets/viz_aqe/pm_diff_max_min_box.png){: .center }
 <center><i>Boxplot of difference between PM max and min values, by tag</i></center>
 <br/>
 
-A first interpretation of this [box plot](https://en.wikipedia.org/wiki/Box_plot) is that cooking is statistically the event that makes PM readings vary most: difference in 25%-75% range is wider than for other events, and maximum is much higher. Note also the shape of the plot for air renewal, indicating that variance is also important: could be due to PM being cleaned out when air is renewed.
+A first interpretation of this [box plot](https://en.wikipedia.org/wiki/Box_plot) is that cooking is statistically the event that makes PM readings vary the most: difference in 25%-75% range is wider than for other events, and maximum is much higher. See also the shape of the plot for air renewal, showing that variance is also important: could be due to PM being cleared or moved by airflow.
 
 Let's see some other plots for VOCs and humidity.
 
@@ -81,18 +81,18 @@ Let's see some other plots for VOCs and humidity.
 <center><i>Boxplot of difference between humidity max and min values, by tag</i></center>
 <br/>
 
-This time, we can deduce that VOC and humidity levels seem to be impacted most by air renewal (first) and presence.
+This time, we can see that VOC and humidity levels seem to be impacted the most by air renewal (first) and then presence.
 
-We now have an intuition about how air quality changes reflects on some of Foobot's sensors. We can go a bit deeper to better exploit variance in data in order to separate event types.
+We now have an intuition about how air quality changes affects some of Foobot's sensors readings. We can go a bit further by checking how variance in data distinguish event types.
 
-### Exploiting variance in data with Principal Components Analysis
+### Using variance in data with Principal Components Analysis
 
-[Principal Components Analysis (PCA)](https://en.wikipedia.org/wiki/Principal_component_analysis) is a very popular technique that is mostly used for
+[Principal Components Analysis (PCA)](https://en.wikipedia.org/wiki/Principal_component_analysis) is a common technique mostly used for
 
 - dimensionality reduction: if variance in data can be explained by few _principal components_ (where number of principal components &lt; number of features) then one can use these components for further analysis, mining or model training
-- visualisation: 2 or 3 principal components are easy to plot, so PCA is convenient for visualizing how variance is explained in data, especially if you associate labels with data points.
+- visualization: 2 or 3 principal components are easy to plot, so PCA is convenient to visualize how variance is explained in data, especially when associating labels with data points.
 
-PCA also has its limits: it really works well when problem is linear, that is when data you want to split is linearly separable. Let's not forget also that PCA really just provides a rotation (or projection onto a different space) that maximizes the variance (principle: diagonalization of the covariance/correlation matrix) for the given data, using fewer dimensions. It can't go beyond (it's not a classifier).
+PCA also has its limits: it really works well when problem is linear, that is when data you want to split is linearly separable. Let's not forget also that PCA just provides a rotation (or projection onto a different space) which maximizes the variance (principle: diagonalization of the covariance/correlation matrix) for the given data, using fewer dimensions. It can't go beyond; it's not a classifier.
 
 Using PySpark and scikit-learn, it's a straightforward task to setup a toy pipeline that pre-processes our dataset (like standardizing features), then applies PCA.
 Following plots are demonstrating PCA with 2 and 3 components.
@@ -105,13 +105,13 @@ Following plots are demonstrating PCA with 2 and 3 components.
 <center><i>PCA of air quality events (k=3)</i></center>
 <br/>
 
-Here we achieve a visualization that projects all the features of our dataset onto the PCA features space (2 or 3 dimensions). We can see a trend in groups of points that seem to belong to each label. However, a simple interpretation can state that linear separability across tags isn't achieved: although data belonging to air renewal and cooking groups seem to distinguish from each other well, presence (_many people_) have data points mixed up with the 2 previous classes. A simple intuition could explain this: presence can reflect in many ways on sensor readings, and probably the same way as for other classes.
+Here we achieve a visualization that projects all the features of our dataset onto the PCA features space (2 or 3 dimensions). We can see a trend in groups of points that seem to belong to each label. However, a simple interpretation can state that linear separability across tags isn't achieved: although data belonging to air renewal and cooking groups seem to segregate from each other well, presence (_many people_) has data points mixed up with the 2 previous classes. A simple intuition could explain this: presence could be true at the samae time than the other classes.
 
 ### Going non-linear with Polynomial Expansion
 
 Since we weren't able to linearly separate data in a clear way, let's try a non-linear method to see if we can better manage this. A first option is [polynomial expansion](https://en.wikipedia.org/wiki/Polynomial_expansion) (a particular method of basis expansion) which consists in projecting data onto a different space, here formed by polynomial combinations of all existing features. For instance, if you have features `[a b]`, a 2nd degree expansion would result in `[ a b ab a² b²]`. We can then use the result as an input for a linear transformer or classifier, which is good also to preserve the low complexity of a linear algorithm to make projections or decisions in a non-linear space.
 
-Though you can guess it: it will require huge computational power if polynomial degree is high and number of features is big. Also, the higher the degree, the more models using this new feature space will tend to overfit.
+Though you can guess it: it will require huge computational power if polynomial degree is high, and number of features is large. Also, the higher the degree, the more models using this new feature space will tend to overfit.
 
 For the purpose of this article, we'll only try 2nd degree polynomial.
 
