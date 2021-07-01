@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Crowd sourced classifier to identify air pollution sources"
-date:   2021-06-14 00:00:00
+date:   2021-07-1 00:00:00
 categories: "data_science air_quality classifier machine_learning"
 comments: false
 author: Antoine Galataud, Inouk Bourgon
@@ -49,9 +49,9 @@ Now let's introduce some basic techniques for data segmentation and classificati
 The dataset that is used for the purpose of this article is a subset of Foobot full dataset. It contains _extracted features_ from sensor data time series and other continuous and categorical features, as well as associated tags given by users. These labels will be, used as classes to train a classifier. Selected samples are from devices and users located in the US and Europe.
 
 For the sake of simplicity and readability we'll only detail 3 specific labels, though we have proven our method to work with quite a few others:
-- __Cooking__ consequence of a cooking action. This is one of the most common source of indoor air pollution. It is quite challenging to detect accurately because of the variety of event types it amalgamates. eg: frying, oven cooking, steaming.
-- __Air renewal__ opening a door, a window, switching ON some kind of ventilation. It appeared important to be able to detect remediation events. Either to reward users or to just to be able to prevent an automated system from asking users to perform an action already performed. We could also derive an airing score out of this metric.
-- __Presence__ people coming and going in the space. Whether someone is around or not is important for an automated system to decides what to communicate to an end user. It was also an interesting challenge since the Foobot home sensor doesn't feature a CO2 sensor.
+- **_Cooking_** consequence of a cooking action. This is one of the most common source of indoor air pollution. It is quite challenging to detect accurately because of the variety of event types it amalgamates. eg: frying, oven cooking, steaming.
+- **_Air renewal_** opening a door, a window, switching ON some kind of ventilation. It appeared important to be able to detect remediation events. Either to reward users or to just to be able to prevent an automated system from asking users to perform an action already performed. We could also derive an airing score out of this metric.
+- **_Presence_** people coming and going in the space. Whether someone is around or not is important for an automated system to decides what to communicate to an end user. It was also an interesting challenge since the Foobot home sensor doesn't feature a CO2 sensor.
 
 ### Tools
 
@@ -131,8 +131,6 @@ Another method uses the [kernel trick](https://en.wikipedia.org/wiki/Kernel_meth
 
 Multiple "standard" kernel functions exist (like _gaussian radial basis function_ (RBF)). Choosing the right one is a difficult task when it's meant to be used in a model training pipeline. Here we're using the _cosine_ kernel function, only because it offers good visualization results.
 
-Note: as of writing, kernels for feature engineering aren't available in Spark, but it's fairly simple to create your own.
-
 ![sources]({{ site.baseurl }}/assets/viz_aqe/kpca_k_2.png){: .center }
 <center><i>Kernel PCA (k=2)</i></center>
 <br/>
@@ -141,7 +139,7 @@ Note: as of writing, kernels for feature engineering aren't available in Spark, 
 <center><i>Kernel PCA (k=3)</i></center>
 <br/>
 
-Again, separation between cooking and air renewal data is good. This time 'presence' (many people) seems to overlap with cooking only, which makes sense: people are generating VOCs (breath, sweat, cosmetics, ...) and particles (like dust moved by human movements). Cooking can also have impact on the same sensors: frying or using the oven create particles, and VOCs can be emitted by gaz stove or other combustion/heating by-products.
+Again, separation between cooking and air renewal data is good. This time 'presence' (many people) seems to overlap with cooking only, which makes sense: people are usually in the room where they cook.
 
 ### A supervised learning technique: Linear Discriminant Analysis
 
@@ -149,7 +147,7 @@ We didn't manage to separate data between classes well with PCA in the previous 
 
 This is what [Linear Discriminant Analysis](https://en.wikipedia.org/wiki/Linear_discriminant_analysis) is capable of. Like PCA, it's a linear transformation, and the goal is to find a projection that maximizes variance, but this time between classes. It runs well under the assumptions that class densities are Gaussian and that each class covariance matrix is similar, assumptions that are not often met in real world problems.
 
-We're going to use it here only for its dimensionality reduction capability, and we'll project our data onto a subspace made only of the number of dimensions we're interested in: LDA lets us chose number of components `k`, but it can only be such as `k < n-1` (`n` = number of classes).
+We're going to use it here only for its dimensionality reduction capability, and we'll project our data onto a subspace made only of the number of dimensions we're interested in: LDA lets us choose number of components `k`, but it can only be such as `k < n-1` (`n` = number of classes).
 
 LDA remains a linear method (linear decision boundaries) and tends to overfit the data as number of features (dimensions) grows.
 
@@ -181,15 +179,17 @@ This time, a clear separation is obtained.
 
 ## Accuracy verification
 
-As we discovered, separating or classifying air quality events classes is a non-trivial task. Pure linear methods don't give satisfactory results - classes still overlap - and we had to use the technique of basis expansion (polynomials) along with LDA in order to get a proper visual separation (and classification). Although results are promising to build a classifier, there are some limitations to the algorithms and methods used in this article: PCA isn't a classification algorithm and can only be, when conditions are met, used to reduce dimensionality of a dataset. On the other hand, LDA is a classifier that is known to perform well, but it had to be combined with basis expansion. We also have to considered:
+As we discovered, distinguishing or classifying air quality events classes is a non-trivial task. Pure linear methods don't give satisfactory results and we had to use the technique of basis expansion (polynomials) along with LDA in order to get a proper classification. Although results were promising to build a classifier, we also have to consider:
 
 - generalization capability of our classifier, which should be verified with (cross-)validation and testing.
 - users live in different indoor and outdoor conditions: from one region of the world to another, habits are different, outdoor air quality is different, temperature and humidity vary greatly.
 - air quality events are difficult to track by nature: there can be several happening at the same time, there can be a significant delay between start of event and impact on sensor readings, same type of event will have a different expression from one place to another (e.g. air renewal in a polluted city vs countryside).
 
+All these possible hurdles called for a verification to evaluate the performance of our classifier.
+
 ### Crowd sourced classification check
 
-In the same way that we uses a subset of our users to help build a labeled dataset we proposed them to verify the accuracy of our classifier. We introduce a new feature that is this time not asking the user to label an event, but rather to check if the label to assigned to an event is correct:
+In the same way that we uses a subset of our users to help build a labeled dataset we proposed them to verify the accuracy of our classifier. We introduced a new feature that is this time not asking the user to label an event, but rather to check if the label to assigned to an event is correct:
 
 ![sources]({{ site.baseurl }}/assets/viz_aqe/iphone_valid.png){: .center }
 <center><i>Event validation push notification</i></center>
@@ -199,9 +199,9 @@ In the same way that we uses a subset of our users to help build a labeled datas
 
 With user being able to enter sub-categories or reclassify wrongly labeled events, we were able to iterate and improve. Today our accuracy in detecting the different events are the following for the main ones:
 
-- _cooking_ 88%
-- _air renewal_ 98%
-- _presence_ 96%
-- _cleaning_ 100%
+- **_cooking_** 88%
+- **_air renewal_** 98%
+- **_presence_** 96%
+- **_cleaning_** 100%
 
 Worth to be noticed is that we are able to label these events in a streaming fashion, meaning that data points are classified live while they are being collected thanks to Spark streaming.
