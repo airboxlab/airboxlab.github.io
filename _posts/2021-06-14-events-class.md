@@ -179,17 +179,17 @@ This time, a clear separation is obtained.
 
 ## Accuracy verification
 
-As we discovered, distinguishing or classifying air quality events classes is a non-trivial task. Pure linear methods don't give satisfactory results and we had to use the technique of basis expansion (polynomials) along with LDA in order to get a proper classification. Although results were promising to build a classifier, we also have to consider:
+As we discovered, distinguishing or classifying air quality events classes is a non-trivial task. Pure linear methods do not give good results and we have to use the technique of basis expansion (polynomials) along with LDA in order to get a proper classification. Although results were promising to build a classifier, we also have to consider:
 
-- generalization capability of our classifier, which should be verified with (cross-)validation and testing.
-- users live in different indoor and outdoor conditions: from one region of the world to another, habits are different, outdoor air quality is different, temperature and humidity vary greatly.
-- air quality events are difficult to track by nature: there can be several happening at the same time, there can be a significant delay between start of event and impact on sensor readings, same type of event will have a different expression from one place to another (e.g. air renewal in a polluted city vs countryside).
+- Users live in different indoor and outdoor conditions: from one region of the world to another, habits are different, outdoor air quality is different, temperature and humidity vary greatly.
+- Air quality events are difficult to track by nature: there can be several happening at the same time, there can be a delay between start of event and impact on sensor readings, same type of event will have a different expression from one place to another (e.g. air renewal in a polluted city vs countryside).
+- Generalization capability of the classifier, which should be verified with (cross-)validation and testing.
 
 All these possible hurdles called for a verification to evaluate the performance of our classifier.
 
 ### Crowd sourced classification check
 
-In the same way that we uses a subset of our users to help build a labeled dataset we proposed them to verify the accuracy of our classifier. We introduced a new feature that is this time not asking the user to label an event, but rather to check if the label to assigned to an event is correct:
+In the same way that we uses a subset of our users to help build a labeled dataset we proposed them to verify the accuracy of our classifier. We introduced a new feature that is, this time, not asking the user to label an event, but rather to check if the label to assigned to an event is correct:
 
 ![sources]({{ site.baseurl }}/assets/viz_aqe/iphone_valid.png){: .center }
 <center><i>Event validation push notification</i></center>
