@@ -199,9 +199,9 @@ In the same way that we uses a subset of our users to help build a labeled datas
 
 With user being able to enter sub-categories or reclassify wrongly labeled events, we were able to iterate and improve. Today our accuracy in detecting the different events are the following for the main ones:
 
-- **_cooking_** 88%
-- **_air renewal_** 98%
-- **_presence_** 96%
-- **_cleaning_** 100%
+- **Cooking** 88%
+- **Air renewal** 98%
+- **Presence** 96%
+- **Cleaning** 100%
 
 Worth to be noticed is that we are able to label these events in a streaming fashion, meaning that data points are classified live while they are being collected thanks to Spark streaming.
