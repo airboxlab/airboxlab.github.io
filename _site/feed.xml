@@ -6,9 +6,217 @@
 </description>
     <link>https://airboxlab.github.io//</link>
     <atom:link href="https://airboxlab.github.io//feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Mon, 14 Jun 2021 15:22:17 +0200</pubDate>
-    <lastBuildDate>Mon, 14 Jun 2021 15:22:17 +0200</lastBuildDate>
+    <pubDate>Tue, 01 Mar 2022 21:06:59 +0100</pubDate>
+    <lastBuildDate>Tue, 01 Mar 2022 21:06:59 +0100</lastBuildDate>
     <generator>Jekyll v4.2.0</generator>
+    
+      <item>
+        <title>Autoregressive control policies for HVAC optimization</title>
+        <description>&lt;style type=&quot;text/css&quot;&gt;
+.center {
+    display:block;
+    margin: 0 auto;
+}
+.double-left {
+    width:49%;
+    display:block;
+    float:left;
+    margin: 0 auto;
+    margin-right: 10px;
+}
+.add-margin-right {
+    margin-right: 20px;
+}
+.double {
+    width:49%;
+    margin: 0 auto;
+}
+.image-foot {
+    font-size:10pt;
+    max-width: 20rem;
+    margin: 0 auto;
+}
+ul {
+  display: table;
+}
+&lt;/style&gt;
+
+&lt;p&gt;This article deals with the use of autoregressive (AR) models in control policies. After a short background and litterature review, we formulate the problem statement and theoritical advantages over other control strategies involving taking multiple decisions at the same time.&lt;/p&gt;
+
+&lt;p&gt;We then demonstrate it can overperform policies with “classic” models on a series of toy tasks (2D grid path-finding) and simulated HVAC environments.&lt;/p&gt;
+
+&lt;h2 id=&quot;autoregressive-models-a-brief-introduction&quot;&gt;Autoregressive models: a brief introduction&lt;/h2&gt;
+
+&lt;p&gt;Autoregressive (AR) models are commonly used in statistics and time series problems. They can be defined as regressions where outputs depend on previous values on the same time series. This indicates a strong &lt;em&gt;temporal&lt;/em&gt; dependency between past and future observations.
+Famously known algorithms exist that build on this principle like &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ARMA&lt;/code&gt; (Autoregressive Moving Average) and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ARIMA&lt;/code&gt; (Autoregressive Integrated Moving Average).&lt;/p&gt;
+
+&lt;p&gt;In the present article we’ll give a slightly different meaning to &lt;em&gt;autoregressive&lt;/em&gt;, although the &lt;em&gt;temporal&lt;/em&gt; aspect is still there.&lt;/p&gt;
+
+&lt;h3 id=&quot;multi-decisions-ar-models&quot;&gt;Multi-decisions AR models&lt;/h3&gt;
+
+&lt;p&gt;In multi-decisions control problems, we often find the following methodology for solving optimization problems that involve applying multiple actions on an environment:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;a single control policy is learnt that models multiple independent action probability distributions&lt;/li&gt;
+  &lt;li&gt;multiple control policies model one action probability distribution each&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;In real-world problems, there is often a dependency between multiple decisions taken in the same environment. Here are a few illustrations for control problems involving 2 decisions:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;a bipedal needs to coordinate his left and right legs&lt;/li&gt;
+  &lt;li&gt;a car driver must coordinate actions on break and accelerator&lt;/li&gt;
+  &lt;li&gt;…&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;In this type of problem, the dependency between actions is strong. That’s what AR models can help solving, by modeling a statistical dependency between an action and potentially many others.&lt;/p&gt;
+
+&lt;p&gt;This differs from the broader definition of autoregressive models where the statistical dependency is between actions taken at different time steps: action is applied on the environment, result is observed, then a new action is decided that takes into account the previous action and its result on the environment.&lt;/p&gt;
+
+&lt;p&gt;Below diagram illustrates these different ways of modeling decision processes with and without AR models&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/ar_policy/ar_def.svg&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 1: 3 ways of modeling decision processes with state / action transitions using independent actions distributions (a.) and AR models (b. and c.)&lt;/i&gt;&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;Note: nothing prevents from modeling both intra and inter-step dependencies.&lt;/p&gt;
+
+&lt;h3 id=&quot;optimizing-multi-decisions-processes-with-reinforcement-learning&quot;&gt;Optimizing multi-decisions processes with Reinforcement Learning&lt;/h3&gt;
+
+&lt;p&gt;We’ve briefly described different ways of modeling decision processes that aim at optimizing parameters of multiple actions probability distributions. Reinforcement learning (RL) is, in the family of machine learning / artificial intelligence techniques, a method that can be used to solve this. It is based on a trial-and-error learning process, where an agent tries to learn the optimal policy by interacting with its environment (actions), learning from observations (state) and rewards (also referred as penalties).&lt;/p&gt;
+
+&lt;p&gt;Modeling methods described in previous section apply to RL as well, while independent action distributions are the modeling technique that is the most often used.&lt;/p&gt;
+
+&lt;h4 id=&quot;independently-sampled-decisions&quot;&gt;Independently-sampled decisions&lt;/h4&gt;
+
+&lt;p&gt;This is the most common case. In many classic problems, each action of a multi-decision problem is modeled and its probability distribution is estimated as independent from other actions. This doesn’t allow to account for relationships between actions that can be encountered in many problems.&lt;/p&gt;
+
+&lt;h4 id=&quot;multi-agent&quot;&gt;Multi-agent&lt;/h4&gt;
+
+&lt;p&gt;In a multi-agent setting, two or more agents are learning a policy by acting on the same environment. While there are problems with no collaboration needed between agents (each agent decisions has neutral impact on others), in this article we focus on relationships between decisions that have impact on the same shared state.
+With this assumption, problem forumlation with multi-agent setup can lead to the well-known “credit assignment dilemma”: each agent needs to be rewarded for its action, but how can a fair credit be given to each since they influence the same system?&lt;/p&gt;
+
+&lt;p&gt;Below diagram illustrates such a dilemma&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/ar_policy/ar_vs_ma.svg&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 2: 2 agents taking independent decisions on the same state, leading to a credit assignment problem&lt;/i&gt;&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;Tricks and heuristics can be found to help with this issue but they can give suboptimal performance, when they exist at all.&lt;/p&gt;
+
+&lt;h2 id=&quot;in-the-litterature&quot;&gt;In the litterature&lt;/h2&gt;
+
+&lt;p&gt;An extensive review of all AR modeling techniques is out of the scope of this article. We focus on AR models in RL problems that aim at modeling dependencies between actions within the same control time step.&lt;/p&gt;
+
+&lt;p&gt;In Harmer et al. (2018)&lt;a href=&quot;#1&quot;&gt;[1]&lt;/a&gt;, imitation learning is used in a 3D game setting that involves multiple actions. However, an assumption is made that actions are conditionnally independent given the state. This simplification reduces computational complexity, but doesn’t allow learning relationships between actions.&lt;/p&gt;
+
+&lt;p&gt;In Wang et al. (2016)&lt;a href=&quot;#2&quot;&gt;[2]&lt;/a&gt;, an algorithm is proposed to introduce regularization terms in two classic RL methods. The regularization consists of 2 parameters that must be estimated alternatively on every learning step. This proves to improve learning performance on some classic control problems like 2D-grid navigation or Persistent Search and Track (PST).&lt;/p&gt;
+
+&lt;p&gt;In Vinyals et al. (2017)&lt;a href=&quot;#3&quot;&gt;[3]&lt;/a&gt;, an extensive problem definition is given about training an agent on StarCraft II 3D-game. In particular, the action space representation is modeled to introduce conditional dependencies between action. (see section 4.2).&lt;/p&gt;
+
+&lt;p&gt;Finally, in Germain et al. (2018)&lt;a href=&quot;#4&quot;&gt;[4]&lt;/a&gt;, a masked autoencoder neural network architecture is introduced to estimate parameters of probability distributions. The method uses masking so to respect autoregression constraint, which is to reconstruct an input only from previous inputs. This allows fast and scalable distributions estimation, with any type of ordering or relationship modeling constraints. The study doesn’t give any RL application example but it is theoritically usable for the policy network architecture.&lt;/p&gt;
+
+&lt;h2 id=&quot;hvac-control-sequences-applications&quot;&gt;HVAC control sequences applications&lt;/h2&gt;
+
+&lt;p&gt;HVAC systems are complex and made of multiple systems that interact in complex, non-linear ways (see a brief introduction on that in &lt;a href=&quot;https://airboxlab.github.io/hvac/control/ai/reinforcement_learning/2021/01/24/smart_control.html&quot;&gt;HVAC processes control: can AI help?&lt;/a&gt;).&lt;/p&gt;
+
+&lt;p&gt;HVAC air loops are responsible for maintaining fresh air and good temperatures in buildings occupied zones. They can be seen as a sequence of decisions, starting from how much fresh air the systems lets in, going through deciding at what flow rate it must be pushed and at what temperature, and ending with how this air must be “adjusted” for the target zone.
+Many equipment are involved, like fans, heating and cooling coils, chilled and hot water plant loops, etc.&lt;/p&gt;
+
+&lt;h3 id=&quot;why-is-it-a-good-fit&quot;&gt;Why is it a good fit?&lt;/h3&gt;
+
+&lt;p&gt;Let’s build our intuition with an example: a heater is equipped with a hot water coil and a fan, and heats the space by controlling the hot water valve and the fan to blow the hot air. If you turn the fan off but keep valve open, hot air won’t move much, and energy consumption will be near 0. If you turn it to maximum position or speed, hot air will move quicker, room will heat quicker too, and energy consumption will be high, both because of the higher fan electricity consumption, and because it increases heat exchange between air and hot water coil.&lt;/p&gt;
+
+&lt;p&gt;As a consequence, optimizing control on this simple heating system would require to consider both fan speed and hot water valve position, with prior knowledge that fan and valve have a non-linear dependency regarding temperature of the air blown and energy consumption.&lt;/p&gt;
+
+&lt;p&gt;If we generalize this example, many parts of the HVAC system can be seen as dependent to or having a direct or indirect impact on other parts. Trying to control only one equipment as a whole will necessarily lead to suboptimal performance. However, this is often how HVAC systems are controlled: each equipment takes decision regarding a single input. No matter how complex the calculation of this input is, it won’t be differentiable since it’s a single scalar value. Common calculation methods for control decisions rely on linear methods (linear interpolations, PIDs, …) with a narrow view of the state of the system.&lt;/p&gt;
+
+&lt;p&gt;That’s where AR methods and Deep RL can be a good fit: combining function approximation capabilities of neural networks, theoritically unlimited observability of the system and modeling of actions dependencies, the HVAC system and the building it serves could be controlled as a whole (holistic approach), and learned policies could model complex relationships between states and equipment.&lt;/p&gt;
+
+&lt;h3 id=&quot;formulation&quot;&gt;Formulation&lt;/h3&gt;
+
+&lt;p&gt;Given a policy &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=\pi_{\theta}&quot; /&gt; to optimize with regards to parameters &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=\theta&quot; /&gt;, state &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=s \in \mathcal{S}&quot; /&gt;, a set of n actions &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=a_{i} \in \mathcal{A}&quot; /&gt;, we can represent the policy as following:&lt;/p&gt;
+&lt;center&gt;&lt;img src=&quot;https://render.githubusercontent.com/render/math?math=\pi_{\theta}(a, s) = \prod_{i=1}^{n} \pi_{\theta}(a_{i} \bigm\lvert a_{k&amp;lt;i}, s)&quot; /&gt;&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;This simple formulation is generic and describes simple relationships and order with action at rank i being dependent on all previous actions.&lt;/p&gt;
+
+&lt;p&gt;An example neural network architecture illustrating this formulation is given below&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/ar_policy/ar_nn_arch.svg&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 3: example neural network architecture to model conditional dependencies between actions&lt;/i&gt;&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;In this model, a policy with 2 actions is used. It should be noted that:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 1&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 2&lt;/code&gt; are actually parameters of their respective probability distributions (PD).&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 1&lt;/code&gt; scalar value (sampled from estimated PD) is passed as input for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 2&lt;/code&gt; distribution estimation&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 1&lt;/code&gt; &lt;em&gt;logits&lt;/em&gt; could be passed as input instead of scalar value. This can help preserve information on large discrete/categorical distributions.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Note that this model doesn’t use the masked autoencoder architecture, hence wouldn’t scale well for the estimation of a large number of actions distributions.&lt;/p&gt;
+
+&lt;h2 id=&quot;experiments&quot;&gt;Experiments&lt;/h2&gt;
+
+&lt;p&gt;To validate benefits of such architecture, we compare performance of “classic” network models with the one described in previous section. To draw a fair comparison, the same total number of neural network cells is used in classic and AR policies networks. Furthermore, all other parameters of the Proximal Policy Optimization (PPO, Shulman et al. &lt;a href=&quot;#5&quot;&gt;[5]&lt;/a&gt;) algorithm are kept equal between the 2 models.&lt;/p&gt;
+
+&lt;h3 id=&quot;a-path-finding-task&quot;&gt;A path-finding task&lt;/h3&gt;
+
+&lt;p&gt;The first task is a toy problem where an agent must navigate through a 2D-grid and maximize its reward. The action space is designed with 2 actions (vertical and horizontal movements). 
+To emphasize on the need to learn correlation between actions, the reward scheme is modeled using 2 gaussian distributions located on 2 corners, and a one-time bonus whenever the agent reaches a point close to the mean of each gaussian. We refer to this training environment as bi-modal environment (BME). The agent start each episode starting at the center of the grid. Episode ends when all bonuses are found.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/ar_policy/bi_modal_env_grid.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 4: rewards distribution over the BME grid&lt;/i&gt;&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;We run 5 experiments with different seeds for each method (classic and AR) and compare the mean return per episode below.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/ar_policy/bi_modal_avg_return.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 5: average episode reward for non AR policy (classic, light green) and AR policy (dark green)&lt;/i&gt;&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;Visual inspection of trajectories for each method can highlight non-efficiencies and differencies. 
+Below animations capture sample trajectories after 50 training iterations.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/ar_policy/bi_modal_classic_traj.gif&quot; alt=&quot;sources&quot; class=&quot;double&quot; /&gt;
+&lt;img src=&quot;/assets/ar_policy/bi_modal_ar_traj.gif&quot; alt=&quot;sources&quot; class=&quot;double&quot; /&gt;&lt;/p&gt;
+&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 6a and 6b: average episode reward for classic policy (left) and AR policy (right)&lt;/i&gt;&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
+
+&lt;p&gt;&lt;a id=&quot;1&quot;&gt;[1]&lt;/a&gt; 
+Jack Harmer, Linus Gisslén, Jorge del Val, Henrik Holst, Joakim Bergdahl, Tom Olsson, Kristoffer Sjöö, Magnus Nordin. 
+&lt;i&gt;Imitation Learning with Concurrent Actions in 3D Games.&lt;/i&gt; &lt;a href=&quot;https://arxiv.org/abs/1803.05402&quot;&gt;2018&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a id=&quot;2&quot;&gt;[2]&lt;/a&gt;
+Han Wang and Yang Yu.
+&lt;i&gt;Exploring Multi-Action Relationship in Reinforcement Learning.&lt;/i&gt; &lt;a href=&quot;http://www.lamda.nju.edu.cn/wanghan/pricai16.pdf&quot;&gt;2016&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a id=&quot;3&quot;&gt;[3]&lt;/a&gt;
+Oriol Vinyals, Timo Ewalds, Sergey Bartunov, Petko Georgiev, Alexander Sasha Vezhnevets, Michelle Yeo, Alireza Makhzani, Heinrich Küttler, John Agapiou, Julian Schrittwieser, John Quan, Stephen Gaffney, Stig Petersen, Karen Simonyan, Tom Schaul, Hado van Hasselt, David Silver, Timothy Lillicrap, Kevin Calderone, Paul Keet, Anthony Brunasso, David Lawrence, Anders Ekermo, Jacob Repp, Rodney Tsing.
+&lt;i&gt;StarCraft II: A New Challenge for Reinforcement Learning.&lt;/i&gt; &lt;a href=&quot;https://arxiv.org/abs/1708.04782&quot;&gt;2017&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a id=&quot;4&quot;&gt;[4]&lt;/a&gt;
+Mathieu Germain, Karol Gregor, Iain Murray, Hugo Larochelle.
+&lt;i&gt;MADE: Masked Autoencoder for Distribution Estimation&lt;/i&gt; &lt;a href=&quot;https://arxiv.org/abs/1502.03509&quot;&gt;2015&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a id=&quot;5&quot;&gt;[5]&lt;/a&gt;
+John Schulman, Filip Wolski, Prafulla Dhariwal, Alec Radford, Oleg Klimov.
+&lt;i&gt;Proximal Policy Optimization Algorithms&lt;/i&gt; &lt;a href=&quot;https://arxiv.org/abs/1707.06347&quot;&gt;2017&lt;/a&gt;&lt;/p&gt;
+
+</description>
+        <pubDate>Wed, 23 Feb 2022 01:00:00 +0100</pubDate>
+        <link>https://airboxlab.github.io//hvac/rl/autoregressive/2022/02/23/ar_policy.html</link>
+        <guid isPermaLink="true">https://airboxlab.github.io//hvac/rl/autoregressive/2022/02/23/ar_policy.html</guid>
+        
+        
+        <category>hvac</category>
+        
+        <category>rl</category>
+        
+        <category>autoregressive</category>
+        
+      </item>
     
       <item>
         <title>Crowd sourced classifier to identify air pollution sources</title>
@@ -23,31 +231,31 @@
 
 &lt;p&gt;Foobot designs and manufactures indoor air quality monitors since 2013. These monitors are connected to a cloud platform that collects and process sensor readings from around the world; customers can visualize their data from mobile or web interfaces. Foobots have been used in homes, offices and research context.&lt;/p&gt;
 
-&lt;p&gt;As a sensor device manufacturer, our goal isn’t only to provide a &lt;em&gt;thermometer&lt;/em&gt; for air quality, the end goal is to reduce exposure to air pollution for our customers. For that we have been involved in the engineering of several air purifier lines over the years. We also noticed it is key for users understand the actions that leaded to poorer air indoor. When one understands where pollution comes from, (s)he can perform remediation actions, or set an automated way to deal with it.&lt;/p&gt;
+&lt;p&gt;As a sensor device manufacturer, our goal isn’t only to provide a &lt;em&gt;thermometer&lt;/em&gt; for air quality, the end goal is to reduce exposure to air pollution for our customers. For that we have been involved in the engineering of several air purifier lines over the years. We also perceived that it is key for users to understand what actions lead to poorer air indoor. When one understands where pollution comes from, (s)he can perform remediation actions, or set an automated way to deal with it.&lt;/p&gt;
 
 &lt;h2 id=&quot;identify-pollution-sources&quot;&gt;Identify pollution sources&lt;/h2&gt;
 
-&lt;p&gt;Air quality is complex and it is always challenging to identify a root cause when air pollution rises. It can be due to outdoor events, like wild fires or traffic pollution, but often, the pollution source is indoor. Within dwellings, there are a number of air quality events triggered by inhabitants. Our actions and behaviours indoor impact the air quality we live in; for the better, when we switch on the cooking hood, or for the worth when we are cleaning the bathroom with hash chemicals.&lt;/p&gt;
+&lt;p&gt;Air quality is complex, and it is always challenging to identify a root cause when air pollution rises. It can be due to outdoor events, like wildfires or traffic pollution, but often, the pollution source is indoor. Within dwellings, there are a number of air quality events triggered by inhabitants. Our actions and behaviors indoor impact the air quality we live in; for the better, when we switch on the cooking hood, or for the worth when we are cleaning the bathroom with harsh chemicals.&lt;/p&gt;
 
-&lt;p&gt;Foobot home sensors measures four environmental parameters: fine particulates (PM), volatile organic compounds (VOC), temperature and relative humidity. The challenge in creating a feature that can show user a root cause for a pollution event is to identify a unsique &lt;em&gt;signature&lt;/em&gt; over these 4 measured environmental parameters.&lt;/p&gt;
+&lt;p&gt;Foobot home sensors measures four environmental parameters: fine particulates (PM), volatile organic compounds (VOC), temperature and relative humidity. The challenge in creating a feature that can show user a root cause for a pollution event is to identify a unsique &lt;em&gt;signature&lt;/em&gt; over these 4 environmental parameters measured.&lt;/p&gt;
 
-&lt;p&gt;This article describes the process we followed to collect a dataset and to setup an automated air quality event classification process.&lt;/p&gt;
+&lt;p&gt;This article describes the process we followed to collect a dataset and to setup an automated air quality event classifier.&lt;/p&gt;
 
 &lt;h3 id=&quot;crowd-collected-dataset&quot;&gt;Crowd collected dataset&lt;/h3&gt;
 
-&lt;p&gt;We created a feature for our users to label their data. It allowed enrolled users to receive a push notification each time an air quality event was detected. The push notification opens Foobot mobile app where users were able to choose the action that was carried on, or to enter free text.&lt;/p&gt;
+&lt;p&gt;We created a feature for our users to label their data. It allowed enrolled users to receive a push notification each time an air quality event was detected. The push notification opens up Foobot mobile app where users were able to choose the action that was carried on, or to enter free text.&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;/assets/viz_aqe/iphone_classify.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
 &lt;center&gt;&lt;i&gt;Push notification for classification&lt;/i&gt;&lt;/center&gt;
 &lt;p&gt;&lt;br /&gt;&lt;/p&gt;
 
-&lt;p&gt;The detection of an event, meaning the kind sensor deviation that constitue it, and the timing to trigger a push notification to a user is a topic on its own. It took us several iterations to maximize the number of responses and to avoid bothering users for non-event, or for events that happened too long ago and they weren’t able to identify anymore.&lt;/p&gt;
+&lt;p&gt;The detection of an event, meaning the kind sensor deviation that constitute it, and the timing to trigger a push notification to a user is a topic on its own. It took us several iterations to maximize the number of responses and to avoid bothering users for non-event, or for events that happened too long ago and that they couldn’t to identify anymore.&lt;/p&gt;
 
-&lt;p&gt;Thanks this feature and to our user base we were able to collects tens of thousands of labeled events.&lt;/p&gt;
+&lt;p&gt;Thanks to this feature and the users enrolled we were able to collects tens of thousands of labeled events.&lt;/p&gt;
 
-&lt;h2 id=&quot;data-analisys&quot;&gt;Data analisys&lt;/h2&gt;
+&lt;h2 id=&quot;data-analysis&quot;&gt;Data analysis&lt;/h2&gt;
 
-&lt;p&gt;Now lets introduce some basic techniques for data segmentation and classification, that we used to visualize labeled &lt;em&gt;air quality events&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;Now let’s introduce some basic techniques for data segmentation and classification we used to visualize labeled &lt;em&gt;air quality events&lt;/em&gt;.&lt;/p&gt;
 
 &lt;h3 id=&quot;dataset-description&quot;&gt;Dataset description&lt;/h3&gt;
 
@@ -55,9 +263,9 @@
 
 &lt;p&gt;For the sake of simplicity and readability we’ll only detail 3 specific labels, though we have proven our method to work with quite a few others:&lt;/p&gt;
 &lt;ul&gt;
-  &lt;li&gt;&lt;em&gt;cooking&lt;/em&gt; consequence of a cooking action. This is one of the most common source of indoor air pollution, and it is quite challenging to detect accurately because of the variety of event types it amalgamates: frying, oven cooking, steaming, for example.&lt;/li&gt;
-  &lt;li&gt;&lt;em&gt;air renewal&lt;/em&gt; opening a door, a window, switching On some kind of ventilation. It appeared important to be able to detect remediation events. Either to reward users or to just to be able to prevent an automated system to ask user to perform an action already carried. We could also derive an airing score out of this metric.&lt;/li&gt;
-  &lt;li&gt;&lt;em&gt;presence&lt;/em&gt; people coming and going in the space. Wether someone is around or not is important for an automated system to decides what to communicate to the end user. It was also an interesting challenge since the Foobot home sensor doesn’t feature a CO2 sensor.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;&lt;em&gt;Cooking&lt;/em&gt;&lt;/strong&gt; consequence of a cooking action. This is one of the most common source of indoor air pollution. It is quite challenging to detect accurately because of the variety of event types it amalgamates. eg: frying, oven cooking, steaming.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;&lt;em&gt;Air renewal&lt;/em&gt;&lt;/strong&gt; opening a door, a window, switching ON some kind of ventilation. It appeared important to be able to detect remediation events. Either to reward users or to just to be able to prevent an automated system from asking users to perform an action already performed. We could also derive an airing score out of this metric.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;&lt;em&gt;Presence&lt;/em&gt;&lt;/strong&gt; people coming and going in the space. Whether someone is around or not is important for an automated system to decides what to communicate to an end user. It was also an interesting challenge since the Foobot home sensor doesn’t feature a CO2 sensor.&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;h3 id=&quot;tools&quot;&gt;Tools&lt;/h3&gt;
@@ -66,17 +274,17 @@
 
 &lt;h3 id=&quot;overview&quot;&gt;Overview&lt;/h3&gt;
 
-&lt;p&gt;Intuitively, air quality events will have different “signatures”, that is they will be expressed differently in data. For instance, cooking could be a source of particulate matters, while air renewal can translate into change in temperature, humidity and/or volatile organic compounds (VOC). That are just a few examples to build our intuition, there are many others.&lt;/p&gt;
+&lt;p&gt;Intuitively, air quality events will have different “signatures”, that is they will be expressed differently in data. For instance, cooking could be a source of particulate matters, while air renewal can translate into change in temperature, humidity and/or volatile organic compounds (VOC). These are just a few examples to build our intuition, there are many others.&lt;/p&gt;
 
 &lt;p&gt;To get a first feeling of how they show up in data, let’s see how &lt;em&gt;difference between maximum and minimum value around event time&lt;/em&gt;* is characterized&lt;/p&gt;
 
-&lt;div style=&quot;font-size:12px;margin-bottom:15px&quot;&gt;*feature extraction in time windows isn't discussed in this article&lt;/div&gt;
+&lt;div style=&quot;font-size:12px;margin-bottom:15px&quot;&gt;*feature extraction in time windows isn't detailed in this article&lt;/div&gt;
 
 &lt;p&gt;&lt;img src=&quot;/assets/viz_aqe/pm_diff_max_min_box.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
 &lt;center&gt;&lt;i&gt;Boxplot of difference between PM max and min values, by tag&lt;/i&gt;&lt;/center&gt;
 &lt;p&gt;&lt;br /&gt;&lt;/p&gt;
 
-&lt;p&gt;A first interpretation of this &lt;a href=&quot;https://en.wikipedia.org/wiki/Box_plot&quot;&gt;box plot&lt;/a&gt; is that cooking is statistically the event that makes PM readings vary most: difference in 25%-75% range is wider than for other events, and maximum is much higher. Note also the shape of the plot for air renewal, indicating that variance is also important: could be due to PM being cleaned out when air is renewed.&lt;/p&gt;
+&lt;p&gt;A first interpretation of this &lt;a href=&quot;https://en.wikipedia.org/wiki/Box_plot&quot;&gt;box plot&lt;/a&gt; is that cooking is statistically the event that makes PM readings vary the most: difference in 25%-75% range is wider than for other events, and maximum is much higher. See also the shape of the plot for air renewal, showing that variance is also important: could be due to PM being cleared or moved by airflow.&lt;/p&gt;
 
 &lt;p&gt;Let’s see some other plots for VOCs and humidity.&lt;/p&gt;
 
@@ -88,20 +296,20 @@
 &lt;center&gt;&lt;i&gt;Boxplot of difference between humidity max and min values, by tag&lt;/i&gt;&lt;/center&gt;
 &lt;p&gt;&lt;br /&gt;&lt;/p&gt;
 
-&lt;p&gt;This time, we can deduce that VOC and humidity levels seem to be impacted most by air renewal (first) and presence.&lt;/p&gt;
+&lt;p&gt;This time, we can see that VOC and humidity levels seem to be impacted the most by air renewal (first) and then presence.&lt;/p&gt;
 
-&lt;p&gt;We now have an intuition about how air quality changes reflects on some of Foobot’s sensors. We can go a bit deeper to better exploit variance in data in order to separate event types.&lt;/p&gt;
+&lt;p&gt;We now have an intuition about how air quality changes affects some of Foobot’s sensors readings. We can go a bit further by checking how variance in data distinguish event types.&lt;/p&gt;
 
-&lt;h3 id=&quot;exploiting-variance-in-data-with-principal-components-analysis&quot;&gt;Exploiting variance in data with Principal Components Analysis&lt;/h3&gt;
+&lt;h3 id=&quot;using-variance-in-data-with-principal-components-analysis&quot;&gt;Using variance in data with Principal Components Analysis&lt;/h3&gt;
 
-&lt;p&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/Principal_component_analysis&quot;&gt;Principal Components Analysis (PCA)&lt;/a&gt; is a very popular technique that is mostly used for&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/Principal_component_analysis&quot;&gt;Principal Components Analysis (PCA)&lt;/a&gt; is a common technique mostly used for&lt;/p&gt;
 
 &lt;ul&gt;
   &lt;li&gt;dimensionality reduction: if variance in data can be explained by few &lt;em&gt;principal components&lt;/em&gt; (where number of principal components &amp;lt; number of features) then one can use these components for further analysis, mining or model training&lt;/li&gt;
-  &lt;li&gt;visualisation: 2 or 3 principal components are easy to plot, so PCA is convenient for visualizing how variance is explained in data, especially if you associate labels with data points.&lt;/li&gt;
+  &lt;li&gt;visualization: 2 or 3 principal components are easy to plot, so PCA is convenient to visualize how variance is explained in data, especially when associating labels with data points.&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;PCA also has its limits: it really works well when problem is linear, that is when data you want to split is linearly separable. Let’s not forget also that PCA really just provides a rotation (or projection onto a different space) that maximizes the variance (principle: diagonalization of the covariance/correlation matrix) for the given data, using fewer dimensions. It can’t go beyond (it’s not a classifier).&lt;/p&gt;
+&lt;p&gt;PCA also has its limits: it really works well when problem is linear, that is when data you want to split is linearly separable. Let’s not forget also that PCA just provides a rotation (or projection onto a different space) which maximizes the variance (principle: diagonalization of the covariance/correlation matrix) for the given data, using fewer dimensions. It can’t go beyond; it’s not a classifier.&lt;/p&gt;
 
 &lt;p&gt;Using PySpark and scikit-learn, it’s a straightforward task to setup a toy pipeline that pre-processes our dataset (like standardizing features), then applies PCA.
 Following plots are demonstrating PCA with 2 and 3 components.&lt;/p&gt;
@@ -114,13 +322,13 @@ Following plots are demonstrating PCA with 2 and 3 components.&lt;/p&gt;
 &lt;center&gt;&lt;i&gt;PCA of air quality events (k=3)&lt;/i&gt;&lt;/center&gt;
 &lt;p&gt;&lt;br /&gt;&lt;/p&gt;
 
-&lt;p&gt;Here we achieve a visualization that projects all the features of our dataset onto the PCA features space (2 or 3 dimensions). We can see a trend in groups of points that seem to belong to each label. However, a simple interpretation can state that linear separability across tags isn’t achieved: although data belonging to air renewal and cooking groups seem to distinguish from each other well, presence (&lt;em&gt;many people&lt;/em&gt;) have data points mixed up with the 2 previous classes. A simple intuition could explain this: presence can reflect in many ways on sensor readings, and probably the same way as for other classes.&lt;/p&gt;
+&lt;p&gt;Here we achieve a visualization that projects all the features of our dataset onto the PCA features space (2 or 3 dimensions). We can see a trend in groups of points that seem to belong to each label. However, a simple interpretation can state that linear separability across tags isn’t achieved: although data belonging to air renewal and cooking groups seem to segregate from each other well, presence (&lt;em&gt;many people&lt;/em&gt;) has data points mixed up with the 2 previous classes. A simple intuition could explain this: presence could be true at the samae time than the other classes.&lt;/p&gt;
 
 &lt;h3 id=&quot;going-non-linear-with-polynomial-expansion&quot;&gt;Going non-linear with Polynomial Expansion&lt;/h3&gt;
 
 &lt;p&gt;Since we weren’t able to linearly separate data in a clear way, let’s try a non-linear method to see if we can better manage this. A first option is &lt;a href=&quot;https://en.wikipedia.org/wiki/Polynomial_expansion&quot;&gt;polynomial expansion&lt;/a&gt; (a particular method of basis expansion) which consists in projecting data onto a different space, here formed by polynomial combinations of all existing features. For instance, if you have features &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;[a b]&lt;/code&gt;, a 2nd degree expansion would result in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;[ a b ab a² b²]&lt;/code&gt;. We can then use the result as an input for a linear transformer or classifier, which is good also to preserve the low complexity of a linear algorithm to make projections or decisions in a non-linear space.&lt;/p&gt;
 
-&lt;p&gt;Though you can guess it: it will require huge computational power if polynomial degree is high and number of features is big. Also, the higher the degree, the more models using this new feature space will tend to overfit.&lt;/p&gt;
+&lt;p&gt;Though you can guess it: it will require huge computational power if polynomial degree is high, and number of features is large. Also, the higher the degree, the more models using this new feature space will tend to overfit.&lt;/p&gt;
 
 &lt;p&gt;For the purpose of this article, we’ll only try 2nd degree polynomial.&lt;/p&gt;
 
@@ -140,8 +348,6 @@ Following plots are demonstrating PCA with 2 and 3 components.&lt;/p&gt;
 
 &lt;p&gt;Multiple “standard” kernel functions exist (like &lt;em&gt;gaussian radial basis function&lt;/em&gt; (RBF)). Choosing the right one is a difficult task when it’s meant to be used in a model training pipeline. Here we’re using the &lt;em&gt;cosine&lt;/em&gt; kernel function, only because it offers good visualization results.&lt;/p&gt;
 
-&lt;p&gt;Note: as of writing, kernels for feature engineering aren’t available in Spark, but it’s fairly simple to create your own.&lt;/p&gt;
-
 &lt;p&gt;&lt;img src=&quot;/assets/viz_aqe/kpca_k_2.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
 &lt;center&gt;&lt;i&gt;Kernel PCA (k=2)&lt;/i&gt;&lt;/center&gt;
 &lt;p&gt;&lt;br /&gt;&lt;/p&gt;
@@ -150,7 +356,7 @@ Following plots are demonstrating PCA with 2 and 3 components.&lt;/p&gt;
 &lt;center&gt;&lt;i&gt;Kernel PCA (k=3)&lt;/i&gt;&lt;/center&gt;
 &lt;p&gt;&lt;br /&gt;&lt;/p&gt;
 
-&lt;p&gt;Again, separation between cooking and air renewal data is good. This time ‘presence’ (many people) seems to overlap with cooking only, which makes sense: people are generating VOCs (breath, sweat, cosmetics, …) and particles (like dust moved by human movements). Cooking can also have impact on the same sensors: frying or using the oven create particles, and VOCs can be emitted by gaz stove or other combustion/heating by-products.&lt;/p&gt;
+&lt;p&gt;Again, separation between cooking and air renewal data is good. This time ‘presence’ (many people) seems to overlap with cooking only, which makes sense: people are usually in the room where they cook.&lt;/p&gt;
 
 &lt;h3 id=&quot;a-supervised-learning-technique-linear-discriminant-analysis&quot;&gt;A supervised learning technique: Linear Discriminant Analysis&lt;/h3&gt;
 
@@ -158,7 +364,7 @@ Following plots are demonstrating PCA with 2 and 3 components.&lt;/p&gt;
 
 &lt;p&gt;This is what &lt;a href=&quot;https://en.wikipedia.org/wiki/Linear_discriminant_analysis&quot;&gt;Linear Discriminant Analysis&lt;/a&gt; is capable of. Like PCA, it’s a linear transformation, and the goal is to find a projection that maximizes variance, but this time between classes. It runs well under the assumptions that class densities are Gaussian and that each class covariance matrix is similar, assumptions that are not often met in real world problems.&lt;/p&gt;
 
-&lt;p&gt;We’re going to use it here only for its dimensionality reduction capability, and we’ll project our data onto a subspace made only of the number of dimensions we’re interested in: LDA lets us chose number of components &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;k&lt;/code&gt;, but it can only be such as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;k &amp;lt; n-1&lt;/code&gt; (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n&lt;/code&gt; = number of classes).&lt;/p&gt;
+&lt;p&gt;We’re going to use it here only for its dimensionality reduction capability, and we’ll project our data onto a subspace made only of the number of dimensions we’re interested in: LDA lets us choose number of components &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;k&lt;/code&gt;, but it can only be such as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;k &amp;lt; n-1&lt;/code&gt; (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n&lt;/code&gt; = number of classes).&lt;/p&gt;
 
 &lt;p&gt;LDA remains a linear method (linear decision boundaries) and tends to overfit the data as number of features (dimensions) grows.&lt;/p&gt;
 
@@ -190,17 +396,19 @@ Following plots are demonstrating PCA with 2 and 3 components.&lt;/p&gt;
 
 &lt;h2 id=&quot;accuracy-verification&quot;&gt;Accuracy verification&lt;/h2&gt;
 
-&lt;p&gt;As we discovered, separating or classifying air quality events classes is a non-trivial task. Pure linear methods don’t give satisfactory results - classes still overlap - and we had to use the technique of basis expansion (polynomials) along with LDA in order to get a proper visual separation (and classification). Although results are promising to build a classifier, there are some limitations to the algorithms and methods used in this article: PCA isn’t a classification algorithm and can only be, when conditions are met, used to reduce dimensionality of a dataset. On the other hand, LDA is a classifier that is known to perform well, but it had to be combined with basis expansion. We also have to considered:&lt;/p&gt;
+&lt;p&gt;As we discovered, distinguishing or classifying air quality events classes is a non-trivial task. Pure linear methods do not give good results and we have to use the technique of basis expansion (polynomials) along with LDA in order to get a proper classification. Although results were promising to build a classifier, we also have to consider:&lt;/p&gt;
 
 &lt;ul&gt;
-  &lt;li&gt;generalization capability of our classifier, which should be verified with (cross-)validation and testing.&lt;/li&gt;
-  &lt;li&gt;users live in different indoor and outdoor conditions: from one region of the world to another, habits are different, outdoor air quality is different, temperature and humidity vary greatly.&lt;/li&gt;
-  &lt;li&gt;air quality events are difficult to track by nature: there can be several happening at the same time, there can be a significant delay between start of event and impact on sensor readings, same type of event will have a different expression from one place to another (e.g. air renewal in a polluted city vs countryside).&lt;/li&gt;
+  &lt;li&gt;Users live in different indoor and outdoor conditions: from one region of the world to another, habits are different, outdoor air quality is different, temperature and humidity vary greatly.&lt;/li&gt;
+  &lt;li&gt;Air quality events are difficult to track by nature: there can be several happening at the same time, there can be a delay between start of event and impact on sensor readings, same type of event will have a different expression from one place to another (e.g. air renewal in a polluted city vs countryside).&lt;/li&gt;
+  &lt;li&gt;Generalization capability of the classifier, which should be verified with (cross-)validation and testing.&lt;/li&gt;
 &lt;/ul&gt;
+
+&lt;p&gt;All these possible hurdles called for a verification to evaluate the performance of our classifier.&lt;/p&gt;
 
 &lt;h3 id=&quot;crowd-sourced-classification-check&quot;&gt;Crowd sourced classification check&lt;/h3&gt;
 
-&lt;p&gt;In the same way that we uses a subset of our users to help build a labeled dataset we proposed them to verify the accuracy of our classifier. We introduce a new feature that is this time not asking the user to label an event, but rather to check if the label to assigned to an event is correct:&lt;/p&gt;
+&lt;p&gt;In the same way that we uses a subset of our users to help build a labeled dataset we proposed them to verify the accuracy of our classifier. We introduced a new feature that is, this time, not asking the user to label an event, but rather to check if the label to assigned to an event is correct:&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;/assets/viz_aqe/iphone_valid.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
 &lt;center&gt;&lt;i&gt;Event validation push notification&lt;/i&gt;&lt;/center&gt;
@@ -211,17 +419,17 @@ Following plots are demonstrating PCA with 2 and 3 components.&lt;/p&gt;
 &lt;p&gt;With user being able to enter sub-categories or reclassify wrongly labeled events, we were able to iterate and improve. Today our accuracy in detecting the different events are the following for the main ones:&lt;/p&gt;
 
 &lt;ul&gt;
-  &lt;li&gt;&lt;em&gt;cooking&lt;/em&gt; 88%&lt;/li&gt;
-  &lt;li&gt;&lt;em&gt;air renewal&lt;/em&gt; 98%&lt;/li&gt;
-  &lt;li&gt;&lt;em&gt;presence&lt;/em&gt; 96%&lt;/li&gt;
-  &lt;li&gt;&lt;em&gt;cleaning&lt;/em&gt; 100%&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Cooking&lt;/strong&gt; 88%&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Air renewal&lt;/strong&gt; 98%&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Presence&lt;/strong&gt; 96%&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Cleaning&lt;/strong&gt; 100%&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;p&gt;Worth to be noticed is that we are able to label these events in a streaming fashion, meaning that data points are classified live while they are being collected thanks to Spark streaming.&lt;/p&gt;
 </description>
-        <pubDate>Mon, 14 Jun 2021 02:00:00 +0200</pubDate>
-        <link>https://airboxlab.github.io//data_science/air_quality/classifier/machine_learning/2021/06/14/events-class.html</link>
-        <guid isPermaLink="true">https://airboxlab.github.io//data_science/air_quality/classifier/machine_learning/2021/06/14/events-class.html</guid>
+        <pubDate>Thu, 01 Jul 2021 02:00:00 +0200</pubDate>
+        <link>https://airboxlab.github.io//data_science/air_quality/classifier/machine_learning/2021/07/01/events-class.html</link>
+        <guid isPermaLink="true">https://airboxlab.github.io//data_science/air_quality/classifier/machine_learning/2021/07/01/events-class.html</guid>
         
         
         <category>data_science</category>
@@ -347,9 +555,9 @@ ul {
   &lt;li&gt;reactivity and security are not optional: if something goes wrong, you need to know it immediately and react as fast as possible. This leads to automating everything. As a consequence, all our control loops deployment pipelines are fully automated, isolated and secured.&lt;/li&gt;
 &lt;/ul&gt;
 </description>
-        <pubDate>Mon, 14 Jun 2021 02:00:00 +0200</pubDate>
-        <link>https://airboxlab.github.io//hvac/control/ai/reinforcement_learning/2021/06/14/sab_after_9.html</link>
-        <guid isPermaLink="true">https://airboxlab.github.io//hvac/control/ai/reinforcement_learning/2021/06/14/sab_after_9.html</guid>
+        <pubDate>Mon, 21 Jun 2021 02:00:00 +0200</pubDate>
+        <link>https://airboxlab.github.io//hvac/control/ai/reinforcement_learning/2021/06/21/sab_after_9.html</link>
+        <guid isPermaLink="true">https://airboxlab.github.io//hvac/control/ai/reinforcement_learning/2021/06/21/sab_after_9.html</guid>
         
         
         <category>hvac</category>
@@ -1570,276 +1778,6 @@ A future series of articles will dive into more specific parts of the pipeline.&
         <category>spark</category>
         
         <category>real-time</category>
-        
-      </item>
-    
-      <item>
-        <title>Lean Approach to Spark Streaming with AWS EC2</title>
-        <description>&lt;p&gt;We’ve been using &lt;a href=&quot;http://spark.apache.org&quot;&gt;Apache Spark&lt;/a&gt; for 1 year, and we wanted to share some thoughts and tips about it.&lt;/p&gt;
-
-&lt;p&gt;Spark is beautiful. It has a strong and simple API, a vibrant community, a wide ecosystem and lot of satellite projects. However, it doesn’t come for free: you need to understand its API, internal structures, and deployment methodologies. Setting up a cluster, maintaining, designing applications and jobs, … All of this can be overwhelming and looks like a daunting task at first.&lt;/p&gt;
-
-&lt;p&gt;The goal of this article is to provide overview, instructions and tips on how to build, deploy and maintain a distributed data analytics application based on Spark, with a particular focus on Spark Streaming.&lt;/p&gt;
-
-&lt;h2 id=&quot;context&quot;&gt;Context&lt;/h2&gt;
-
-&lt;p&gt;We decided to go for Spark at &lt;a href=&quot;https://foobot.io&quot;&gt;Airboxlab&lt;/a&gt; firstly to ingest and analyze streams of sensors data. We design, build and sell air quality monitoring products, that are used to monitor and trigger actions based on air quality measurements.&lt;/p&gt;
-
-&lt;p&gt;We had several options on the table (AWS Kinesis, Apache Storm, …) but we decided to pick Spark for the following reasons:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;unified platform for data streaming and batch analysis (lambda architecture), with machine learning capabilities&lt;/li&gt;
-  &lt;li&gt;heterogeneous team with different background and technical skills&lt;/li&gt;
-  &lt;li&gt;tight budget&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;As of now, some other options may be available to you, like AWS Kinesis Firehose.&lt;/p&gt;
-
-&lt;p&gt;We started with Spark 1.2.0 in test, and went in production with 1.3.0 few months later.&lt;/p&gt;
-
-&lt;p&gt;Our first Spark job was a streaming job, one to clean and store sensor data sent by devices. It made us discover Spark architecture, application deployment process, and fault tolerance semantics.&lt;/p&gt;
-
-&lt;h2 id=&quot;spark-cluster-topology&quot;&gt;Spark cluster topology&lt;/h2&gt;
-
-&lt;p&gt;I won’t go into details here as it has been extensively described in main &lt;a href=&quot;?&quot;&gt;Spark documentation&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;Here is just a quick reminder of main Spark processes&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;em&gt;Master&lt;/em&gt;: this is the main process responsible for coordinating cluster, scheduling jobs, restarting failed workers, …&lt;/li&gt;
-  &lt;li&gt;&lt;em&gt;Worker&lt;/em&gt;: a worker node is where executors can be launched.&lt;/li&gt;
-  &lt;li&gt;&lt;em&gt;Executor&lt;/em&gt;: started by workers for a given application. There may be 1 or thousands of them, depending on task configuration. They execute the application and store data in memory or in persistent stores.&lt;/li&gt;
-  &lt;li&gt;&lt;em&gt;Driver&lt;/em&gt;: application submitted to the cluster that contains the main() method.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://spark.apache.org/docs/latest/img/cluster-overview.png&quot; alt=&quot;Cluster&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;There are 3 deployment methods if you want to run your own cluster:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;Standalone (comes with AWS EC2 deployment scripts)&lt;/li&gt;
-  &lt;li&gt;Mesos&lt;/li&gt;
-  &lt;li&gt;YARN&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;And there are several companies that sell Spark cluster management, like Databricks (created by creators of Apache Spark), Hortonworks, Cloudera, and even AWS and Google are proposing services.&lt;/p&gt;
-
-&lt;p&gt;Here comes the first question you may be asking yourself: will I invest in my own Spark clusters (probably several if you have test environments), or can I use an hosted and managed cluster?&lt;/p&gt;
-
-&lt;h3 id=&quot;own-cluster-vs-managed-cluster&quot;&gt;Own cluster VS Managed cluster&lt;/h3&gt;
-
-&lt;p&gt;Having your own cluster will let choose your configuration, that may not be easy with a provider. For instance, Databricks doesn’t let you choose your AWS instance type (it’s a r3.2xlarge and that’s it!).&lt;/p&gt;
-
-&lt;p&gt;Another important point is that, especially in the case of clusters dedicated to batches, or even with streaming applications that run on over-sized clusters where there is CPU and RAM available, you could share instances for other tasks. Mesos and YARN let you share resources between clusters, so you can efficiently allocate resources and avoid wasting money.&lt;/p&gt;
-
-&lt;p&gt;But there are also advantages using an hosted solution: you don’t need to know a lot about Spark or system administration before you start your first data exploration job. Not all teams have someone available to setup (and maintain) a cluster, and Spark is all about giving instant access to big data analysis. In that perspective, a managed cluster is a good solution.&lt;/p&gt;
-
-&lt;p&gt;It can also be interesting if you want to temporarily create a cluster: Spark version upgrade testing, scheduled jobs, external users access to your data and jobs, …&lt;/p&gt;
-
-&lt;p&gt;Last but not least: you don’t need a cluster to start testing Spark! You will see it when you start reading &lt;a href=&quot;http://spark.apache.org/docs/latest/programming-guide.html&quot;&gt;Spark programming guide&lt;/a&gt;, Spark can run on your own machine, just pick a reduced dataset and don’t try to load terabytes of data.
-That’s one of the main strengths of Spark, you can develop and test your whole job locally.&lt;/p&gt;
-
-&lt;h3 id=&quot;deploying-spark-on-aws-ec2&quot;&gt;Deploying Spark on AWS EC2&lt;/h3&gt;
-
-&lt;p&gt;Say you decide to give a try to Spark with your own standalone cluster, on AWS. Spark comes with a set of scripts that let you deploy a cluster from a command line. Documentation is available &lt;a href=&quot;http://spark.apache.org/docs/latest/ec2-scripts.html&quot;&gt;here&lt;/a&gt;. You can deploy inside or outside of a VPC, define your spot instance price, or choose your instance types for both master and workers.&lt;/p&gt;
-
-&lt;p&gt;Speaking of master and workers, there is a first budget optimization you can do here: you can share the master node, that will rather go unoccupied with only the master process and your driver. You can start one or more workers on it.&lt;/p&gt;
-
-&lt;p&gt;Spark EC2 will also do several other things:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;create 2 &lt;strong&gt;Hadoop&lt;/strong&gt; clusters, one said ephemeral because it’s started on SSD instance storage, another said persistent (not started by default). It allows you to store and fetch data on HDFS, and it’s also used by Spark internals and application checkpointing.&lt;/li&gt;
-  &lt;li&gt;create a &lt;strong&gt;Tachyon&lt;/strong&gt; cluster for in memory caching&lt;/li&gt;
-  &lt;li&gt;add monitoring agents with &lt;strong&gt;Ganglia&lt;/strong&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;When your cluster is built, there are 2 web UIs available where you can monitor Spark and your instances:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;code&gt;http://&amp;lt;spark_master&amp;gt;:8080/&lt;/code&gt; is the Spark Web interface. There you can check health of master, workers, executors and jobs.&lt;/li&gt;
-  &lt;li&gt;&lt;code&gt;http://&amp;lt;spark_master&amp;gt;:5080/ganglia/&lt;/code&gt; is the Ganglia master UI (monitoring of hardware, processes, memory, …).&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h3 id=&quot;cluster-management&quot;&gt;Cluster management&lt;/h3&gt;
-
-&lt;p&gt;Your cluster is up and running, you may now wonder what you will have to do to keep it healthy. There are some things you need to automate to ensure nothing breaks without you being alerted, and also to simplify provisioning (adding and retiring nodes).&lt;/p&gt;
-
-&lt;h4 id=&quot;adding-nodes&quot;&gt;Adding nodes&lt;/h4&gt;
-
-&lt;p&gt;Spark EC2 scripts doesn’t help on this (hey, they already did a lot!). The way we do it at Airboxlab is based on AWS AMIs: we build an AMI from one of the worker nodes freshly created and configured.&lt;/p&gt;
-
-&lt;p&gt;The first thing is to let your master node know about this new node: you have to edit spark configuration (&lt;em&gt;slaves&lt;/em&gt; files under spark and spark-ec2) and hadoop configuration (&lt;em&gt;slaves&lt;/em&gt; under ephemeral-hdfs) to add the host name of your newly created instance. Don’t forget to &lt;em&gt;r-sync&lt;/em&gt; all these files (&lt;em&gt;spark-ec2/copy-dir&lt;/em&gt; command).&lt;/p&gt;
-
-&lt;p&gt;When you launch a new instance from this AMI, there are processed that must started so your node is operational:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;start Hadoop data node: &lt;code&gt;sudo /root/ephemeral-hdfs/bin/start-dfs.sh&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;start Ganglia agent: &lt;code&gt;sudo /usr/sbin/gmond&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;start Spark worker: &lt;code&gt;nohup sudo /root/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://&lt;MASTER_HOSTNAME&gt;:7077 &amp;amp;&amp;lt;/code&amp;gt;&lt;/MASTER_HOSTNAME&gt;&lt;/code&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;Note: if you use Tachyon, above steps apply too.&lt;/p&gt;
-
-&lt;h4 id=&quot;scheduling-clean-up&quot;&gt;Scheduling clean up&lt;/h4&gt;
-
-&lt;p&gt;Jobs are started on worker nodes and will produce logs in &lt;code&gt;$SPARK_HOME/work/&lt;/code&gt;. Each application jar version will also be stored on each worker running it. If you run a lot of them, disk space will decrease.
-Below are cleanup tasks that can be scheduled with &lt;code&gt;cron&lt;/code&gt; on each worker node and that removes logs and jars after 30 days. &lt;strong&gt;Warning&lt;/strong&gt;: this assumes you redeploy at least every 30 days!&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;find /root/spark/work/ &lt;span class=&quot;nt&quot;&gt;-type&lt;/span&gt; f &lt;span class=&quot;nt&quot;&gt;-name&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;std*&quot;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-mtime&lt;/span&gt; +30 &lt;span class=&quot;nt&quot;&gt;-delete&lt;/span&gt;
-find /root/spark/work/ &lt;span class=&quot;nt&quot;&gt;-type&lt;/span&gt; f &lt;span class=&quot;nt&quot;&gt;-name&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;*.jar&quot;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-mtime&lt;/span&gt; +30 &lt;span class=&quot;nt&quot;&gt;-delete&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;Also, Spark AWS deployment comes with a Hadoop cluster that also needs maintenance. Hadoop logs cleanup task can be scheduled the same way:&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;find /mnt/ephemeral-hdfs/logs &lt;span class=&quot;nt&quot;&gt;-name&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;hadoop*.log.201*&quot;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-type&lt;/span&gt; f &lt;span class=&quot;nt&quot;&gt;-mtime&lt;/span&gt; +10 &lt;span class=&quot;nt&quot;&gt;-delete&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h4 id=&quot;system-failures-handling&quot;&gt;System failures handling&lt;/h4&gt;
-
-&lt;p&gt;You may have started with 1 or 2 worker nodes, but you may end up with dozens of them. Eventually, one or more servers will fail. They will. You have to anticipate it: a streaming job may not stop too long!
-Few tips to anticipate a failure, in case you chose standalone deployment mode (different approaches apply for Mesos or YARN):&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;On AWS, &lt;strong&gt;create AMIs&lt;/strong&gt; from both master and worker node types. We already talked about the latter, but it can help to have an image for the former. This way you can start a new master instance and restart your workers one by one to point to the master&lt;/li&gt;
-  &lt;li&gt;Spark deployment guide already covers this: have a &lt;strong&gt;standby master&lt;/strong&gt;&lt;/li&gt;
-  &lt;li&gt;You could also study the creation of a &lt;strong&gt;standby cluster&lt;/strong&gt;: one that is an exact replica of the running one, but that you let shut down (so you save the price of running instances, but not EBS volumes unfortunately). It can be created on a different AWS availability zone or region than the other one, in case the first may become unavailable for a moment. It can also be used for &lt;em&gt;blue/green&lt;/em&gt; types of deployment.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h4 id=&quot;monitoring&quot;&gt;Monitoring&lt;/h4&gt;
-
-&lt;p&gt;Monitoring is essential and can’t be skipped. In our case, with streaming jobs that must run 24/7 in multiple data-centers, monitoring and alerting are vital.&lt;/p&gt;
-
-&lt;p&gt;Your first weapons are Spark and Ganglia UIs, which are very good at collecting monitoring information about instances. Spark UI will help you find failed jobs and stages, application exceptions (log files are accessible in &lt;em&gt;Executors&lt;/em&gt; tab), receiver exceptions (&lt;em&gt;Streaming&lt;/em&gt; tab).&lt;/p&gt;
-
-&lt;p&gt;You also need to be alerted when something goes wrong; that’s something we do with logstash (1 by cluster node) by analyzing jobs and workers log files for specific exceptions.&lt;/p&gt;
-
-&lt;p&gt;Spark master also comes with a &lt;a href=&quot;http://spark.apache.org/docs/latest/monitoring.html#rest-api&quot;&gt;REST API&lt;/a&gt; that you can query periodically to check health of each job.&lt;/p&gt;
-
-&lt;p&gt;In the particular case of a streaming application, you can also monitor:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;strong&gt;batch processing time&lt;/strong&gt;: if it’s frequently above your configured batch interval, your job is too slow at processing received and records and lags behind. Another hint for that is an increasing number of waiting batches. You need to either increase batch interval, add cores/mem to your job, optimize it.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;input stream pending records&lt;/strong&gt;: if you use a broker like Kafka or RabbitMQ, check that your job is able to process incoming events. Spark has flow control mechanisms to move pressure back to the sender, still you may want your data to be processed in a timely manner.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&quot;spark-application-development&quot;&gt;Spark application development&lt;/h2&gt;
-
-&lt;p&gt;Good, you have your own cluster now! It’s time to run something on it. This part won’t cover the basics of how to write a streaming job with Spark Streaming API, but rather try to list some useful tips on application development and life-cycle management.&lt;/p&gt;
-
-&lt;p&gt;A very complete programming guide is available &lt;a href=&quot;http://spark.apache.org/docs/latest/streaming-programming-guide.html&quot;&gt;here&lt;/a&gt; and is a good start point. Working examples are available in &lt;a href=&quot;https://github.com/apache/spark/tree/master/examples/src/main/scala/org/apache/spark/examples/streaming&quot;&gt;Spark github repo&lt;/a&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;cores-are-expensive&quot;&gt;Cores are expensive&lt;/h3&gt;
-
-&lt;p&gt;You’re still in the early stages but want to use Spark anyway. Spark streaming applications require at least 2 cores to run, and that can look overwhelming if you already think about the dozen of small streaming jobs you want to write.
-A quick solution is to write a &lt;strong&gt;single driver with several output operations&lt;/strong&gt;. You can then make different jobs share the same resources, within the same driver execution process. It’s still possible to scale, as it will benefit from adding additional cores to driver the same way a driver with a single output operation would do (you’ll have to define &lt;code&gt;spark.streaming.concurrentJobs&lt;/code&gt; to parallelize processing of jobs in a single driver) . Another advantage is you can create much cheaper integration test environments.&lt;/p&gt;
-
-&lt;p&gt;The drawbacks are:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;you loose code and process isolation, and you’ll have to redeploy everything even when you want to upgrade a single job. Code your driver with future splits in mind.&lt;/li&gt;
-  &lt;li&gt;debugging can be much harder.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h3 id=&quot;stateful-operators-think-twice&quot;&gt;Stateful operators: think twice&lt;/h3&gt;
-
-&lt;p&gt;They look apealing, and can do really great job. However, logic for stateful operations in a stream are more complex than other kinds, and more complex to debug.
-First of all, a common mistake we made at the beginning (saw it also in different mailing lists conversations), is to use stateful operations as persistent stores. They are not, of course, and they are wiped out when checkpoint directory is cleared. You have to save everything that needs to be in a reliable persistent storage. Stateful operations are great to store transitive states that you can afford to lose or are easy to store and restore on startup.
-Complexity in writing a working and maintainable job is also something to avoid. There are usually other ways to write the same job without using stateful operators (like persisting and fetching everything in DB)&lt;/p&gt;
-
-&lt;h3 id=&quot;event-driven&quot;&gt;Event-driven&lt;/h3&gt;
-
-&lt;p&gt;Think event-driven: streaming applications will run micro batches every few seconds. Is it ok to fetch static or live data from your relational database everytime, for every received record? It is a possible solution, but it won’t scale well. Prefer an event-driven approach: when you change the value of a column or row in DB that the streaming app should be aware of, also send a message asynchronously to a specific topic that will be broadcasted by your message broker.&lt;/p&gt;
-
-&lt;p&gt;You can then merge different &lt;code&gt;DStream&lt;/code&gt; in a single job using &lt;code&gt;DStream.join&lt;/code&gt;: if the first is of &lt;code&gt;(K,V)&lt;/code&gt; and the second &lt;code&gt;(K,W)&lt;/code&gt;, the merged stream will be of &lt;code&gt;(K,(V,W))&lt;/code&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;use-pooling-everywhere&quot;&gt;Use pooling everywhere&lt;/h3&gt;
-
-&lt;p&gt;It’s strongly recommended to use connection pooling everywhere. It is true with database connections, and you’re probably already using it in your applications. But it’s also true with connections to other systems, like your message broker. For that purpose, a simple solution is to use &lt;em&gt;Apache Commons Pool&lt;/em&gt; library.&lt;/p&gt;
-
-&lt;h3 id=&quot;batch-interval-and-recovery&quot;&gt;Batch interval and recovery&lt;/h3&gt;
-
-&lt;p&gt;When you design your job and calculate a relevant batch interval, you will take into account estimated messages rate, probable spikes in load, capacity of dedicated hardware, … A thing that must also be part of the reasoning is recovery in case of failure: if a driver (or any other piece of the system) fails and messages aren’t consumed for a while, they will pile up on the producer side. When application restarts, it will have to handle a massive and unusual work load. This can have several impacts, especially overwhelming systems used as data input and output providers (DB, brokers, …), and this can end up in messages lost because of processing errors.&lt;/p&gt;
-
-&lt;p&gt;Spark now ships back pressure mechanisms (on both sides), and you can also use &lt;code&gt;spark.streaming.receiver.maxRate&lt;/code&gt; that will define the maximum number of records per second a batch will process. This is extremely useful in case of recovery or during application upgrade, to avoid the firehose effect of letting messages queued in a broker.&lt;/p&gt;
-
-&lt;h3 id=&quot;life-cycle&quot;&gt;Life cycle&lt;/h3&gt;
-
-&lt;p&gt;If you have run stateful operations, or want complete recovery of a failed driver with no data loss, &lt;strong&gt;checkpointing&lt;/strong&gt; is mandatory.
-Both last data received and jobs meta data are checkpointed. This means that if you modify code job and redeploy, you also need to remove checkpoint directory. Even if you modify application submission configuration (number of cores, memory to allocate, …) you’ll have to do so.&lt;/p&gt;
-
-&lt;p&gt;Don’t forget to enable &lt;strong&gt;graceful shutdown&lt;/strong&gt;. When enabled, a hook is added to the shutdown sequence so the driver won’t stop until current batch is fully finished, while receiver has stopped and has no pending messages to be processed.&lt;/p&gt;
-
-&lt;p&gt;This was previously done with following piece of code&lt;/p&gt;
-
-&lt;div class=&quot;language-scala highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;sys&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;ShutdownHookThread&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-  &lt;span class=&quot;nv&quot;&gt;ssc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;py&quot;&gt;stop&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;But since 1.4 you can also use the following property&lt;/p&gt;
-
-&lt;div class=&quot;language-properties highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;py&quot;&gt;spark.streaming.stopGracefullyOnShutdown&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;true&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h3 id=&quot;tuning&quot;&gt;Tuning&lt;/h3&gt;
-
-&lt;p&gt;Apart from obvious or mandatory &lt;a href=&quot;http://spark.apache.org/docs/latest/configuration.html&quot;&gt;parameters&lt;/a&gt;, there are several important things to tune up:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;configuring &lt;strong&gt;block interval&lt;/strong&gt; (default is 200ms) improves performances a lot (divided batch processing time by 4 for us). Basically, for a small cluster and small amount of data, there is no need to divide incoming data into blocks of 200ms. It’s better to form bigger blocks and avoid wasting time in sending and processing small ones. 
-See &lt;a href=&quot;http://spark.apache.org/docs/latest/streaming-programming-guide.html#level-of-parallelism-in-data-receiving&quot;&gt;Spark performance tuning&lt;/a&gt; for details.&lt;/li&gt;
-  &lt;li&gt;number of &lt;strong&gt;concurrent jobs&lt;/strong&gt; is also important to setup if you have more than one output operation in your driver. If you don’t raise this number, each output operation will be run sequentially. The drawback is that it will be harder to detect jobs that run longer than the configured batch time, as operations will continue to run while a new batch is getting processed.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;don’t use the default serializer&lt;/strong&gt;: it’s a well-known fact, Java serialization isn’t efficient. Spark supports Kryo, but that requires to write read and write functions.&lt;/li&gt;
-  &lt;li&gt;configure &lt;strong&gt;cleaner TTL&lt;/strong&gt;, or RDD will be kept in memory forever.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;Here is a sample driver submission script&lt;/p&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;SPARK_HOME&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'/root/spark'&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;SPARK_MASTER&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'spark://host:6066'&lt;/span&gt;
-
-&lt;span class=&quot;nv&quot;&gt;$SPARK_HOME&lt;/span&gt;/bin/spark-submit &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
- &lt;span class=&quot;nt&quot;&gt;--class&lt;/span&gt; com.foobot.stream.DatapointStream &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
- &lt;span class=&quot;nt&quot;&gt;--master&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$SPARK_MASTER&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
- &lt;span class=&quot;nt&quot;&gt;--deploy-mode&lt;/span&gt; cluster &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
- &lt;span class=&quot;nt&quot;&gt;--supervise&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
- &lt;span class=&quot;nt&quot;&gt;--executor-memory&lt;/span&gt; 1536m &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
- &lt;span class=&quot;nt&quot;&gt;--total-executor-cores&lt;/span&gt; 6 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
- &lt;span class=&quot;nt&quot;&gt;--driver-memory&lt;/span&gt; 1G &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
- &lt;span class=&quot;nt&quot;&gt;--driver-java-options&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;-XX:MaxPermSize=512m&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
- &lt;span class=&quot;nt&quot;&gt;--conf&lt;/span&gt; spark.streaming.blockInterval&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;500 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
- &lt;span class=&quot;nt&quot;&gt;--conf&lt;/span&gt; spark.streaming.concurrentJobs&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;6 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
- &lt;span class=&quot;nt&quot;&gt;--conf&lt;/span&gt; spark.cleaner.ttl&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;1800 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
- &lt;span class=&quot;nt&quot;&gt;--conf&lt;/span&gt; spark.executor.logs.rolling.strategy&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;time&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
- &lt;span class=&quot;nt&quot;&gt;--conf&lt;/span&gt; spark.executor.logs.rolling.time.interval&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;daily &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
- &lt;span class=&quot;nt&quot;&gt;--conf&lt;/span&gt; spark.executor.logs.rolling.maxRetainedFiles&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;10 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
- &lt;span class=&quot;nt&quot;&gt;--conf&lt;/span&gt; spark.streaming.receiver.maxRate&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;30 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
- /home/ec2-user/spark-drivers/spark-driver-datapoint.jar &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
- &lt;span class=&quot;nv&quot;&gt;$1&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
-
-&lt;p&gt;What we shared here is experience using Spark Streaming, from prototyping to production, with a particular focus on how to get the best of it without wasting too much resources. 
-Most of these thoughts and advice remain valid for bigger clusters and workloads, but there would be different approaches and topics to discuss.&lt;/p&gt;
-
-</description>
-        <pubDate>Tue, 21 Jun 2016 10:00:00 +0200</pubDate>
-        <link>https://airboxlab.github.io//spark/streaming/cluster/ec2/aws/lean/2016/06/21/lean-spark-streaming.html</link>
-        <guid isPermaLink="true">https://airboxlab.github.io//spark/streaming/cluster/ec2/aws/lean/2016/06/21/lean-spark-streaming.html</guid>
-        
-        
-        <category>spark</category>
-        
-        <category>streaming</category>
-        
-        <category>cluster</category>
-        
-        <category>ec2</category>
-        
-        <category>aws</category>
-        
-        <category>lean</category>
         
       </item>
     
