@@ -6,8 +6,8 @@
 </description>
     <link>https://airboxlab.github.io//</link>
     <atom:link href="https://airboxlab.github.io//feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Tue, 01 Mar 2022 21:06:59 +0100</pubDate>
-    <lastBuildDate>Tue, 01 Mar 2022 21:06:59 +0100</lastBuildDate>
+    <pubDate>Thu, 03 Mar 2022 11:49:51 +0100</pubDate>
+    <lastBuildDate>Thu, 03 Mar 2022 11:49:51 +0100</lastBuildDate>
     <generator>Jekyll v4.2.0</generator>
     
       <item>
@@ -28,13 +28,21 @@
     margin-right: 20px;
 }
 .double {
-    width:49%;
+    width: 49%;
     margin: 0 auto;
+}
+.double-unconst {
+    width: auto;
+    margin: 0 auto;
+    margin-left: 1.5rem;
 }
 .image-foot {
     font-size:10pt;
-    max-width: 20rem;
+    max-width: 30rem;
     margin: 0 auto;
+}
+.small-img {
+  width: 45%;
 }
 ul {
   display: table;
@@ -43,7 +51,7 @@ ul {
 
 &lt;p&gt;This article deals with the use of autoregressive (AR) models in control policies. After a short background and litterature review, we formulate the problem statement and theoritical advantages over other control strategies involving taking multiple decisions at the same time.&lt;/p&gt;
 
-&lt;p&gt;We then demonstrate it can overperform policies with “classic” models on a series of toy tasks (2D grid path-finding) and simulated HVAC environments.&lt;/p&gt;
+&lt;p&gt;We then demonstrate it can overperform policies with “classic” models on a series of toy tasks (2D grid path-finding) and simulated Heating, Ventilation and Air Conditioning (HVAC) system environments.&lt;/p&gt;
 
 &lt;h2 id=&quot;autoregressive-models-a-brief-introduction&quot;&gt;Autoregressive models: a brief introduction&lt;/h2&gt;
 
@@ -97,7 +105,7 @@ With this assumption, problem forumlation with multi-agent setup can lead to the
 &lt;p&gt;Below diagram illustrates such a dilemma&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;/assets/ar_policy/ar_vs_ma.svg&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 2: 2 agents taking independent decisions on the same state, leading to a credit assignment problem&lt;/i&gt;&lt;/center&gt;
+&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 2: 2 agents being rewarded on the same state, leading to a credit assignment problem&lt;/i&gt;&lt;/center&gt;
 &lt;p&gt;&lt;br /&gt;&lt;/p&gt;
 
 &lt;p&gt;Tricks and heuristics can be found to help with this issue but they can give suboptimal performance, when they exist at all.&lt;/p&gt;
@@ -151,6 +159,7 @@ Many equipment are involved, like fans, heating and cooling coils, chilled and h
   &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 1&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 2&lt;/code&gt; are actually parameters of their respective probability distributions (PD).&lt;/li&gt;
   &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 1&lt;/code&gt; scalar value (sampled from estimated PD) is passed as input for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 2&lt;/code&gt; distribution estimation&lt;/li&gt;
   &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 1&lt;/code&gt; &lt;em&gt;logits&lt;/em&gt; could be passed as input instead of scalar value. This can help preserve information on large discrete/categorical distributions.&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 2&lt;/code&gt; inputs could be solely made of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 1&lt;/code&gt; output (scalar or logits). In such case policy can be formulated as &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=\pi_{\theta}(a, s) = \pi_{\theta}(a_1, s) \cdot \prod_{i=2}^{n} \pi_{\theta}(a_{i} \bigm\lvert a_{k&amp;lt;i})&quot; /&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;p&gt;Note that this model doesn’t use the masked autoencoder architecture, hence wouldn’t scale well for the estimation of a large number of actions distributions.&lt;/p&gt;
@@ -161,14 +170,14 @@ Many equipment are involved, like fans, heating and cooling coils, chilled and h
 
 &lt;h3 id=&quot;a-path-finding-task&quot;&gt;A path-finding task&lt;/h3&gt;
 
-&lt;p&gt;The first task is a toy problem where an agent must navigate through a 2D-grid and maximize its reward. The action space is designed with 2 actions (vertical and horizontal movements). 
-To emphasize on the need to learn correlation between actions, the reward scheme is modeled using 2 gaussian distributions located on 2 corners, and a one-time bonus whenever the agent reaches a point close to the mean of each gaussian. We refer to this training environment as bi-modal environment (BME). The agent start each episode starting at the center of the grid. Episode ends when all bonuses are found.&lt;/p&gt;
+&lt;p&gt;The first task is a toy problem where an agent must navigate through a 2D-grid and maximize its reward by moving to certain locations. The action space is designed with 2 actions (vertical and horizontal movements). 
+To emphasize on the need to learn correlation between actions, the reward scheme is modeled using 2 gaussian distributions located on 2 corners of the grid, and a one-time bonus whenever the agent reaches a point close to the mean of each gaussian. The agent start each episode starting at the center of the grid. Episode ends when all bonuses are found. We refer to this training environment as bi-modal environment (BME).&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;/assets/ar_policy/bi_modal_env_grid.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
 &lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 4: rewards distribution over the BME grid&lt;/i&gt;&lt;/center&gt;
 &lt;p&gt;&lt;br /&gt;&lt;/p&gt;
 
-&lt;p&gt;We run 5 experiments with different seeds for each method (classic and AR) and compare the mean return per episode below.&lt;/p&gt;
+&lt;p&gt;We run 5 experiments with different seeds for each method (classic and AR) on the BME and compare the mean return per episode below.&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;/assets/ar_policy/bi_modal_avg_return.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
 &lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 5: average episode reward for non AR policy (classic, light green) and AR policy (dark green)&lt;/i&gt;&lt;/center&gt;
@@ -181,6 +190,58 @@ Below animations capture sample trajectories after 50 training iterations.&lt;/p
 &lt;img src=&quot;/assets/ar_policy/bi_modal_ar_traj.gif&quot; alt=&quot;sources&quot; class=&quot;double&quot; /&gt;&lt;/p&gt;
 &lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 6a and 6b: average episode reward for classic policy (left) and AR policy (right)&lt;/i&gt;&lt;/center&gt;
 &lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;On this toy environment, AR policy achieves a much better mean episode reward than its counterpart.&lt;/p&gt;
+
+&lt;h3 id=&quot;a-simulated-hvac&quot;&gt;A simulated HVAC&lt;/h3&gt;
+
+&lt;p&gt;We now use a simulated building and its HVAC. The building model, or digital twin, is created from an actual building and calibrated on Foobot platform using OpenStudio and EnergyPlus opensource software. It is a 3 storey office building, with a dedicated outdoor air system, a single air handling unit (AHU) with eletric heating and chilled water coil served by a local plant, and fan coil units for zones comfort.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/ar_policy/dt_3d_geo.png&quot; alt=&quot;sources&quot; class=&quot;center small-img&quot; /&gt;&lt;/p&gt;
+&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 7: office building used as a test environment&lt;/i&gt;&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;A policy is trained with and without autoregressive (AR) actions model. The observation and action spaces, reward function, and PPO parameters are identical between the 2 methods. The action space is composed of 2 actions that command the amount and temperature of air supplied to the zones by the AHU. Each experiment is run for 1e6 timesteps.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/ar_policy/hvac_env_rew.svg&quot; alt=&quot;sources&quot; class=&quot;double&quot; /&gt;
+&lt;img src=&quot;/assets/ar_policy/hvac_env_power.svg&quot; alt=&quot;sources&quot; class=&quot;double&quot; /&gt;
+&lt;br /&gt;
+&lt;img src=&quot;/assets/ar_policy/hvac_env_tmp.svg&quot; alt=&quot;sources&quot; class=&quot;double&quot; /&gt;
+&lt;img src=&quot;/assets/ar_policy/hvac_env_co2.svg&quot; alt=&quot;sources&quot; class=&quot;double&quot; /&gt;&lt;/p&gt;
+&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 8: average episode reward (a., upper left), power demand (b., upper right, in kW), indoor temperature (c., lower left, in Celsius degrees) and CO2 (d., in ppm) for classic and AR policy (blue line) models&lt;/i&gt;&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;AR policy model not only achieves a better mean episode reward (fig 8a.), but it significantly outperforms (by 8.5%) the energy consumption reduction of the classic method. Other reward components, like thermal comfort and indoor air quality, are also better in line with their respective constraints which are a maximum of 25°C indoor temperature and a maximum of 1000ppm for indoor CO2.&lt;/p&gt;
+
+&lt;h3 id=&quot;analysing-impacts-and-relationships&quot;&gt;Analysing impacts and relationships&lt;/h3&gt;
+
+&lt;p&gt;To understand better our model, a short study is conducted to highlight how action 1 influence action 2, how each action influence the state space, and what part of the state space has the most influence on agent decisions.&lt;/p&gt;
+
+&lt;p&gt;To do that, we’ll first map our system and learned policy with functions approximations that govern it:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;em&gt;transitions&lt;/em&gt; that associates an action and a state to a next state &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=f_{tr}(a_{t}, s_{t}) \Rightarrow s_{t'}&quot; /&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;rewards&lt;/em&gt; that maps action and state with its immediate reward &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=f_{rew}(a_{t}, s_{t'}) \Rightarrow r_{t}&quot; /&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;policy&lt;/em&gt; that maps a state and the next action &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=f_{p}(s_{t}) \Rightarrow a_{t'}&quot; /&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;autoregression&lt;/em&gt; that looks for correlation between action 1 and action 2 &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=f_{ar}(a_{1, t}) \Rightarrow a_{2, t}&quot; /&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;We then compute the jacobian of each function in order to differentiate with respect to relevant parameters. For instance, to highlight what part of the state space is directly influenced by agent decisions, we’ll use the jacobian of the transitions function &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=\mathbb{J}({f_{tr}})&quot; /&gt; and differentiate with respect to agent actions.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/ar_policy/jac_f_p1.png&quot; alt=&quot;sources&quot; class=&quot;double-unconst&quot; /&gt;
+&lt;img src=&quot;/assets/ar_policy/jac_f_p2.png&quot; alt=&quot;sources&quot; class=&quot;double-unconst&quot; /&gt;&lt;/p&gt;
+&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 9: what part of the state space influences decisions the most, for each action a1 (left) and a2 (right). Actions a1 and a2 seem influenced by different parts of the state&lt;/i&gt;&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/ar_policy/jac_f_tr.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 10: what part of the state space is &quot;controllable&quot; by the policy, for each action (a1, a2) of the space. Here indoor conditions are the most influenced, from both actions&lt;/i&gt;&lt;/center&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/ar_policy/jac_f_ar.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 11: what values of a1 influence the most decisions on a2. This highlights potential non-linear relationships between certain parts of the a1 action space and a2&lt;/i&gt;&lt;/center&gt;
+
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;Through a series of examples we’ve demonstrated that autoregressive (AR) policies can bring significant performance and training speed improvements compared to more classic models.&lt;/p&gt;
 
 &lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
 
