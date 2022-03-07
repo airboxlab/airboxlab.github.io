@@ -6,8 +6,8 @@
 </description>
     <link>https://airboxlab.github.io//</link>
     <atom:link href="https://airboxlab.github.io//feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Thu, 03 Mar 2022 15:38:44 +0100</pubDate>
-    <lastBuildDate>Thu, 03 Mar 2022 15:38:44 +0100</lastBuildDate>
+    <pubDate>Mon, 07 Mar 2022 09:34:40 +0100</pubDate>
+    <lastBuildDate>Mon, 07 Mar 2022 09:34:40 +0100</lastBuildDate>
     <generator>Jekyll v4.2.0</generator>
     
       <item>
@@ -217,7 +217,7 @@ Below animations capture sample trajectories after 50 training iterations.&lt;/p
 
 &lt;p&gt;To understand better our model, a short study is conducted to highlight how action 1 influence action 2, how each action influence the state space, and what part of the state space has the most influence on agent decisions.&lt;/p&gt;
 
-&lt;p&gt;To do that, we’ll first map our system and learned policy with functions approximations that govern it:&lt;/p&gt;
+&lt;p&gt;To do that, we’ll first map our system and learned policy with functions approximations that govern it. They can be seen as forward models that predict the behavior of our policy.&lt;/p&gt;
 
 &lt;ul&gt;
   &lt;li&gt;&lt;em&gt;transitions&lt;/em&gt; that associates an action and a state to a next state &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=f_{tr}(a_{t}, s_{t}) \Rightarrow s_{t'}&quot; /&gt;&lt;/li&gt;
@@ -236,8 +236,15 @@ Below animations capture sample trajectories after 50 training iterations.&lt;/p
 &lt;p&gt;&lt;img src=&quot;/assets/ar_policy/jac_f_tr.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
 &lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 10: what part of the state space is &quot;controllable&quot; by the policy, for each action (a1, a2) of the space. Here indoor conditions are the most influenced, from both actions&lt;/i&gt;&lt;/center&gt;
 
-&lt;p&gt;&lt;img src=&quot;/assets/ar_policy/jac_f_ar.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 11: what values of a1 influence the most decisions on a2. This highlights potential non-linear relationships between certain parts of the a1 action space and a2&lt;/i&gt;&lt;/center&gt;
+&lt;p&gt;Influence of a1 over a2 can also be estimated thanks to computing the jacobian of the forward model that approximates the predictor function that gives a2 knowing a1. This allows to highlights the much stronger influence score of a1 over a2, as shown in figure 11.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/ar_policy/jac_f_ar_bar.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 11: a1 influence on a2, as a scalar score. Left bar for a classic model, right for the AR one&lt;/i&gt;&lt;/center&gt;
+
+&lt;p&gt;We can also estimate how much each action influence the immediate reward. Interestingly, forward models learned on AR and classic policies lead different estimate: model learned on classic policy shows a somewhat equal influence of each action, while model learned on AR policy shows a much stronger influence of a1.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/ar_policy/jac_f_rew.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 12: a1 and a2 influence score on immediate reward, for each policy type&lt;/i&gt;&lt;/center&gt;
 
 &lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
 
