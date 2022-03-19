@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Airboxlab Technical Blog</title>
-    <description>The guys behind Foobot.Talking here about our achievements, failures &amp; OSS contributions
+    <title>Foobot Technical Blog</title>
+    <description>The guys behind Foobot. Talking here about our achievements, failures &amp; OSS contributions
 </description>
     <link>https://airboxlab.github.io//</link>
     <atom:link href="https://airboxlab.github.io//feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Mon, 07 Mar 2022 09:34:40 +0100</pubDate>
-    <lastBuildDate>Mon, 07 Mar 2022 09:34:40 +0100</lastBuildDate>
+    <pubDate>Sat, 12 Mar 2022 20:45:03 +0100</pubDate>
+    <lastBuildDate>Sat, 12 Mar 2022 20:45:03 +0100</lastBuildDate>
     <generator>Jekyll v4.2.0</generator>
     
       <item>
         <title>Autoregressive control policies for HVAC optimization</title>
-        <description>&lt;style type=&quot;text/css&quot;&gt;
+        <description>
+&lt;style type=&quot;text/css&quot;&gt;
 .center {
     display:block;
     margin: 0 auto;
@@ -49,89 +50,16 @@ ul {
 }
 &lt;/style&gt;
 
-&lt;p&gt;This article deals with the use of autoregressive (AR) models in control policies. After a short background and litterature review, we formulate the problem statement and theoritical advantages over other control strategies involving taking multiple decisions at the same time.&lt;/p&gt;
+&lt;p&gt;Real world applications of Reinforcement Learning (RL) are still limited as the technology is brittle and requires an enormous amount of simulated interactions. The power of simulated Heating, Ventilation and Air Conditioning (HVAC) systems represent a unique opportunity to use RL in the real systems. Nonetheless, HVAC represent an array of different challenges such as learning robust policies from simulation that can transfer into the real world and defining a reward function that will lead to the desired behavior. In this article, we examine different strategies to deal with the rich action spaces of HVAC systems.&lt;/p&gt;
 
-&lt;p&gt;We then demonstrate it can overperform policies with “classic” models on a series of toy tasks (2D grid path-finding) and simulated Heating, Ventilation and Air Conditioning (HVAC) system environments.&lt;/p&gt;
+&lt;h2 id=&quot;problem-setting&quot;&gt;Problem Setting&lt;/h2&gt;
 
-&lt;h2 id=&quot;autoregressive-models-a-brief-introduction&quot;&gt;Autoregressive models: a brief introduction&lt;/h2&gt;
+&lt;p&gt;HVAC systems are complex and made of multiple sub-systems that interact in complex, non-linear ways (see a brief introduction on that in &lt;a href=&quot;https://airboxlab.github.io/hvac/control/ai/reinforcement_learning/2021/01/24/smart_control.html&quot;&gt;HVAC processes control: can AI help?&lt;/a&gt;).&lt;/p&gt;
 
-&lt;p&gt;Autoregressive (AR) models are commonly used in statistics and time series problems. They can be defined as regressions where outputs depend on previous values on the same time series. This indicates a strong &lt;em&gt;temporal&lt;/em&gt; dependency between past and future observations.
-Famously known algorithms exist that build on this principle like &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ARMA&lt;/code&gt; (Autoregressive Moving Average) and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ARIMA&lt;/code&gt; (Autoregressive Integrated Moving Average).&lt;/p&gt;
-
-&lt;p&gt;In the present article we’ll give a slightly different meaning to &lt;em&gt;autoregressive&lt;/em&gt;, although the &lt;em&gt;temporal&lt;/em&gt; aspect is still there.&lt;/p&gt;
-
-&lt;h3 id=&quot;multi-decisions-ar-models&quot;&gt;Multi-decisions AR models&lt;/h3&gt;
-
-&lt;p&gt;In multi-decisions control problems, we often find the following methodology for solving optimization problems that involve applying multiple actions on an environment:&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;a single control policy is learnt that models multiple independent action probability distributions&lt;/li&gt;
-  &lt;li&gt;multiple control policies model one action probability distribution each&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;In real-world problems, there is often a dependency between multiple decisions taken in the same environment. Here are a few illustrations for control problems involving 2 decisions:&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;a bipedal needs to coordinate his left and right legs&lt;/li&gt;
-  &lt;li&gt;a car driver must coordinate actions on break and accelerator&lt;/li&gt;
-  &lt;li&gt;…&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;In this type of problem, the dependency between actions is strong. That’s what AR models can help solving, by modeling a statistical dependency between an action and potentially many others.&lt;/p&gt;
-
-&lt;p&gt;This differs from the broader definition of autoregressive models where the statistical dependency is between actions taken at different time steps: action is applied on the environment, result is observed, then a new action is decided that takes into account the previous action and its result on the environment.&lt;/p&gt;
-
-&lt;p&gt;Below diagram illustrates these different ways of modeling decision processes with and without AR models&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/ar_policy/ar_def.svg&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 1: 3 ways of modeling decision processes with state / action transitions using independent actions distributions (a.) and AR models (b. and c.)&lt;/i&gt;&lt;/center&gt;
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;Note: nothing prevents from modeling both intra and inter-step dependencies.&lt;/p&gt;
-
-&lt;h3 id=&quot;optimizing-multi-decisions-processes-with-reinforcement-learning&quot;&gt;Optimizing multi-decisions processes with Reinforcement Learning&lt;/h3&gt;
-
-&lt;p&gt;We’ve briefly described different ways of modeling decision processes that aim at optimizing parameters of multiple actions probability distributions. Reinforcement learning (RL) is, in the family of machine learning / artificial intelligence techniques, a method that can be used to solve this. It is based on a trial-and-error learning process, where an agent tries to learn the optimal policy by interacting with its environment (actions), learning from observations (state) and rewards (also referred as penalties).&lt;/p&gt;
-
-&lt;p&gt;Modeling methods described in previous section apply to RL as well, while independent action distributions are the modeling technique that is the most often used.&lt;/p&gt;
-
-&lt;h4 id=&quot;independently-sampled-decisions&quot;&gt;Independently-sampled decisions&lt;/h4&gt;
-
-&lt;p&gt;This is the most common case. In many classic problems, each action of a multi-decision problem is modeled and its probability distribution is estimated as independent from other actions. This doesn’t allow to account for relationships between actions that can be encountered in many problems.&lt;/p&gt;
-
-&lt;h4 id=&quot;multi-agent&quot;&gt;Multi-agent&lt;/h4&gt;
-
-&lt;p&gt;In a multi-agent setting, two or more agents are learning a policy by acting on the same environment. While there are problems with no collaboration needed between agents (each agent decisions has neutral impact on others), in this article we focus on relationships between decisions that have impact on the same shared state.
-With this assumption, problem forumlation with multi-agent setup can lead to the well-known “credit assignment dilemma”: each agent needs to be rewarded for its action, but how can a fair credit be given to each since they influence the same system?&lt;/p&gt;
-
-&lt;p&gt;Below diagram illustrates such a dilemma&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/ar_policy/ar_vs_ma.svg&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 2: 2 agents being rewarded on the same state, leading to a credit assignment problem&lt;/i&gt;&lt;/center&gt;
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;Tricks and heuristics can be found to help with this issue but they can give suboptimal performance, when they exist at all.&lt;/p&gt;
-
-&lt;h2 id=&quot;in-the-litterature&quot;&gt;In the litterature&lt;/h2&gt;
-
-&lt;p&gt;An extensive review of all AR modeling techniques is out of the scope of this article. We focus on AR models in RL problems that aim at modeling dependencies between actions within the same control time step.&lt;/p&gt;
-
-&lt;p&gt;In Harmer et al. (2018)&lt;a href=&quot;#1&quot;&gt;[1]&lt;/a&gt;, imitation learning is used in a 3D game setting that involves multiple actions. However, an assumption is made that actions are conditionnally independent given the state. This simplification reduces computational complexity, but doesn’t allow learning relationships between actions.&lt;/p&gt;
-
-&lt;p&gt;In Wang et al. (2016)&lt;a href=&quot;#2&quot;&gt;[2]&lt;/a&gt;, an algorithm is proposed to introduce regularization terms in two classic RL methods. The regularization consists of 2 parameters that must be estimated alternatively on every learning step. This proves to improve learning performance on some classic control problems like 2D-grid navigation or Persistent Search and Track (PST).&lt;/p&gt;
-
-&lt;p&gt;In Vinyals et al. (2017)&lt;a href=&quot;#3&quot;&gt;[3]&lt;/a&gt;, an extensive problem definition is given about training an agent on StarCraft II 3D-game. In particular, the action space representation is modeled to introduce conditional dependencies between action. (see section 4.2).&lt;/p&gt;
-
-&lt;p&gt;Finally, in Germain et al. (2018)&lt;a href=&quot;#4&quot;&gt;[4]&lt;/a&gt;, a masked autoencoder neural network architecture is introduced to estimate parameters of probability distributions. The method uses masking so to respect autoregression constraint, which is to reconstruct an input only from previous inputs. This allows fast and scalable distributions estimation, with any type of ordering or relationship modeling constraints. The study doesn’t give any RL application example but it is theoritically usable for the policy network architecture.&lt;/p&gt;
-
-&lt;h2 id=&quot;hvac-control-sequences-applications&quot;&gt;HVAC control sequences applications&lt;/h2&gt;
-
-&lt;p&gt;HVAC systems are complex and made of multiple systems that interact in complex, non-linear ways (see a brief introduction on that in &lt;a href=&quot;https://airboxlab.github.io/hvac/control/ai/reinforcement_learning/2021/01/24/smart_control.html&quot;&gt;HVAC processes control: can AI help?&lt;/a&gt;).&lt;/p&gt;
-
-&lt;p&gt;HVAC air loops are responsible for maintaining fresh air and good temperatures in buildings occupied zones. They can be seen as a sequence of decisions, starting from how much fresh air the systems lets in, going through deciding at what flow rate it must be pushed and at what temperature, and ending with how this air must be “adjusted” for the target zone.
+&lt;p&gt;HVAC air and plant loops are responsible for maintaining comfort in buildings occupied zones. Their continuous control is made of a sequence of decisions. Taking the example of an air loop, it can start by deciding how much fresh air the systems lets in, then deciding at what flow rate it must be pushed and at what temperature, and ending with how this air must be “adjusted” for the target zone.
 Many equipment are involved, like fans, heating and cooling coils, chilled and hot water plant loops, etc.&lt;/p&gt;
 
-&lt;h3 id=&quot;why-is-it-a-good-fit&quot;&gt;Why is it a good fit?&lt;/h3&gt;
-
-&lt;p&gt;Let’s build our intuition with an example: a heater is equipped with a hot water coil and a fan, and heats the space by controlling the hot water valve and the fan to blow the hot air. If you turn the fan off but keep valve open, hot air won’t move much, and energy consumption will be near 0. If you turn it to maximum position or speed, hot air will move quicker, room will heat quicker too, and energy consumption will be high, both because of the higher fan electricity consumption, and because it increases heat exchange between air and hot water coil.&lt;/p&gt;
+&lt;p&gt;Let’s build our intuition with a simple example: a heater is equipped with a hot water coil and a fan, and heats the space by controlling the hot water valve and the fan to blow the hot air. If you turn the fan off but keep valve open, hot air won’t move much, and energy consumption will be near 0. If you turn it to maximum position or speed, hot air will move quicker, room will heat quicker too, and energy consumption will be high, both because of the higher fan electricity consumption, and because it increases heat exchange between air and hot water coil.&lt;/p&gt;
 
 &lt;p&gt;As a consequence, optimizing control on this simple heating system would require to consider both fan speed and hot water valve position, with prior knowledge that fan and valve have a non-linear dependency regarding temperature of the air blown and energy consumption.&lt;/p&gt;
 
@@ -139,8 +67,17 @@ Many equipment are involved, like fans, heating and cooling coils, chilled and h
 
 &lt;p&gt;That’s where AR methods and Deep RL can be a good fit: combining function approximation capabilities of neural networks, theoritically unlimited observability of the system and modeling of actions dependencies, the HVAC system and the building it serves could be controlled as a whole (holistic approach), and learned policies could model complex relationships between states and equipment.&lt;/p&gt;
 
-&lt;h3 id=&quot;formulation&quot;&gt;Formulation&lt;/h3&gt;
+&lt;h2 id=&quot;high-dimensional-action-spaces&quot;&gt;High dimensional action spaces&lt;/h2&gt;
 
+&lt;p&gt;&lt;img src=&quot;/assets/ar_policy/ar_def.svg&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 1: 3 ways of modeling decision processes with state / action transitions using independent actions distributions (a.) and AR models (b. and c.)&lt;/i&gt;&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;state-conditionally-independent-actions&quot;&gt;State conditionally independent actions&lt;/h3&gt;
+
+&lt;p&gt;This is the most common case. In many classic problems, each action of a multi-decision problem is modeled and its probability distribution is estimated as independent from other actions. This doesn’t allow to account for relationships between actions that can be encountered in many problems.&lt;/p&gt;
+
+&lt;h3 id=&quot;introducing-action-dependence-with-autoregressive-policies&quot;&gt;Introducing action dependence with autoregressive policies&lt;/h3&gt;
 &lt;p&gt;Given a policy &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=\pi_{\theta}&quot; /&gt; to optimize with regards to parameters &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=\theta&quot; /&gt;, state &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=s \in \mathcal{S}&quot; /&gt;, a set of n actions &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=a_{i} \in \mathcal{A}&quot; /&gt;, we can represent the policy as following:&lt;/p&gt;
 &lt;center&gt;&lt;img src=&quot;https://render.githubusercontent.com/render/math?math=\pi_{\theta}(a, s) = \prod_{i=1}^{n} \pi_{\theta}(a_{i} \bigm\lvert a_{k&amp;lt;i}, s)&quot; /&gt;&lt;/center&gt;
 &lt;p&gt;&lt;br /&gt;&lt;/p&gt;
@@ -150,7 +87,7 @@ Many equipment are involved, like fans, heating and cooling coils, chilled and h
 &lt;p&gt;An example neural network architecture illustrating this formulation is given below&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;/assets/ar_policy/ar_nn_arch.svg&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 3: example neural network architecture to model conditional dependencies between actions&lt;/i&gt;&lt;/center&gt;
+&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 2: example neural network architecture to model conditional dependencies between actions&lt;/i&gt;&lt;/center&gt;
 &lt;p&gt;&lt;br /&gt;&lt;/p&gt;
 
 &lt;p&gt;In this model, a policy with 2 actions is used. It should be noted that:&lt;/p&gt;
@@ -162,11 +99,11 @@ Many equipment are involved, like fans, heating and cooling coils, chilled and h
   &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 2&lt;/code&gt; inputs could be solely made of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 1&lt;/code&gt; output (scalar or logits). In such case policy can be formulated as &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=\pi_{\theta}(a, s) = \pi_{\theta}(a_1, s) \cdot \prod_{i=2}^{n} \pi_{\theta}(a_{i} \bigm\lvert a_{k&amp;lt;i})&quot; /&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;Note that this model doesn’t use the masked autoencoder architecture, hence wouldn’t scale well for the estimation of a large number of actions distributions.&lt;/p&gt;
+&lt;p&gt;Note that this model hence wouldn’t scale well for the estimation of a large number of actions distributions. For large action spaces, one can refer to the &lt;em&gt;MADE&lt;/em&gt; architecture &lt;a href=&quot;#1&quot;&gt;[1]&lt;/a&gt;.&lt;/p&gt;
 
 &lt;h2 id=&quot;experiments&quot;&gt;Experiments&lt;/h2&gt;
 
-&lt;p&gt;To validate benefits of such architecture, we compare performance of “classic” network models with the one described in previous section. To draw a fair comparison, the same total number of neural network cells is used in classic and AR policies networks. Furthermore, all other parameters of the Proximal Policy Optimization (PPO, Shulman et al. &lt;a href=&quot;#5&quot;&gt;[5]&lt;/a&gt;) algorithm are kept equal between the 2 models.&lt;/p&gt;
+&lt;p&gt;To validate benefits of such architecture, we compare performance of “classic” network models with the one described in previous section. To draw a fair comparison, the same total number of neural network cells is used in classic and AR policies networks. Furthermore, all other parameters of the Proximal Policy Optimization (PPO, Shulman et al. &lt;a href=&quot;#2&quot;&gt;[2]&lt;/a&gt;) algorithm are kept equal between the 2 models.&lt;/p&gt;
 
 &lt;h3 id=&quot;a-path-finding-task&quot;&gt;A path-finding task&lt;/h3&gt;
 
@@ -174,13 +111,13 @@ Many equipment are involved, like fans, heating and cooling coils, chilled and h
 To emphasize on the need to learn correlation between actions, the reward scheme is modeled using 2 gaussian distributions located on 2 corners of the grid, and a one-time bonus whenever the agent reaches a point close to the mean of each gaussian. The agent start each episode starting at the center of the grid. Episode ends when all bonuses are found. We refer to this training environment as bi-modal environment (BME).&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;/assets/ar_policy/bi_modal_env_grid.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 4: rewards distribution over the BME grid&lt;/i&gt;&lt;/center&gt;
+&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 3: rewards distribution over the BME grid&lt;/i&gt;&lt;/center&gt;
 &lt;p&gt;&lt;br /&gt;&lt;/p&gt;
 
 &lt;p&gt;We run 5 experiments with different seeds for each method (classic and AR) on the BME and compare the mean return per episode below.&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;/assets/ar_policy/bi_modal_avg_return.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 5: average episode reward for non AR policy (classic, light green) and AR policy (dark green)&lt;/i&gt;&lt;/center&gt;
+&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 4: average episode reward for non AR policy (classic, light green) and AR policy (dark green)&lt;/i&gt;&lt;/center&gt;
 &lt;p&gt;&lt;br /&gt;&lt;/p&gt;
 
 &lt;p&gt;Visual inspection of trajectories for each method can highlight non-efficiencies and differencies. 
@@ -188,7 +125,7 @@ Below animations capture sample trajectories after 50 training iterations.&lt;/p
 
 &lt;p&gt;&lt;img src=&quot;/assets/ar_policy/bi_modal_classic_traj.gif&quot; alt=&quot;sources&quot; class=&quot;double&quot; /&gt;
 &lt;img src=&quot;/assets/ar_policy/bi_modal_ar_traj.gif&quot; alt=&quot;sources&quot; class=&quot;double&quot; /&gt;&lt;/p&gt;
-&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 6a and 6b: average episode reward for classic policy (left) and AR policy (right)&lt;/i&gt;&lt;/center&gt;
+&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 5a and 5b: average episode reward for classic policy (left) and AR policy (right)&lt;/i&gt;&lt;/center&gt;
 &lt;p&gt;&lt;br /&gt;&lt;/p&gt;
 
 &lt;p&gt;On this toy environment, AR policy achieves a much better mean episode reward than its counterpart.&lt;/p&gt;
@@ -198,7 +135,7 @@ Below animations capture sample trajectories after 50 training iterations.&lt;/p
 &lt;p&gt;We now use a simulated building and its HVAC. The building model, or digital twin, is created from an actual building and calibrated on Foobot platform using OpenStudio and EnergyPlus opensource software. It is a 3 storey office building, with a dedicated outdoor air system, a single air handling unit (AHU) with eletric heating and chilled water coil served by a local plant, and fan coil units for zones comfort.&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;/assets/ar_policy/dt_3d_geo.png&quot; alt=&quot;sources&quot; class=&quot;center small-img&quot; /&gt;&lt;/p&gt;
-&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 7: office building used as a test environment&lt;/i&gt;&lt;/center&gt;
+&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 6: office building used as a test environment&lt;/i&gt;&lt;/center&gt;
 &lt;p&gt;&lt;br /&gt;&lt;/p&gt;
 
 &lt;p&gt;A policy is trained with and without autoregressive (AR) actions model. The observation and action spaces, reward function, and PPO parameters are identical between the 2 methods. The action space is composed of 2 actions that command the amount and temperature of air supplied to the zones by the AHU. Each experiment is run for 1e6 timesteps.&lt;/p&gt;
@@ -208,10 +145,10 @@ Below animations capture sample trajectories after 50 training iterations.&lt;/p
 &lt;br /&gt;
 &lt;img src=&quot;/assets/ar_policy/hvac_env_tmp.svg&quot; alt=&quot;sources&quot; class=&quot;double&quot; /&gt;
 &lt;img src=&quot;/assets/ar_policy/hvac_env_co2.svg&quot; alt=&quot;sources&quot; class=&quot;double&quot; /&gt;&lt;/p&gt;
-&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 8: average episode reward (a., upper left), power demand (b., upper right, in kW), indoor temperature (c., lower left, in Celsius degrees) and CO2 (d., in ppm) for classic and AR policy (blue line) models&lt;/i&gt;&lt;/center&gt;
+&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 7 average episode reward (a., upper left), power demand (b., upper right, in kW), indoor temperature (c., lower left, in Celsius degrees) and CO2 (d., in ppm) for classic and AR policy (blue line) models&lt;/i&gt;&lt;/center&gt;
 &lt;p&gt;&lt;br /&gt;&lt;/p&gt;
 
-&lt;p&gt;AR policy model not only achieves a better mean episode reward (fig 8a.), but it significantly outperforms (by 8.5%) the energy consumption reduction of the classic method. Other reward components, like thermal comfort and indoor air quality, are also better in line with their respective constraints which are a maximum of 25°C indoor temperature and a maximum of 1000ppm for indoor CO2.&lt;/p&gt;
+&lt;p&gt;AR policy model not only achieves a better mean episode reward (fig 7a.), but it significantly outperforms (by 8.5%) the energy consumption reduction of the classic method. Other reward components, like thermal comfort and indoor air quality, are also better in line with their respective constraints which are a maximum of 25°C indoor temperature and a maximum of 1000ppm for indoor CO2.&lt;/p&gt;
 
 &lt;h3 id=&quot;analysing-impacts-and-relationships&quot;&gt;Analysing impacts and relationships&lt;/h3&gt;
 
@@ -230,21 +167,21 @@ Below animations capture sample trajectories after 50 training iterations.&lt;/p
 
 &lt;p&gt;&lt;img src=&quot;/assets/ar_policy/jac_f_p1.png&quot; alt=&quot;sources&quot; class=&quot;double-unconst&quot; /&gt;
 &lt;img src=&quot;/assets/ar_policy/jac_f_p2.png&quot; alt=&quot;sources&quot; class=&quot;double-unconst&quot; /&gt;&lt;/p&gt;
-&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 9: what part of the state space influences decisions the most, for each action a1 (left) and a2 (right). Actions a1 and a2 seem influenced by different parts of the state&lt;/i&gt;&lt;/center&gt;
+&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 8: what part of the state space influences decisions the most, for each action a1 (left) and a2 (right). Actions a1 and a2 seem influenced by different parts of the state&lt;/i&gt;&lt;/center&gt;
 &lt;p&gt;&lt;br /&gt;&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;/assets/ar_policy/jac_f_tr.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 10: what part of the state space is &quot;controllable&quot; by the policy, for each action (a1, a2) of the space. Here indoor conditions are the most influenced, from both actions&lt;/i&gt;&lt;/center&gt;
+&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 9: what part of the state space is &quot;controllable&quot; by the policy, for each action (a1, a2) of the space. Here indoor conditions are the most influenced, from both actions&lt;/i&gt;&lt;/center&gt;
 
-&lt;p&gt;Influence of a1 over a2 can also be estimated thanks to computing the jacobian of the forward model that approximates the predictor function that gives a2 knowing a1. This allows to highlights the much stronger influence score of a1 over a2, as shown in figure 11.&lt;/p&gt;
+&lt;p&gt;Influence of a1 over a2 can also be estimated thanks to computing the jacobian of the forward model that approximates the predictor function that gives a2 knowing a1. This allows to highlight the much stronger influence score of a1 over a2, as shown in &lt;a href=&quot;#fig11&quot;&gt;figure 11&lt;/a&gt;.&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;/assets/ar_policy/jac_f_ar_bar.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 11: a1 influence on a2, as a scalar score. Left bar for a classic model, right for the AR one&lt;/i&gt;&lt;/center&gt;
+&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 10: a1 influence on a2, as a scalar score. Left bar for a classic model, right for the AR one&lt;/i&gt;&lt;/center&gt;
 
 &lt;p&gt;We can also estimate how much each action influence the immediate reward. Interestingly, forward models learned on AR and classic policies lead different estimate: model learned on classic policy shows a somewhat equal influence of each action, while model learned on AR policy shows a much stronger influence of a1.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;/assets/ar_policy/jac_f_rew.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 12: a1 and a2 influence score on immediate reward, for each policy type&lt;/i&gt;&lt;/center&gt;
+&lt;p&gt;&lt;a id=&quot;fig11&quot;&gt;&lt;/a&gt;&lt;img src=&quot;/assets/ar_policy/jac_f_rew.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 11: a1 and a2 influence score on immediate reward, for each policy type&lt;/i&gt;&lt;/center&gt;
 
 &lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
 
@@ -252,26 +189,13 @@ Below animations capture sample trajectories after 50 training iterations.&lt;/p
 
 &lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
 
-&lt;p&gt;&lt;a id=&quot;1&quot;&gt;[1]&lt;/a&gt; 
-Jack Harmer, Linus Gisslén, Jorge del Val, Henrik Holst, Joakim Bergdahl, Tom Olsson, Kristoffer Sjöö, Magnus Nordin. 
-&lt;i&gt;Imitation Learning with Concurrent Actions in 3D Games.&lt;/i&gt; &lt;a href=&quot;https://arxiv.org/abs/1803.05402&quot;&gt;2018&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;a id=&quot;2&quot;&gt;[2]&lt;/a&gt;
-Han Wang and Yang Yu.
-&lt;i&gt;Exploring Multi-Action Relationship in Reinforcement Learning.&lt;/i&gt; &lt;a href=&quot;http://www.lamda.nju.edu.cn/wanghan/pricai16.pdf&quot;&gt;2016&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;a id=&quot;3&quot;&gt;[3]&lt;/a&gt;
-Oriol Vinyals, Timo Ewalds, Sergey Bartunov, Petko Georgiev, Alexander Sasha Vezhnevets, Michelle Yeo, Alireza Makhzani, Heinrich Küttler, John Agapiou, Julian Schrittwieser, John Quan, Stephen Gaffney, Stig Petersen, Karen Simonyan, Tom Schaul, Hado van Hasselt, David Silver, Timothy Lillicrap, Kevin Calderone, Paul Keet, Anthony Brunasso, David Lawrence, Anders Ekermo, Jacob Repp, Rodney Tsing.
-&lt;i&gt;StarCraft II: A New Challenge for Reinforcement Learning.&lt;/i&gt; &lt;a href=&quot;https://arxiv.org/abs/1708.04782&quot;&gt;2017&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;a id=&quot;4&quot;&gt;[4]&lt;/a&gt;
+&lt;p&gt;&lt;a id=&quot;1&quot;&gt;[1]&lt;/a&gt;
 Mathieu Germain, Karol Gregor, Iain Murray, Hugo Larochelle.
 &lt;i&gt;MADE: Masked Autoencoder for Distribution Estimation&lt;/i&gt; &lt;a href=&quot;https://arxiv.org/abs/1502.03509&quot;&gt;2015&lt;/a&gt;&lt;/p&gt;
 
-&lt;p&gt;&lt;a id=&quot;5&quot;&gt;[5]&lt;/a&gt;
+&lt;p&gt;&lt;a id=&quot;2&quot;&gt;[2]&lt;/a&gt;
 John Schulman, Filip Wolski, Prafulla Dhariwal, Alec Radford, Oleg Klimov.
 &lt;i&gt;Proximal Policy Optimization Algorithms&lt;/i&gt; &lt;a href=&quot;https://arxiv.org/abs/1707.06347&quot;&gt;2017&lt;/a&gt;&lt;/p&gt;
-
 </description>
         <pubDate>Wed, 23 Feb 2022 01:00:00 +0100</pubDate>
         <link>https://airboxlab.github.io//hvac/rl/autoregressive/2022/02/23/ar_policy.html</link>
