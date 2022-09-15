@@ -6,8 +6,8 @@
 </description>
     <link>https://airboxlab.github.io//</link>
     <atom:link href="https://airboxlab.github.io//feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Thu, 15 Sep 2022 20:42:48 +0200</pubDate>
-    <lastBuildDate>Thu, 15 Sep 2022 20:42:48 +0200</lastBuildDate>
+    <pubDate>Thu, 15 Sep 2022 20:45:18 +0200</pubDate>
+    <lastBuildDate>Thu, 15 Sep 2022 20:45:18 +0200</lastBuildDate>
     <generator>Jekyll v4.2.0</generator>
     
       <item>
@@ -83,6 +83,8 @@ environment, the number of computations would grow exponentially.&lt;/p&gt;
 
 &lt;p&gt;Heat diffusion equation &lt;a href=&quot;#3&quot;&gt;[3]&lt;/a&gt; describes the diffusion of heat over time and space. It’s a PDE, involving time and space 
 derivatives. The basic equation in a 2D space is:&lt;/p&gt;
+
+&lt;p&gt;$\sqrt{3x-1}+(1+x)^2$&lt;/p&gt;
 
 &lt;pre&gt;&lt;code class=&quot;language-math&quot;&gt;$\frac{\partial u}{\partial t}$ = \alpha x $\frac{\partial^2 u}{\partial x}$ x $\frac{\partial^2 u}{\partial y}$ (1.a)
 &lt;/code&gt;&lt;/pre&gt;
