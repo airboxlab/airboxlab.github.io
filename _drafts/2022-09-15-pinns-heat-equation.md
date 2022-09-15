@@ -78,11 +78,10 @@ In this article we'll see how we can solve the 2 dimensional heat equation.
 Heat diffusion equation [[3]](#3) describes the diffusion of heat over time and space. It's a PDE, involving time and space 
 derivatives. The basic equation in a 2D space is:
 
-<center>
 ```math
 $\frac{\partial u}{\partial t}$ = \alpha x $\frac{\partial^2 u}{\partial x}$ x $\frac{\partial^2 u}{\partial y}$ (1.a)
 ```
-</center>
+
 Often simplified using notation:
 
 <center>$u_t = \alpha x u_xx * u_yy$ (1.b)</center>
