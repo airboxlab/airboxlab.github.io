@@ -6,9 +6,248 @@
 </description>
     <link>https://airboxlab.github.io//</link>
     <atom:link href="https://airboxlab.github.io//feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Sat, 12 Mar 2022 20:45:03 +0100</pubDate>
-    <lastBuildDate>Sat, 12 Mar 2022 20:45:03 +0100</lastBuildDate>
+    <pubDate>Thu, 15 Sep 2022 20:42:10 +0200</pubDate>
+    <lastBuildDate>Thu, 15 Sep 2022 20:42:10 +0200</lastBuildDate>
     <generator>Jekyll v4.2.0</generator>
+    
+      <item>
+        <title>Using Physics-informed Neural Networks to solve 2D heat equation</title>
+        <description>
+&lt;style type=&quot;text/css&quot;&gt;
+.center {
+    display:block;
+    margin: 0 auto;
+}
+.double-left {
+    width:49%;
+    display:block;
+    float:left;
+    margin: 0 auto;
+    margin-right: 10px;
+}
+.add-margin-right {
+    margin-right: 20px;
+}
+.double {
+    width: 49%;
+    margin: 0 auto;
+}
+.double-unconst {
+    width: auto;
+    margin: 0 auto;
+    margin-left: 1.5rem;
+}
+.image-foot {
+    font-size:10pt;
+    max-width: 30rem;
+    margin: 0 auto;
+}
+.small-img {
+  width: 45%;
+}
+ul {
+  display: table;
+}
+&lt;/style&gt;
+
+&lt;p&gt;In real world problems, data is often scarce and noisy, limiting how fast an ML/AI-based solutions can become effective 
+in the field. Mathematical models of physical phenomenons exist, but they require intractable computation times and level of
+details about the environment.&lt;/p&gt;
+
+&lt;p&gt;Physics-informed neural networks (PINNs) try to mary the best of both worlds:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;learn from the theoretical model represented by a partial differential equation (PDE), to ensure robust predictions and limit amount of field data to collect&lt;/li&gt;
+  &lt;li&gt;learn from field data to adapt the trained neural network to the target environment&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;pinns-the-theory&quot;&gt;PINNs, the theory&lt;/h2&gt;
+
+&lt;p&gt;Many physical aspects of our surrounding world can be described using PDEs. But computing the solution to these equations 
+often require complex models and details about the environment that are often not available. Worse, solutions would need 
+to be recomputed for every change in the PDE conditions, which will always happen. Depending on the variability of the 
+environment, the number of computations would grow exponentially.&lt;/p&gt;
+
+&lt;p&gt;Physics-informed neural networks &lt;a href=&quot;#1&quot;&gt;[1]&lt;/a&gt;&lt;a href=&quot;#2&quot;&gt;[2]&lt;/a&gt; offer an elegant and flexible solution to solve PDEs in a more universal manner:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;thanks to the capacity of neural networks to approximate arbitrary functions, they can also approximate PDEs involving derivates of different orders&lt;/li&gt;
+  &lt;li&gt;they are not limited by discretization like classic approximators of PDEs, thus can infer any point in space&lt;/li&gt;
+  &lt;li&gt;they are not limited to specific boundary or initial conditions, given that they are appropriately trained (ie conditions given as input)&lt;/li&gt;
+  &lt;li&gt;they take advantage of modern deep learning frameworks auto differentiation methods to compute derivatives (ie &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;torch.autograd&lt;/code&gt;)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;In this article we’ll see how we can solve the 2 dimensional heat equation.&lt;/p&gt;
+
+&lt;h2 id=&quot;the-partial-differential-equation-of-heat&quot;&gt;The Partial Differential Equation of Heat&lt;/h2&gt;
+
+&lt;p&gt;Heat diffusion equation &lt;a href=&quot;#3&quot;&gt;[3]&lt;/a&gt; describes the diffusion of heat over time and space. It’s a PDE, involving time and space 
+derivatives. The basic equation in a 2D space is:&lt;/p&gt;
+
+&lt;center&gt;
+```math
+$\frac{\partial u}{\partial t}$ = \alpha x $\frac{\partial^2 u}{\partial x}$ x $\frac{\partial^2 u}{\partial y}$ (1.a)
+```
+&lt;/center&gt;
+&lt;p&gt;Often simplified using notation:&lt;/p&gt;
+
+&lt;center&gt;$u_t = \alpha x u_xx * u_yy$ (1.b)&lt;/center&gt;
+
+&lt;p&gt;where $u$ is the temperature function, $x$ and $y$ points on the 2D surface and $\alpha$ is the coefficient of diffusion.&lt;/p&gt;
+
+&lt;p&gt;A PDE is also defined by its boundary and initial conditions. In present case we’ll set left, bottom and right edges as 
+cold surfaces at 0 unit of temperature, while the top is heated at 1 unit of temperature:&lt;/p&gt;
+
+&lt;center&gt;$u(t, 0, y) = u(t, x_max, y) = u(t, x, 0) = 0$ with $0 &amp;lt;= y &amp;lt; y_max$&lt;/center&gt;
+&lt;center&gt;$u(t, x, y_max) = 1$&lt;/center&gt;
+
+&lt;p&gt;As an initial condition, we’ll consider the whole surface at 0 unit of temperature, ie $u(0, x, y) = 0$.&lt;/p&gt;
+
+&lt;h2 id=&quot;high-dimensional-action-spaces&quot;&gt;High dimensional action spaces&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/ar_policy/ar_def.svg&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 1: 3 ways of modeling decision processes with state / action transitions using independent actions distributions (a.) and AR models (b. and c.)&lt;/i&gt;&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;state-conditionally-independent-actions&quot;&gt;State conditionally independent actions&lt;/h3&gt;
+
+&lt;p&gt;This is the most common case. In many classic problems, each action of a multi-decision problem is modeled and its probability distribution is estimated as independent from other actions. This doesn’t allow to account for relationships between actions that can be encountered in many problems.&lt;/p&gt;
+
+&lt;h3 id=&quot;introducing-action-dependence-with-autoregressive-policies&quot;&gt;Introducing action dependence with autoregressive policies&lt;/h3&gt;
+&lt;p&gt;Given a policy &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=\pi_{\theta}&quot; /&gt; to optimize with regards to parameters &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=\theta&quot; /&gt;, state &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=s \in \mathcal{S}&quot; /&gt;, a set of n actions &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=a_{i} \in \mathcal{A}&quot; /&gt;, we can represent the policy as following:&lt;/p&gt;
+&lt;center&gt;&lt;img src=&quot;https://render.githubusercontent.com/render/math?math=\pi_{\theta}(a, s) = \prod_{i=1}^{n} \pi_{\theta}(a_{i} \bigm\lvert a_{k&amp;lt;i}, s)&quot; /&gt;&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;This simple formulation is generic and describes simple relationships and order with action at rank i being dependent on all previous actions.&lt;/p&gt;
+
+&lt;p&gt;An example neural network architecture illustrating this formulation is given below&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/ar_policy/ar_nn_arch.svg&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 2: example neural network architecture to model conditional dependencies between actions&lt;/i&gt;&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;In this model, a policy with 2 actions is used. It should be noted that:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 1&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 2&lt;/code&gt; are actually parameters of their respective probability distributions (PD).&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 1&lt;/code&gt; scalar value (sampled from estimated PD) is passed as input for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 2&lt;/code&gt; distribution estimation&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 1&lt;/code&gt; &lt;em&gt;logits&lt;/em&gt; could be passed as input instead of scalar value. This can help preserve information on large discrete/categorical distributions.&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 2&lt;/code&gt; inputs could be solely made of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 1&lt;/code&gt; output (scalar or logits). In such case policy can be formulated as &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=\pi_{\theta}(a, s) = \pi_{\theta}(a_1, s) \cdot \prod_{i=2}^{n} \pi_{\theta}(a_{i} \bigm\lvert a_{k&amp;lt;i})&quot; /&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Note that this model wouldn’t scale well for the estimation of a large number of action distributions. For large action spaces, one can refer to the &lt;em&gt;MADE&lt;/em&gt; architecture &lt;a href=&quot;#1&quot;&gt;[1]&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&quot;experiments&quot;&gt;Experiments&lt;/h2&gt;
+
+&lt;p&gt;To validate benefits of such architecture, we compare performance of “classic” network models with the one described in previous section. To draw a fair comparison, the same total number of neural network cells is used in classic and AR policies networks. Furthermore, all other parameters of the Proximal Policy Optimization (PPO, Shulman et al. &lt;a href=&quot;#2&quot;&gt;[2]&lt;/a&gt;) algorithm are kept equal between the 2 models.&lt;/p&gt;
+
+&lt;h3 id=&quot;a-path-finding-task&quot;&gt;A path-finding task&lt;/h3&gt;
+
+&lt;p&gt;The first task is a toy problem where an agent must navigate through a 2D-grid and maximize its reward by moving to certain locations. The action space is designed with 2 actions (vertical and horizontal movements). 
+To emphasize on the need to learn correlation between actions, the reward scheme is modeled using 2 gaussian distributions located on 2 corners of the grid, and a one-time bonus whenever the agent reaches a point close to the mean of each gaussian. The agent starts each episode at the center of the grid. Episode ends when all bonuses are found. We refer to this training environment as bi-modal environment (BME).&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/ar_policy/bi_modal_env_grid.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 3: rewards distribution over the BME grid&lt;/i&gt;&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;We run 5 experiments with different seeds for each method (classic and AR) on the BME and compare the mean return per episode below.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/ar_policy/bi_modal_avg_return.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 4: average episode reward for non AR policy (classic, light green) and AR policy (dark green)&lt;/i&gt;&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;On this toy environment, AR policy achieves a much better mean episode reward than its counterpart.&lt;/p&gt;
+
+&lt;p&gt;Visual inspection of trajectories for each method can highlight non-efficiencies and differencies. 
+Below animations capture sample trajectories after 50 training iterations.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/ar_policy/bi_modal_classic_traj.gif&quot; alt=&quot;sources&quot; class=&quot;double&quot; /&gt;
+&lt;img src=&quot;/assets/ar_policy/bi_modal_ar_traj.gif&quot; alt=&quot;sources&quot; class=&quot;double&quot; /&gt;&lt;/p&gt;
+&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 5a and 5b: trajectory examples after 50 training iterations of an agent trained under a classic policy (left) and an AR policy (right)&lt;/i&gt;&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;a-simulated-hvac&quot;&gt;A simulated HVAC&lt;/h3&gt;
+
+&lt;p&gt;We now use a simulated building and its HVAC. The building model, or digital twin, is created from an actual building and calibrated on Foobot platform using OpenStudio and EnergyPlus open source software. It is a 3 storey office building, with a dedicated outdoor air system, a single air handling unit (AHU) with eletric heating and chilled water coil served by a local plant, and fan coil units for zones comfort.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/ar_policy/dt_3d_geo.png&quot; alt=&quot;sources&quot; class=&quot;center small-img&quot; /&gt;&lt;/p&gt;
+&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 6: office building used as a test environment&lt;/i&gt;&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;A policy is trained with and without autoregressive (AR) actions model. The observation and action spaces, reward function, and PPO parameters are identical between the 2 methods. The action space is composed of 2 actions that command the amount and temperature of air supplied to the zones by the AHU. Each experiment is run for 1e6 timesteps.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/ar_policy/hvac_env_rew.svg&quot; alt=&quot;sources&quot; class=&quot;double&quot; /&gt;
+&lt;img src=&quot;/assets/ar_policy/hvac_env_power.svg&quot; alt=&quot;sources&quot; class=&quot;double&quot; /&gt;
+&lt;br /&gt;
+&lt;img src=&quot;/assets/ar_policy/hvac_env_tmp.svg&quot; alt=&quot;sources&quot; class=&quot;double&quot; /&gt;
+&lt;img src=&quot;/assets/ar_policy/hvac_env_co2.svg&quot; alt=&quot;sources&quot; class=&quot;double&quot; /&gt;&lt;/p&gt;
+&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 7 average episode reward (a., upper left), power demand (b., upper right, in kW), indoor temperature (c., lower left, in Celsius degrees) and CO2 (d., in ppm) for classic and AR policy (blue line) models&lt;/i&gt;&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;AR policy model not only achieves a better mean episode reward (fig 7a.), but it significantly outperforms (by 8.5%) the energy consumption reduction of the classic method. Other reward components, like thermal comfort and indoor air quality, are also better in line with their respective constraints which are a maximum of 25°C indoor temperature and a maximum of 1000ppm for indoor CO2.&lt;/p&gt;
+
+&lt;h3 id=&quot;analysing-impacts-and-relationships&quot;&gt;Analysing impacts and relationships&lt;/h3&gt;
+
+&lt;p&gt;To understand better our model, a short study is conducted to highlight how action 1 influence action 2, how each action influence the state space, and what part of the state space has the most influence on agent decisions.&lt;/p&gt;
+
+&lt;p&gt;To do that, we’ll first map our system and learned policy with functions approximations that govern it. They can be seen as forward models that predict the behavior of our policy.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;em&gt;transitions&lt;/em&gt; that associates an action and a state to a next state &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=f_{tr}(a_{t}, s_{t}) \Rightarrow s_{t'}&quot; /&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;rewards&lt;/em&gt; that maps action and state with its immediate reward &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=f_{rew}(a_{t}, s_{t'}) \Rightarrow r_{t}&quot; /&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;policy&lt;/em&gt; that maps a state and the next action &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=f_{p}(s_{t}) \Rightarrow a_{t'}&quot; /&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;autoregression&lt;/em&gt; that looks for correlation between action 1 and action 2 &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=f_{ar}(a_{1, t}) \Rightarrow a_{2, t}&quot; /&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;We then compute the jacobian of each function in order to differentiate with respect to relevant parameters. For instance, to highlight what part of the state space is directly influenced by agent decisions, we’ll use the jacobian of the transitions function &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=\mathbb{J}({f_{tr}})&quot; /&gt; and differentiate with respect to agent actions.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/ar_policy/jac_f_p1.png&quot; alt=&quot;sources&quot; class=&quot;double-unconst&quot; /&gt;
+&lt;img src=&quot;/assets/ar_policy/jac_f_p2.png&quot; alt=&quot;sources&quot; class=&quot;double-unconst&quot; /&gt;&lt;/p&gt;
+&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 8: what part of the state space influences decisions the most, for each action a1 (left) and a2 (right). Actions a1 and a2 seem influenced by different parts of the state&lt;/i&gt;&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/ar_policy/jac_f_tr.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 9: what part of the state space is &quot;controllable&quot; by the policy, for each action (a1, a2) of the space. Here indoor conditions are the most influenced, from both actions&lt;/i&gt;&lt;/center&gt;
+
+&lt;p&gt;Influence of a1 over a2 can also be estimated thanks to computing the jacobian of the forward model that approximates the predictor function that gives a2 knowing a1. This allows to highlight the much stronger influence score of a1 over a2, as shown in &lt;a href=&quot;#fig11&quot;&gt;figure 11&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/ar_policy/jac_f_ar_bar.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 10: a1 influence on a2, as a scalar score. Left bar for a classic model, right for the AR one&lt;/i&gt;&lt;/center&gt;
+
+&lt;p&gt;We can also estimate how much each action influence the immediate reward. Interestingly, forward models learned on AR and classic policies lead different estimate: model learned on classic policy shows a somewhat equal influence of each action, while model learned on AR policy shows a much stronger influence of a1.&lt;/p&gt;
+
+&lt;p&gt;&lt;a id=&quot;fig11&quot;&gt;&lt;/a&gt;&lt;img src=&quot;/assets/ar_policy/jac_f_rew.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 11: a1 and a2 influence score on immediate reward, for each policy type&lt;/i&gt;&lt;/center&gt;
+
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;Through a series of examples we’ve demonstrated that autoregressive (AR) policies can bring significant performance and training speed improvements compared to more classic models.&lt;/p&gt;
+
+&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
+
+&lt;p&gt;&lt;a id=&quot;1&quot;&gt;[1]&lt;/a&gt;
+Raissi, Maziar and Perdikaris, Paris and Karniadakis, George E
+&lt;i&gt;Physics-informed neural networks: A deep learning framework for solving forward and inverse problems involving nonlinear partial differential equations&lt;/i&gt; &lt;a href=&quot;https://www.sciencedirect.com/science/article/pii/S0021999118307125&quot;&gt;2019&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a id=&quot;2&quot;&gt;[2]&lt;/a&gt;
+Raissi, Maziar and Perdikaris, Paris and Karniadakis, George E
+&lt;i&gt;Physics Informed Deep Learning (Part I): Data-driven Solutions of Nonlinear Partial Differential Equations&lt;/i&gt; &lt;a href=&quot;https://arxiv.org/abs/1711.10561&quot;&gt;2017&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a id=&quot;3&quot;&gt;[3]&lt;/a&gt;
+&lt;a href=&quot;https://en.wikipedia.org/wiki/Heat_equation&quot;&gt;Heat Equation&lt;/a&gt;&lt;/p&gt;
+</description>
+        <pubDate>Thu, 15 Sep 2022 02:00:00 +0200</pubDate>
+        <link>https://airboxlab.github.io//ai/deeplearning/physics/2022/09/15/pinns-heat-equation.html</link>
+        <guid isPermaLink="true">https://airboxlab.github.io//ai/deeplearning/physics/2022/09/15/pinns-heat-equation.html</guid>
+        
+        
+        <category>ai</category>
+        
+        <category>deeplearning</category>
+        
+        <category>physics</category>
+        
+      </item>
     
       <item>
         <title>Autoregressive control policies for HVAC optimization</title>
@@ -65,7 +304,7 @@ Many equipment are involved, like fans, heating and cooling coils, chilled and h
 
 &lt;p&gt;If we generalize this example, many parts of the HVAC system can be seen as dependent to or having a direct or indirect impact on other parts. Trying to control only one equipment as a whole will necessarily lead to suboptimal performance. However, this is often how HVAC systems are controlled: each equipment takes decision regarding a single input. No matter how complex the calculation of this input is, it won’t be differentiable since it’s a single scalar value. Common calculation methods for control decisions rely on linear methods (linear interpolations, PIDs, …) with a narrow view of the state of the system.&lt;/p&gt;
 
-&lt;p&gt;That’s where AR methods and Deep RL can be a good fit: combining function approximation capabilities of neural networks, theoritically unlimited observability of the system and modeling of actions dependencies, the HVAC system and the building it serves could be controlled as a whole (holistic approach), and learned policies could model complex relationships between states and equipment.&lt;/p&gt;
+&lt;p&gt;That’s where autoregressive (AR) methods and deep reinforcement learning (DRL) can be a good fit: combining function approximation capabilities of neural networks, theoritically unlimited observability of the system and modeling of actions dependencies, the HVAC system and the building it serves could be controlled as a whole (holistic approach), and learned policies could model complex relationships between states and equipment.A&lt;/p&gt;
 
 &lt;h2 id=&quot;high-dimensional-action-spaces&quot;&gt;High dimensional action spaces&lt;/h2&gt;
 
@@ -99,7 +338,7 @@ Many equipment are involved, like fans, heating and cooling coils, chilled and h
   &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 2&lt;/code&gt; inputs could be solely made of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 1&lt;/code&gt; output (scalar or logits). In such case policy can be formulated as &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=\pi_{\theta}(a, s) = \pi_{\theta}(a_1, s) \cdot \prod_{i=2}^{n} \pi_{\theta}(a_{i} \bigm\lvert a_{k&amp;lt;i})&quot; /&gt;&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;Note that this model hence wouldn’t scale well for the estimation of a large number of actions distributions. For large action spaces, one can refer to the &lt;em&gt;MADE&lt;/em&gt; architecture &lt;a href=&quot;#1&quot;&gt;[1]&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Note that this model wouldn’t scale well for the estimation of a large number of action distributions. For large action spaces, one can refer to the &lt;em&gt;MADE&lt;/em&gt; architecture &lt;a href=&quot;#1&quot;&gt;[1]&lt;/a&gt;.&lt;/p&gt;
 
 &lt;h2 id=&quot;experiments&quot;&gt;Experiments&lt;/h2&gt;
 
@@ -108,7 +347,7 @@ Many equipment are involved, like fans, heating and cooling coils, chilled and h
 &lt;h3 id=&quot;a-path-finding-task&quot;&gt;A path-finding task&lt;/h3&gt;
 
 &lt;p&gt;The first task is a toy problem where an agent must navigate through a 2D-grid and maximize its reward by moving to certain locations. The action space is designed with 2 actions (vertical and horizontal movements). 
-To emphasize on the need to learn correlation between actions, the reward scheme is modeled using 2 gaussian distributions located on 2 corners of the grid, and a one-time bonus whenever the agent reaches a point close to the mean of each gaussian. The agent start each episode starting at the center of the grid. Episode ends when all bonuses are found. We refer to this training environment as bi-modal environment (BME).&lt;/p&gt;
+To emphasize on the need to learn correlation between actions, the reward scheme is modeled using 2 gaussian distributions located on 2 corners of the grid, and a one-time bonus whenever the agent reaches a point close to the mean of each gaussian. The agent starts each episode at the center of the grid. Episode ends when all bonuses are found. We refer to this training environment as bi-modal environment (BME).&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;/assets/ar_policy/bi_modal_env_grid.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
 &lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 3: rewards distribution over the BME grid&lt;/i&gt;&lt;/center&gt;
@@ -120,19 +359,19 @@ To emphasize on the need to learn correlation between actions, the reward scheme
 &lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 4: average episode reward for non AR policy (classic, light green) and AR policy (dark green)&lt;/i&gt;&lt;/center&gt;
 &lt;p&gt;&lt;br /&gt;&lt;/p&gt;
 
+&lt;p&gt;On this toy environment, AR policy achieves a much better mean episode reward than its counterpart.&lt;/p&gt;
+
 &lt;p&gt;Visual inspection of trajectories for each method can highlight non-efficiencies and differencies. 
 Below animations capture sample trajectories after 50 training iterations.&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;/assets/ar_policy/bi_modal_classic_traj.gif&quot; alt=&quot;sources&quot; class=&quot;double&quot; /&gt;
 &lt;img src=&quot;/assets/ar_policy/bi_modal_ar_traj.gif&quot; alt=&quot;sources&quot; class=&quot;double&quot; /&gt;&lt;/p&gt;
-&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 5a and 5b: average episode reward for classic policy (left) and AR policy (right)&lt;/i&gt;&lt;/center&gt;
+&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 5a and 5b: trajectory examples after 50 training iterations of an agent trained under a classic policy (left) and an AR policy (right)&lt;/i&gt;&lt;/center&gt;
 &lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;On this toy environment, AR policy achieves a much better mean episode reward than its counterpart.&lt;/p&gt;
 
 &lt;h3 id=&quot;a-simulated-hvac&quot;&gt;A simulated HVAC&lt;/h3&gt;
 
-&lt;p&gt;We now use a simulated building and its HVAC. The building model, or digital twin, is created from an actual building and calibrated on Foobot platform using OpenStudio and EnergyPlus opensource software. It is a 3 storey office building, with a dedicated outdoor air system, a single air handling unit (AHU) with eletric heating and chilled water coil served by a local plant, and fan coil units for zones comfort.&lt;/p&gt;
+&lt;p&gt;We now use a simulated building and its HVAC. The building model, or digital twin, is created from an actual building and calibrated on Foobot platform using OpenStudio and EnergyPlus open source software. It is a 3 storey office building, with a dedicated outdoor air system, a single air handling unit (AHU) with eletric heating and chilled water coil served by a local plant, and fan coil units for zones comfort.&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;/assets/ar_policy/dt_3d_geo.png&quot; alt=&quot;sources&quot; class=&quot;center small-img&quot; /&gt;&lt;/p&gt;
 &lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 6: office building used as a test environment&lt;/i&gt;&lt;/center&gt;
@@ -1594,182 +1833,6 @@ Last but not least, RabbitMQ suffers a bug that’s not directly linked to clust
         <category>scheduler</category>
         
         <category>quartz</category>
-        
-      </item>
-    
-      <item>
-        <title>A streaming pipeline for the IoT with Apache Spark &amp; microservices</title>
-        <description>&lt;style type=&quot;text/css&quot;&gt;
-.callout {
-    float: right;
-    margin-left: 5px;
-}
-&lt;/style&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://airboxlab.github.io/assets/data_pipeline/oilpipeline.jpg&quot; alt=&quot;oil pipeline&quot; /&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;what-is-airboxlab-doing-with-foobot-data&quot;&gt;What is Airboxlab doing with Foobot data?&lt;/h2&gt;
-
-&lt;p&gt;We build Foobot, which sends indoor air quality data on a regular schedule. This data represents our users most valuable information, and is why they are buying a Foobot for. 
-This data itself is the core of our business, and as engineers we have to secure the process of receiving and storing it.&lt;/p&gt;
-
-&lt;p&gt;However, data alone isn’t enough to give users a smart and complete experience so they can learn and act to improve their environment: an important part of the value is in the processing of this data, how we react to it, and at what speed. 
-Indoor air quality is a matter of comfort and health, hence being alerted too late that the air you breath is polluted reduces interest and impact of the product a lot. In a similar manner, if you used a toxic cleanser but your ventilation system kicks in too late you just bought a mute doctor: he knows what you’re suffering from but can’t help!&lt;/p&gt;
-
-&lt;p&gt;That’s why engineers at Airboxlab invest a lot in building a reliable, scalable and extensible streaming data pipeline. We want to make sure data is safe, that we react appriopriately and in a timely fashion to it, and that the next useful external system integration (be it a thermostat, HVAC system, IFTTT-like platform, customized stream…) will be straightforward.&lt;/p&gt;
-
-&lt;h2 id=&quot;anatomy-of-our-streaming-pipeline&quot;&gt;Anatomy of our streaming pipeline&lt;/h2&gt;
-
-&lt;h3 id=&quot;sources-sinks--jobs&quot;&gt;Sources, Sinks &amp;amp; Jobs&lt;/h3&gt;
-
-&lt;p&gt;&lt;strong&gt;Sources&lt;/strong&gt; in our pipelines are various. Most data (in volume) is emitted by Foobot sensors, but there are also events sent by applications (mobile, web), internal sources of static data (for instance device or user definitions that can serve to enrich context), and intermediate results in the pipeline that can be served as sources in other steps.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Sinks&lt;/strong&gt; are also of various nature. We can categorize them as following:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;persistent storage, like SQL and NoSQL databases, HDFS and S3&lt;/li&gt;
-  &lt;li&gt;transient like message brokers to which analysis from processed input are sent on structured topics. Downstream pipeline clients subscribe to the topics they are interested in, process incoming messages, and send results to another sink&lt;/li&gt;
-  &lt;li&gt;external like external API offered by partners&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;strong&gt;Jobs&lt;/strong&gt; are the processes that transform input from a source to a desired result and output it to a sink. We have 2 types: &lt;em&gt;Spark Streaming&lt;/em&gt; jobs and &lt;em&gt;microservices&lt;/em&gt;.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Communication&lt;/strong&gt; between sources, sinks &amp;amp; jobs depends on physical location of them (e.g. Foobot devices are living in users networks, data is sent through WAN), performance requirements (in memory vs over network), and flexibility (need to start/stop a source/sink dynamically).&lt;/p&gt;
-
-&lt;p&gt;Finally, a streaming pipeline is all about sources, sinks and how data goes from one to another. With (you guess so) complex interactions between them. That’s what I’m going to detail in the next section.&lt;/p&gt;
-
-&lt;h3 id=&quot;sensor-data-streaming-pipeline&quot;&gt;Sensor data streaming pipeline&lt;/h3&gt;
-
-&lt;p&gt;This is our main data pipeline, the richer and more complex one (there are also other peripheral pipelines that fulfill specific requirements). We can summarize its functions as following:&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;
-    &lt;p&gt;&lt;strong&gt;Ingestion&lt;/strong&gt;&lt;/p&gt;
-
-    &lt;p&gt;&lt;img src=&quot;https://airboxlab.github.io/assets/data_pipeline/data_pipeline_ingestion.png&quot; alt=&quot;ingestion&quot; /&gt;&lt;/p&gt;
-
-    &lt;ul&gt;
-      &lt;li&gt;
-        &lt;p&gt;&lt;strong&gt;Storage&lt;/strong&gt;&lt;/p&gt;
-
-        &lt;p&gt;Between sensor data emission and storage the path must be as short as possible. The shorter it is, the less we expose ourselves to failure and eventually data loss. Hence storage happens right away after reception. Job responsible for receiving and storing is extremely simple, load-balanced, and tolerant to failure.&lt;/p&gt;
-
-        &lt;p&gt;Also, we don’t throw anything, even “junk” data that can sometimes be sent during temporary or permanent failure of a sensor: this won’t be taken into account by downstream consumers of the main pipeline but is used for failure detection.&lt;/p&gt;
-      &lt;/li&gt;
-      &lt;li&gt;
-        &lt;p&gt;&lt;strong&gt;Transformation&lt;/strong&gt;&lt;/p&gt;
-
-        &lt;p&gt;Sensor data is sent in a specific, raw, compressed format in order to save bandwidth. This step transforms this data into a json document. It also performs input validation in the meantime.&lt;/p&gt;
-      &lt;/li&gt;
-      &lt;li&gt;
-        &lt;p&gt;&lt;strong&gt;Contextual enrichment&lt;/strong&gt;&lt;/p&gt;
-
-        &lt;p&gt;Raw sensor data is stored but not used as is downstream: we need to calibrate them in order to have meaningful values. Each device has its own calibration (each sensor is slightly different). Device-specific static data is also added to the context, and the whole forms the first rich json document that is sent to multiple downstream consumers.&lt;/p&gt;
-      &lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;&lt;strong&gt;Aggregations &amp;amp; statistics computing&lt;/strong&gt;&lt;/p&gt;
-
-    &lt;p&gt;&lt;strong&gt;Stats&lt;/strong&gt; are continuously computed for each device connected to our backend. Most of them are quite basic, like cumulative moving averages for each sensor, some others are based on regressions, like averages of top minimum or maximum values.&lt;/p&gt;
-
-    &lt;p&gt;Most statistics computations never imply loading historical values: this would be a scaling problem. Whenever possible, we use a rolling/cumulative version of the statistic.&lt;/p&gt;
-
-    &lt;p&gt;Statistics are used by several consumers:&lt;/p&gt;
-
-    &lt;ul&gt;
-      &lt;li&gt;calibration adapter that is used to adapt sensors baseline&lt;/li&gt;
-      &lt;li&gt;other jobs in the pipeline that can trigger events based on statictics values&lt;/li&gt;
-      &lt;li&gt;reporting tools, for instance one that email a periodic email to users telling him how was air quality in the past days or weeks&lt;br /&gt;&lt;br /&gt;&lt;/li&gt;
-    &lt;/ul&gt;
-
-    &lt;p&gt;We also perform &lt;strong&gt;aggregations&lt;/strong&gt; that are used downstream or served to users (values available by API, used by mobile and web apps). It reduces average response size and latency.&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;&lt;strong&gt;Alerting&lt;/strong&gt;&lt;/p&gt;
-
-    &lt;p&gt;&lt;img src=&quot;https://airboxlab.github.io/assets/data_pipeline/data_pipeline_alerting.png&quot; alt=&quot;ingestion&quot; /&gt;&lt;/p&gt;
-
-    &lt;p&gt;Alerting is the process of raising an alert when a particular event occurs. That is often related to a sensor data value crossing a standard or user-defined threshold, what we call instant threshold crossing, but can be more complex when it comes to “air quality event” detection. A simple type of event would be a pollution event, one that starts when a pollutant crosses a threshold and ends when it comes back to normal. This implies using mechanisms like windowing and stateful operations to preserve event state, or applying hysteresis for values constantly crossing thresholds up and down.&lt;/p&gt;
-
-    &lt;p&gt;There are 2 main types of consumers to these alerts:&lt;/p&gt;
-
-    &lt;ul&gt;
-      &lt;li&gt;Direct user notifiers, mostly using mobile push notifications&lt;/li&gt;
-      &lt;li&gt;External systems notifications: for instance we can trigger the ventilation system linked to an Ecobee thermostat if particulate matter level is higher than user-defined threshold.&lt;br /&gt;&lt;br /&gt;&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;&lt;strong&gt;Machine learning&lt;/strong&gt;&lt;/p&gt;
-
-    &lt;p&gt;We apply machine learning at various levels, from calibration baseline improvement to air quality events detection. We use algorithm implementations provided by Spark ML that can be integrated in Spark Streaming jobs: here Spark reveals all its power, as all these bricks feet well together.
-Downstream consumers are somehow the same as for alerting.&lt;/p&gt;
-
-    &lt;p&gt;There are things to say here, but we’ll cover this in a future blog post.&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;&lt;strong&gt;Backup&lt;/strong&gt;&lt;/p&gt;
-
-    &lt;p&gt;&lt;img src=&quot;https://airboxlab.github.io/assets/data_pipeline/data_pipeline_backup.png&quot; alt=&quot;ingestion&quot; class=&quot;callout&quot; /&gt;&lt;/p&gt;
-
-    &lt;p&gt;Even backup can be done in a near real-time manner: instead of fetching and storing data in an external backup store on a daily basis, why not benefit from streaming pipeline to do it at event processing time. This is how we implemented our incremental and asynchronous backup system. This has several advantages:&lt;/p&gt;
-
-    &lt;ul&gt;
-      &lt;li&gt;2 seat belts: data is stored on arrival, and almost immediately backed up.&lt;/li&gt;
-      &lt;li&gt;we can develop alternative pipelines to handle temporary or non mission critical tools: we store backup data in HDFS, that can be a source for &lt;a href=&quot;http://spark.apache.org/docs/latest/streaming-programming-guide.html#basic-sources&quot;&gt;Spark Streaming&lt;/a&gt;.&lt;/li&gt;
-      &lt;li&gt;we have an up-to-date offline version of our data on which we can perform heavy data mining and model training.&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h2 id=&quot;keeping-the-pipeline-flexible&quot;&gt;Keeping the pipeline flexible&lt;/h2&gt;
-
-&lt;p&gt;The backbone of our pipeline relies on Spark Streaming, which allows us to dedicate more or less resources (CPU &amp;amp; RAM) to streaming jobs, making it able to scale well. Dividing each functional process into separate jobs allows us to re-deploy or scale them independently.&lt;/p&gt;
-
-&lt;p&gt;An other important thing in our day-to-day job is to be able to “plug” a new job at the “periphery” of the pipeline quickly. For instance, we often decide to interact with a new external vendor API, and we don’t want to think about anything else than:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;what will the service subscribe to?&lt;/li&gt;
-  &lt;li&gt;how will it interact with the API?&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;Most importantly, we want to avoid modifying other jobs in the pipeline as much as possible. This allows us to develop and deploy the new service without restarting anything else.&lt;/p&gt;
-
-&lt;p&gt;On another hand, we want subscriptions to be dynamic too. For instance, a new user connects on IFTTT and wants its &lt;a href=&quot;https://ifttt.com/connect/foobot/wemo_switch&quot;&gt;Foobot to turn on his WeMo switch&lt;/a&gt;  whenever global pollution level is too bad. To do that, we will record user configuration but also make the service responsible for interacting with IFTTT listen to relevant user’s device events. 
-Similarly, if user disconnects from Foobot channel, we don’t want the service keep listening to his thresholds alerts.&lt;/p&gt;
-
-&lt;p&gt;In order to fulfill these requirements, we opted for a &lt;strong&gt;microservices&lt;/strong&gt; architecture very early. This brings the following benefits:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;em&gt;easier to develop a new service&lt;/em&gt;: we invested a bit in simplifying services creation, so creating a new one is a matter of minutes.&lt;/li&gt;
-  &lt;li&gt;&lt;em&gt;easier to extends a service functionality&lt;/em&gt;: let’s say you want to add a trigger to your IFTTT channel: you’ll only need to change this service code, and retest it. Nothing else. This greatly reduces the risk of regression in other functionalities, and allows us to deploy faster and more often&lt;/li&gt;
-  &lt;li&gt;&lt;em&gt;efficient communication&lt;/em&gt;: each service subscribes and reacts to the events it’s supposed to listen to. We structured messaging topics so that services receive only what they need.&lt;/li&gt;
-  &lt;li&gt;&lt;em&gt;easier to test&lt;/em&gt;: well, easier than having to deploy the whole pipeline and re-testing everything. Testing a pipeline is still harder than a classic piece of software though, so we invested in a internal testing microframework that helps writing integration tests.&lt;/li&gt;
-  &lt;li&gt;&lt;em&gt;easier to scale&lt;/em&gt; a particular integration: one of our integration becomes popular? we can spin up new services only for this type, making the whole architecture cost-efficient.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://airboxlab.github.io/assets/data_pipeline/data_pipeline_subscribers.png&quot; alt=&quot;subscribers&quot; /&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
-
-&lt;p&gt;This article gave an overview of one of the most critical part of our system, and explains why we choose Spark Streaming and microservices to implement it. 
-A future series of articles will dive into more specific parts of the pipeline.&lt;/p&gt;
-
-</description>
-        <pubDate>Mon, 29 Aug 2016 14:00:00 +0200</pubDate>
-        <link>https://airboxlab.github.io//streaming/microservices/iot/spark/real-time/2016/08/29/streaming-microservices.html</link>
-        <guid isPermaLink="true">https://airboxlab.github.io//streaming/microservices/iot/spark/real-time/2016/08/29/streaming-microservices.html</guid>
-        
-        
-        <category>streaming</category>
-        
-        <category>microservices</category>
-        
-        <category>iot</category>
-        
-        <category>spark</category>
-        
-        <category>real-time</category>
         
       </item>
     
