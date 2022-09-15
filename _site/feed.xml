@@ -6,8 +6,8 @@
 </description>
     <link>https://airboxlab.github.io//</link>
     <atom:link href="https://airboxlab.github.io//feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Thu, 15 Sep 2022 20:45:18 +0200</pubDate>
-    <lastBuildDate>Thu, 15 Sep 2022 20:45:18 +0200</lastBuildDate>
+    <pubDate>Thu, 15 Sep 2022 21:27:05 +0200</pubDate>
+    <lastBuildDate>Thu, 15 Sep 2022 21:27:05 +0200</lastBuildDate>
     <generator>Jekyll v4.2.0</generator>
     
       <item>
@@ -84,144 +84,75 @@ environment, the number of computations would grow exponentially.&lt;/p&gt;
 &lt;p&gt;Heat diffusion equation &lt;a href=&quot;#3&quot;&gt;[3]&lt;/a&gt; describes the diffusion of heat over time and space. It’s a PDE, involving time and space 
 derivatives. The basic equation in a 2D space is:&lt;/p&gt;
 
-&lt;p&gt;$\sqrt{3x-1}+(1+x)^2$&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&quot;language-math&quot;&gt;$\frac{\partial u}{\partial t}$ = \alpha x $\frac{\partial^2 u}{\partial x}$ x $\frac{\partial^2 u}{\partial y}$ (1.a)
-&lt;/code&gt;&lt;/pre&gt;
+&lt;center&gt;
+$ \frac{\partial u}{\partial t} = \alpha \frac{\partial^2 u}{\partial x} \frac{\partial^2 u}{\partial y} $
+&lt;/center&gt;
 
 &lt;p&gt;Often simplified using notation:&lt;/p&gt;
 
-&lt;center&gt;$u_t = \alpha x u_xx * u_yy$ (1.b)&lt;/center&gt;
+&lt;center&gt;$u_t = \alpha \cdot u_{xx} \cdot u_{yy}$&lt;/center&gt;
 
-&lt;p&gt;where $u$ is the temperature function, $x$ and $y$ points on the 2D surface and $\alpha$ is the coefficient of diffusion.&lt;/p&gt;
+&lt;p&gt;where $u$ is the function that associates $t, x, y$ with a temperature, $x$ and $y$ points on the 2D surface, $t$ the time 
+variable and $\alpha$ is the coefficient of diffusion.&lt;/p&gt;
 
 &lt;p&gt;A PDE is also defined by its boundary and initial conditions. In present case we’ll set left, bottom and right edges as 
 cold surfaces at 0 unit of temperature, while the top is heated at 1 unit of temperature:&lt;/p&gt;
 
-&lt;center&gt;$u(t, 0, y) = u(t, x_max, y) = u(t, x, 0) = 0$ with $0 &amp;lt;= y &amp;lt; y_max$&lt;/center&gt;
-&lt;center&gt;$u(t, x, y_max) = 1$&lt;/center&gt;
+&lt;center&gt;$u(t, 0, y) = u(t, x_{max}, y) = u(t, x, 0) = 0$,  $0 \leq y &amp;lt; y_{max}$&lt;/center&gt;
+&lt;center&gt;$u(t, x, y_{max}) = 1$&lt;/center&gt;
 
 &lt;p&gt;As an initial condition, we’ll consider the whole surface at 0 unit of temperature, ie $u(0, x, y) = 0$.&lt;/p&gt;
 
-&lt;h2 id=&quot;high-dimensional-action-spaces&quot;&gt;High dimensional action spaces&lt;/h2&gt;
+&lt;h2 id=&quot;solving-with-finite-difference-method&quot;&gt;Solving with Finite-Difference Method&lt;/h2&gt;
 
-&lt;p&gt;&lt;img src=&quot;/assets/ar_policy/ar_def.svg&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 1: 3 ways of modeling decision processes with state / action transitions using independent actions distributions (a.) and AR models (b. and c.)&lt;/i&gt;&lt;/center&gt;
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p&gt;The Finite-Difference Method (FDM) offers a way to numerically solve PDEs using discrete space and time spaces 
+to enable derivative functions approximation.&lt;/p&gt;
 
-&lt;h3 id=&quot;state-conditionally-independent-actions&quot;&gt;State conditionally independent actions&lt;/h3&gt;
+&lt;p&gt;First, $\frac{\partial u}{\partial t}$ can be approximated with 
+$ \frac{u_{i,j}^{k+1} - u_{i,j}^{k}}{\Delta t} $.&lt;/p&gt;
 
-&lt;p&gt;This is the most common case. In many classic problems, each action of a multi-decision problem is modeled and its probability distribution is estimated as independent from other actions. This doesn’t allow to account for relationships between actions that can be encountered in many problems.&lt;/p&gt;
+&lt;p&gt;Then for second order derivatives, we can transform this way:&lt;/p&gt;
 
-&lt;h3 id=&quot;introducing-action-dependence-with-autoregressive-policies&quot;&gt;Introducing action dependence with autoregressive policies&lt;/h3&gt;
-&lt;p&gt;Given a policy &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=\pi_{\theta}&quot; /&gt; to optimize with regards to parameters &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=\theta&quot; /&gt;, state &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=s \in \mathcal{S}&quot; /&gt;, a set of n actions &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=a_{i} \in \mathcal{A}&quot; /&gt;, we can represent the policy as following:&lt;/p&gt;
-&lt;center&gt;&lt;img src=&quot;https://render.githubusercontent.com/render/math?math=\pi_{\theta}(a, s) = \prod_{i=1}^{n} \pi_{\theta}(a_{i} \bigm\lvert a_{k&amp;lt;i}, s)&quot; /&gt;&lt;/center&gt;
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;center&gt;
+$\frac{\partial^2 u}{\partial x} = \frac{\partial}{\partial x} \cdot (\frac{\partial u}{\partial x}) \approx \frac{u_{i+1,j}^{k} - 2u_{i,j}^{k} + u_{i-1,j}^{k}}{\Delta x^2} $ 
+&lt;/center&gt;
 
-&lt;p&gt;This simple formulation is generic and describes simple relationships and order with action at rank i being dependent on all previous actions.&lt;/p&gt;
+&lt;p&gt;If we transform the whole original equation we get:&lt;/p&gt;
 
-&lt;p&gt;An example neural network architecture illustrating this formulation is given below&lt;/p&gt;
+&lt;center&gt;
+$ \frac{u_{i,j}^{k+1} - u_{i,j}^{k}}{\Delta t} = \alpha (\frac{u_{i+1,j}^{k} - 2u_{i,j}^{k} + u_{i-1,j}^{k}}{\Delta x^2} + \frac{u_{i,j+1}^{k} - 2u_{i,j}^{k} + u_{i,j-1}^{k}}{\Delta y^2}) $
+&lt;/center&gt;
 
-&lt;p&gt;&lt;img src=&quot;/assets/ar_policy/ar_nn_arch.svg&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 2: example neural network architecture to model conditional dependencies between actions&lt;/i&gt;&lt;/center&gt;
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+&lt;p&gt;Taking $\Delta x = \Delta y$ (a grid with steps of equal size in all directions), we can simplify the equation to:&lt;/p&gt;
 
-&lt;p&gt;In this model, a policy with 2 actions is used. It should be noted that:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 1&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 2&lt;/code&gt; are actually parameters of their respective probability distributions (PD).&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 1&lt;/code&gt; scalar value (sampled from estimated PD) is passed as input for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 2&lt;/code&gt; distribution estimation&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 1&lt;/code&gt; &lt;em&gt;logits&lt;/em&gt; could be passed as input instead of scalar value. This can help preserve information on large discrete/categorical distributions.&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 2&lt;/code&gt; inputs could be solely made of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 1&lt;/code&gt; output (scalar or logits). In such case policy can be formulated as &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=\pi_{\theta}(a, s) = \pi_{\theta}(a_1, s) \cdot \prod_{i=2}^{n} \pi_{\theta}(a_{i} \bigm\lvert a_{k&amp;lt;i})&quot; /&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;Note that this model wouldn’t scale well for the estimation of a large number of action distributions. For large action spaces, one can refer to the &lt;em&gt;MADE&lt;/em&gt; architecture &lt;a href=&quot;#1&quot;&gt;[1]&lt;/a&gt;.&lt;/p&gt;
-
-&lt;h2 id=&quot;experiments&quot;&gt;Experiments&lt;/h2&gt;
-
-&lt;p&gt;To validate benefits of such architecture, we compare performance of “classic” network models with the one described in previous section. To draw a fair comparison, the same total number of neural network cells is used in classic and AR policies networks. Furthermore, all other parameters of the Proximal Policy Optimization (PPO, Shulman et al. &lt;a href=&quot;#2&quot;&gt;[2]&lt;/a&gt;) algorithm are kept equal between the 2 models.&lt;/p&gt;
-
-&lt;h3 id=&quot;a-path-finding-task&quot;&gt;A path-finding task&lt;/h3&gt;
-
-&lt;p&gt;The first task is a toy problem where an agent must navigate through a 2D-grid and maximize its reward by moving to certain locations. The action space is designed with 2 actions (vertical and horizontal movements). 
-To emphasize on the need to learn correlation between actions, the reward scheme is modeled using 2 gaussian distributions located on 2 corners of the grid, and a one-time bonus whenever the agent reaches a point close to the mean of each gaussian. The agent starts each episode at the center of the grid. Episode ends when all bonuses are found. We refer to this training environment as bi-modal environment (BME).&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/ar_policy/bi_modal_env_grid.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 3: rewards distribution over the BME grid&lt;/i&gt;&lt;/center&gt;
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;We run 5 experiments with different seeds for each method (classic and AR) on the BME and compare the mean return per episode below.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/ar_policy/bi_modal_avg_return.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 4: average episode reward for non AR policy (classic, light green) and AR policy (dark green)&lt;/i&gt;&lt;/center&gt;
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;On this toy environment, AR policy achieves a much better mean episode reward than its counterpart.&lt;/p&gt;
-
-&lt;p&gt;Visual inspection of trajectories for each method can highlight non-efficiencies and differencies. 
-Below animations capture sample trajectories after 50 training iterations.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/ar_policy/bi_modal_classic_traj.gif&quot; alt=&quot;sources&quot; class=&quot;double&quot; /&gt;
-&lt;img src=&quot;/assets/ar_policy/bi_modal_ar_traj.gif&quot; alt=&quot;sources&quot; class=&quot;double&quot; /&gt;&lt;/p&gt;
-&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 5a and 5b: trajectory examples after 50 training iterations of an agent trained under a classic policy (left) and an AR policy (right)&lt;/i&gt;&lt;/center&gt;
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;a-simulated-hvac&quot;&gt;A simulated HVAC&lt;/h3&gt;
-
-&lt;p&gt;We now use a simulated building and its HVAC. The building model, or digital twin, is created from an actual building and calibrated on Foobot platform using OpenStudio and EnergyPlus open source software. It is a 3 storey office building, with a dedicated outdoor air system, a single air handling unit (AHU) with eletric heating and chilled water coil served by a local plant, and fan coil units for zones comfort.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/ar_policy/dt_3d_geo.png&quot; alt=&quot;sources&quot; class=&quot;center small-img&quot; /&gt;&lt;/p&gt;
-&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 6: office building used as a test environment&lt;/i&gt;&lt;/center&gt;
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;A policy is trained with and without autoregressive (AR) actions model. The observation and action spaces, reward function, and PPO parameters are identical between the 2 methods. The action space is composed of 2 actions that command the amount and temperature of air supplied to the zones by the AHU. Each experiment is run for 1e6 timesteps.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/ar_policy/hvac_env_rew.svg&quot; alt=&quot;sources&quot; class=&quot;double&quot; /&gt;
-&lt;img src=&quot;/assets/ar_policy/hvac_env_power.svg&quot; alt=&quot;sources&quot; class=&quot;double&quot; /&gt;
+&lt;center&gt;
+$ u_{i,j}^{k+1} = \gamma(u_{i+1,j}^{k} + u_{i-1,j}^{k} + u_{i,j+1}^{k} + u_{i,j-1}^{k} -4u_{i,j}^{k}) + u_{i,j}^{k} $
+&lt;/center&gt;
+&lt;p&gt;with $ \gamma = \alpha \frac{\Delta t}{\Delta x^2} $
 &lt;br /&gt;
-&lt;img src=&quot;/assets/ar_policy/hvac_env_tmp.svg&quot; alt=&quot;sources&quot; class=&quot;double&quot; /&gt;
-&lt;img src=&quot;/assets/ar_policy/hvac_env_co2.svg&quot; alt=&quot;sources&quot; class=&quot;double&quot; /&gt;&lt;/p&gt;
-&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 7 average episode reward (a., upper left), power demand (b., upper right, in kW), indoor temperature (c., lower left, in Celsius degrees) and CO2 (d., in ppm) for classic and AR policy (blue line) models&lt;/i&gt;&lt;/center&gt;
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+This can be quickly implemented using a 3 nested for loops in python, or you can go for a more efficient method using 
+Jax and its Just In Time (JIT) compiler:&lt;/p&gt;
 
-&lt;p&gt;AR policy model not only achieves a better mean episode reward (fig 7a.), but it significantly outperforms (by 8.5%) the energy consumption reduction of the classic method. Other reward components, like thermal comfort and indoor air quality, are also better in line with their respective constraints which are a maximum of 25°C indoor temperature and a maximum of 1000ppm for indoor CO2.&lt;/p&gt;
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;o&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;jax&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;jit&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;compute_next_k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;u_k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+    &lt;span class=&quot;s&quot;&gt;&quot;&quot;&quot;
+    Finite-difference method, approximation of derivatives using discretization of space dimensions
+    to compute u_k+1
+    &quot;&quot;&quot;&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;next_u&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;jnp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;array&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;u_k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
 
-&lt;h3 id=&quot;analysing-impacts-and-relationships&quot;&gt;Analysing impacts and relationships&lt;/h3&gt;
+    &lt;span class=&quot;n&quot;&gt;u_next_k&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;gamma&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;jnp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;roll&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;u_k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;axis&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;jnp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;roll&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;u_k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;axis&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;jnp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;roll&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;u_k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;axis&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;jnp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;roll&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;u_k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;axis&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;u_k&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;u_k&lt;/span&gt;
 
-&lt;p&gt;To understand better our model, a short study is conducted to highlight how action 1 influence action 2, how each action influence the state space, and what part of the state space has the most influence on agent decisions.&lt;/p&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;next_u&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;at&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;].&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;set&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;u_next_k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;To do that, we’ll first map our system and learned policy with functions approximations that govern it. They can be seen as forward models that predict the behavior of our policy.&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;em&gt;transitions&lt;/em&gt; that associates an action and a state to a next state &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=f_{tr}(a_{t}, s_{t}) \Rightarrow s_{t'}&quot; /&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;em&gt;rewards&lt;/em&gt; that maps action and state with its immediate reward &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=f_{rew}(a_{t}, s_{t'}) \Rightarrow r_{t}&quot; /&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;em&gt;policy&lt;/em&gt; that maps a state and the next action &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=f_{p}(s_{t}) \Rightarrow a_{t'}&quot; /&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;em&gt;autoregression&lt;/em&gt; that looks for correlation between action 1 and action 2 &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=f_{ar}(a_{1, t}) \Rightarrow a_{2, t}&quot; /&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;We then compute the jacobian of each function in order to differentiate with respect to relevant parameters. For instance, to highlight what part of the state space is directly influenced by agent decisions, we’ll use the jacobian of the transitions function &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=\mathbb{J}({f_{tr}})&quot; /&gt; and differentiate with respect to agent actions.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/ar_policy/jac_f_p1.png&quot; alt=&quot;sources&quot; class=&quot;double-unconst&quot; /&gt;
-&lt;img src=&quot;/assets/ar_policy/jac_f_p2.png&quot; alt=&quot;sources&quot; class=&quot;double-unconst&quot; /&gt;&lt;/p&gt;
-&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 8: what part of the state space influences decisions the most, for each action a1 (left) and a2 (right). Actions a1 and a2 seem influenced by different parts of the state&lt;/i&gt;&lt;/center&gt;
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/ar_policy/jac_f_tr.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 9: what part of the state space is &quot;controllable&quot; by the policy, for each action (a1, a2) of the space. Here indoor conditions are the most influenced, from both actions&lt;/i&gt;&lt;/center&gt;
-
-&lt;p&gt;Influence of a1 over a2 can also be estimated thanks to computing the jacobian of the forward model that approximates the predictor function that gives a2 knowing a1. This allows to highlight the much stronger influence score of a1 over a2, as shown in &lt;a href=&quot;#fig11&quot;&gt;figure 11&lt;/a&gt;.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/ar_policy/jac_f_ar_bar.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 10: a1 influence on a2, as a scalar score. Left bar for a classic model, right for the AR one&lt;/i&gt;&lt;/center&gt;
-
-&lt;p&gt;We can also estimate how much each action influence the immediate reward. Interestingly, forward models learned on AR and classic policies lead different estimate: model learned on classic policy shows a somewhat equal influence of each action, while model learned on AR policy shows a much stronger influence of a1.&lt;/p&gt;
-
-&lt;p&gt;&lt;a id=&quot;fig11&quot;&gt;&lt;/a&gt;&lt;img src=&quot;/assets/ar_policy/jac_f_rew.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;fig. 11: a1 and a2 influence score on immediate reward, for each policy type&lt;/i&gt;&lt;/center&gt;
-
-&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
-
-&lt;p&gt;Through a series of examples we’ve demonstrated that autoregressive (AR) policies can bring significant performance and training speed improvements compared to more classic models.&lt;/p&gt;
+&lt;h2 id=&quot;solving-with-pinn&quot;&gt;Solving with PINN&lt;/h2&gt;
 
 &lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
 
