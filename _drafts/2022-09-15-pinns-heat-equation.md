@@ -240,6 +240,10 @@ data is available, training loss can be computed as $L_{total} = L_{pde} + L_{da
 the weight of $L_{data}$ can be increased so the solution lean towards the specifics of the target environment, 
 while $L_{pde}$ acts as a regularization term to make sure predicted solution is still robust with respect to physics.
 
+This is particularly well-suited for heating and cooling applications in small buildings, where rooms are often treated 
+by one terminal unit, like a hot water baseboard: natural convection and radiation mechanisms can be modeled and used to 
+train a PINN, which can in turn be used to control the appliance.
+
 Another point in favor of PINNs is that boundary and initial conditions can be encoded as input. This will allow the 
 PINN to generalize to different environments, or contexts for a given environment. This way there would be no need to 
 retrain a model for every change in conditions.
