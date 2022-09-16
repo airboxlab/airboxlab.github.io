@@ -209,16 +209,24 @@ An example of using `pytorch` to compute $L_{eq}$:
 from torch.autograd import grad
 # where u is the neural net module we train, so here we actually call forward()
 u_value = u(t, x, y) 
+# diffusion coefficient
+alpha = 0.1
+
 def _grad(out, inp):
-    return grad(
-        out, 
-        inp, 
-        grad_outputs=torch.ones_like(inp), 
-        create_graph=True
-    )[0]
-loss_pde = (
-        _grad(u_value, t) 
-        - alpha * _grad(_grad(u_value, x), x) * _grad(_grad(u_value, y), y)
+  return grad(
+      out, 
+      inp, 
+      grad_outputs=torch.ones_like(inp), 
+      create_graph=True
+  )[0]
+
+loss_eq = (
+  _grad(u_value, t) 
+  - (
+    alpha 
+    * _grad(_grad(u_value, x), x) 
+    * _grad(_grad(u_value, y), y)
+  )
 )
 ```
 
