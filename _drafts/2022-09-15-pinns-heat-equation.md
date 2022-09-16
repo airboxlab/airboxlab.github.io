@@ -131,7 +131,7 @@ $$
 $$ 
 </center>
 
-If we transform the whole original equation $(1)$, we get:
+If we transform the whole original equation $(1)$ using $(2)$ and $(3)$, we get:
 
 <center>
 $$
@@ -233,23 +233,28 @@ loss_pde = (
 
 ## Results
 
-We train a small PINN on 2000 epochs using IDRLnet library [[4]](#4) and compare visually against FDM method:
+We train a small PINN on 2000 epochs and compare visually against FDM method:
 
 ![sources]({{ site.baseurl }}/assets/pinn/fdm_solution.gif){: .center }
 ![sources]({{ site.baseurl }}/assets/pinn/pinn_solution.gif){: .center }
+
+The PINN solution looks very close to the FDM one, that's what we wanted!
 
 ## Real world applications
 
 Given that PDEs can be used to model a lot of problems, there are many possible real-world applications. 
 
-With PINNs, it becomes possible to control heating equipment, starting with minimal amount of field data. When field 
-data is available, training loss can be computed as $L_{total} = L_{pde} + L_{data}$. As more and more field data gets in, 
-the weight of $L_{data}$ can be increased to adapt the neural network to the specific environment, while $L_{pde}$ acts as a 
-regularizer to make sure predicted solution is still robust with respect to physics.
+With PINNs, it becomes possible to quickly create efficient industrial controllers, starting with minimal amount of field data. When field 
+data is available, training loss can be computed as $L_{total} = L_{pde} + L_{data}$. As more and more field data becomes available, 
+the weight of $L_{data}$ can be increased so the solution lean towards the specifics of the target environment, 
+while $L_{pde}$ acts as a regularization term to make sure predicted solution is still robust with respect to physics.
 
 Another point in favor of PINNs is that boundary and initial conditions can be encoded as input. This will allow the 
 PINN to generalize to different environments, or contexts for a given environment. This way there would be no need to 
 retrain a model for every change in conditions.
+
+To avoid the heavy-lifting of experimenting and implementing from scratch, some libraries already exist, IDRLnet [[4]](#4). 
+It's well suited for iterative experimentation and already implements common PDEs (Heat, Navier-Stokes, Burgers, Wave, ...).
 
 ## References
 

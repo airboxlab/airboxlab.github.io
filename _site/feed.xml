@@ -6,8 +6,8 @@
 </description>
     <link>https://airboxlab.github.io//</link>
     <atom:link href="https://airboxlab.github.io//feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Fri, 16 Sep 2022 12:45:27 +0200</pubDate>
-    <lastBuildDate>Fri, 16 Sep 2022 12:45:27 +0200</lastBuildDate>
+    <pubDate>Fri, 16 Sep 2022 14:24:09 +0200</pubDate>
+    <lastBuildDate>Fri, 16 Sep 2022 14:24:09 +0200</lastBuildDate>
     <generator>Jekyll v4.2.0</generator>
     
       <item>
@@ -136,7 +136,7 @@ $$
 $$ 
 &lt;/center&gt;
 
-&lt;p&gt;If we transform the whole original equation $(1)$, we get:&lt;/p&gt;
+&lt;p&gt;If we transform the whole original equation $(1)$ using $(2)$ and $(3)$, we get:&lt;/p&gt;
 
 &lt;center&gt;
 $$
@@ -236,23 +236,28 @@ but also to compute $L_{pde}$.&lt;/p&gt;
 
 &lt;h2 id=&quot;results&quot;&gt;Results&lt;/h2&gt;
 
-&lt;p&gt;We train a small PINN on 2000 epochs using IDRLnet library &lt;a href=&quot;#4&quot;&gt;[4]&lt;/a&gt; and compare visually against FDM method:&lt;/p&gt;
+&lt;p&gt;We train a small PINN on 2000 epochs and compare visually against FDM method:&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;/assets/pinn/fdm_solution.gif&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;
 &lt;img src=&quot;/assets/pinn/pinn_solution.gif&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The PINN solution looks very close to the FDM one, that’s what we wanted!&lt;/p&gt;
 
 &lt;h2 id=&quot;real-world-applications&quot;&gt;Real world applications&lt;/h2&gt;
 
 &lt;p&gt;Given that PDEs can be used to model a lot of problems, there are many possible real-world applications.&lt;/p&gt;
 
-&lt;p&gt;With PINNs, it becomes possible to control heating equipment, starting with minimal amount of field data. When field 
-data is available, training loss can be computed as $L_{total} = L_{pde} + L_{data}$. As more and more field data gets in, 
-the weight of $L_{data}$ can be increased to adapt the neural network to the specific environment, while $L_{pde}$ acts as a 
-regularizer to make sure predicted solution is still robust with respect to physics.&lt;/p&gt;
+&lt;p&gt;With PINNs, it becomes possible to quickly create efficient industrial controllers, starting with minimal amount of field data. When field 
+data is available, training loss can be computed as $L_{total} = L_{pde} + L_{data}$. As more and more field data becomes available, 
+the weight of $L_{data}$ can be increased so the solution lean towards the specifics of the target environment, 
+while $L_{pde}$ acts as a regularization term to make sure predicted solution is still robust with respect to physics.&lt;/p&gt;
 
 &lt;p&gt;Another point in favor of PINNs is that boundary and initial conditions can be encoded as input. This will allow the 
 PINN to generalize to different environments, or contexts for a given environment. This way there would be no need to 
 retrain a model for every change in conditions.&lt;/p&gt;
+
+&lt;p&gt;To avoid the heavy-lifting of experimenting and implementing from scratch, some libraries already exist, IDRLnet &lt;a href=&quot;#4&quot;&gt;[4]&lt;/a&gt;. 
+It’s well suited for iterative experimentation and already implements common PDEs (Heat, Navier-Stokes, Burgers, Wave, …).&lt;/p&gt;
 
 &lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
 
