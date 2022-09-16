@@ -147,12 +147,12 @@ $(5)$ can be quickly implemented using a 3 nested for loops in python, or you ca
 Jax and its Just In Time (JIT) compiler:
 
 ```python
+delta_t = 0.01
+delta_x = 0.1
+gamma = alpha * delta_t / delta_x ** 2
+
 @jax.jit
 def compute_next_k(u_k):
-    """
-    Finite-difference method, approximation of derivatives using discretization of space dimensions
-    to compute u_k+1
-    """
     next_u = jnp.array(u_k)
 
     u_next_k = gamma * (
