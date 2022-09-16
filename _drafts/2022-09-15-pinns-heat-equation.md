@@ -74,7 +74,7 @@ Physics-informed neural networks [[1]](#1)[[2]](#2) offer an elegant and flexibl
 
 In this article we'll see how we can solve the 2 dimensional heat equation. 
 
-## The Partial Differential Equation of Heat
+## The Heat Equation, a Partial Differential Equation
 
 Heat diffusion equation [[3]](#3) describes the diffusion of heat over time and space. It's a PDE, involving time and space 
 derivatives. The basic equation in a 2D space is:
