@@ -58,7 +58,7 @@ Physics-informed neural networks (PINNs) try to mary the best of both worlds:
 - learn from the theoretical model represented by a partial differential equation (PDE), to ensure robust predictions and limit amount of field data to collect
 - learn from field data to adapt the trained neural network to the target environment
 
-## PINNs, the theory
+## PINNs, an overview
 
 Many physical aspects of our surrounding world can be described using PDEs. But computing the solution to these equations 
 often require complex models and details about the environment that are often not available. Worse, solutions would need 
@@ -97,7 +97,7 @@ cold surfaces at 0 unit of temperature, while the top is heated at 1 unit of tem
 
 <center>
 $$
-u(t, 0, y) = u(t, x_{max}, y) = u(t, x, 0) = 0, with \space 0 \leq y < y_{max}
+u(t, 0, y) = u(t, x_{max}, y) = u(t, x, 0) = 0, \text{with} \space 0 \leq y < y_{max}
 $$
 $$
 u(t, x, y_{max}) = 1
@@ -111,27 +111,18 @@ As an initial condition, we'll consider the whole surface at 0 unit of temperatu
 The Finite-Difference Method (FDM) offers a way to numerically solve PDEs using discrete space and time spaces 
 to enable derivative functions approximation that we saw in $(1)$. 
 
-A first order derivative like $ \frac{\partial u}{\partial t} $ can be approximated with
+First and second order derivatives can be approximated with
 
 <center>
 $$
 \begin{equation}
-\frac{u_{i,j}^{k+1} - u_{i,j}^{k}}{\Delta t}
-\end{equation}
-$$
-</center>
-
-Then for second order derivatives, we can transform this way: 
-
-<center>
-$$
-\begin{equation}
+\frac{\partial u}{\partial t} \approx \frac{u_{i,j}^{k+1} - u_{i,j}^{k}}{\Delta t} \\
 \frac{\partial^2 u}{\partial x} = \frac{\partial}{\partial x} \cdot (\frac{\partial u}{\partial x}) \approx \frac{u_{i+1,j}^{k} - 2u_{i,j}^{k} + u_{i-1,j}^{k}}{\Delta x^2}
 \end{equation}
 $$ 
 </center>
 
-If we transform the whole original equation $(1)$ using $(2)$ and $(3)$, we get:
+If we transform the whole original equation $(1)$ using $(2)$, we get:
 
 <center>
 $$
@@ -146,11 +137,11 @@ Taking $\Delta x = \Delta y$ (a grid with steps of equal size in all directions)
 <center>
 $$
 \begin{equation}
-u_{i,j}^{k+1} = \gamma(u_{i+1,j}^{k} + u_{i-1,j}^{k} + u_{i,j+1}^{k} + u_{i,j-1}^{k} -4u_{i,j}^{k}) + u_{i,j}^{k}
+u_{i,j}^{k+1} = \gamma(u_{i+1,j}^{k} + u_{i-1,j}^{k} + u_{i,j+1}^{k} + u_{i,j-1}^{k} -4u_{i,j}^{k}) + u_{i,j}^{k} \\
+\text{with} \space \gamma = \alpha \frac{\Delta t}{\Delta x^2}
 \end{equation}
 $$
 </center>
-with $ \gamma = \alpha \frac{\Delta t}{\Delta x^2} $
 <br/><br/>
 $(5)$ can be quickly implemented using a 3 nested for loops in python, or you can go for a more efficient method using 
 Jax and its Just In Time (JIT) compiler:
