@@ -6,8 +6,8 @@
 </description>
     <link>https://airboxlab.github.io//</link>
     <atom:link href="https://airboxlab.github.io//feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Thu, 15 Sep 2022 21:27:05 +0200</pubDate>
-    <lastBuildDate>Thu, 15 Sep 2022 21:27:05 +0200</lastBuildDate>
+    <pubDate>Fri, 16 Sep 2022 12:41:29 +0200</pubDate>
+    <lastBuildDate>Fri, 16 Sep 2022 12:41:29 +0200</lastBuildDate>
     <generator>Jekyll v4.2.0</generator>
     
       <item>
@@ -71,7 +71,7 @@ environment, the number of computations would grow exponentially.&lt;/p&gt;
 &lt;p&gt;Physics-informed neural networks &lt;a href=&quot;#1&quot;&gt;[1]&lt;/a&gt;&lt;a href=&quot;#2&quot;&gt;[2]&lt;/a&gt; offer an elegant and flexible solution to solve PDEs in a more universal manner:&lt;/p&gt;
 
 &lt;ul&gt;
-  &lt;li&gt;thanks to the capacity of neural networks to approximate arbitrary functions, they can also approximate PDEs involving derivates of different orders&lt;/li&gt;
+  &lt;li&gt;thanks to the capacity of neural networks to approximate arbitrary functions, they can also approximate PDEs involving derivatives of different orders&lt;/li&gt;
   &lt;li&gt;they are not limited by discretization like classic approximators of PDEs, thus can infer any point in space&lt;/li&gt;
   &lt;li&gt;they are not limited to specific boundary or initial conditions, given that they are appropriately trained (ie conditions given as input)&lt;/li&gt;
   &lt;li&gt;they take advantage of modern deep learning frameworks auto differentiation methods to compute derivatives (ie &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;torch.autograd&lt;/code&gt;)&lt;/li&gt;
@@ -85,52 +85,79 @@ environment, the number of computations would grow exponentially.&lt;/p&gt;
 derivatives. The basic equation in a 2D space is:&lt;/p&gt;
 
 &lt;center&gt;
-$ \frac{\partial u}{\partial t} = \alpha \frac{\partial^2 u}{\partial x} \frac{\partial^2 u}{\partial y} $
+$$ 
+\begin{equation}
+\frac{\partial u}{\partial t} = \alpha \frac{\partial^2 u}{\partial x} \frac{\partial^2 u}{\partial y}
+\end{equation}
+$$
 &lt;/center&gt;
 
-&lt;p&gt;Often simplified using notation:&lt;/p&gt;
-
-&lt;center&gt;$u_t = \alpha \cdot u_{xx} \cdot u_{yy}$&lt;/center&gt;
+&lt;p&gt;Note: it’s often simplified using notation $ u_t = \alpha \cdot u_{xx} \cdot u_{yy} $&lt;/p&gt;
 
 &lt;p&gt;where $u$ is the function that associates $t, x, y$ with a temperature, $x$ and $y$ points on the 2D surface, $t$ the time 
-variable and $\alpha$ is the coefficient of diffusion.&lt;/p&gt;
+variable and $\alpha$ the coefficient of diffusion.&lt;/p&gt;
 
 &lt;p&gt;A PDE is also defined by its boundary and initial conditions. In present case we’ll set left, bottom and right edges as 
 cold surfaces at 0 unit of temperature, while the top is heated at 1 unit of temperature:&lt;/p&gt;
 
-&lt;center&gt;$u(t, 0, y) = u(t, x_{max}, y) = u(t, x, 0) = 0$,  $0 \leq y &amp;lt; y_{max}$&lt;/center&gt;
-&lt;center&gt;$u(t, x, y_{max}) = 1$&lt;/center&gt;
+&lt;center&gt;
+$$
+u(t, 0, y) = u(t, x_{max}, y) = u(t, x, 0) = 0, with \space 0 \leq y &amp;lt; y_{max}
+$$
+$$
+u(t, x, y_{max}) = 1
+$$
+&lt;/center&gt;
 
 &lt;p&gt;As an initial condition, we’ll consider the whole surface at 0 unit of temperature, ie $u(0, x, y) = 0$.&lt;/p&gt;
 
 &lt;h2 id=&quot;solving-with-finite-difference-method&quot;&gt;Solving with Finite-Difference Method&lt;/h2&gt;
 
 &lt;p&gt;The Finite-Difference Method (FDM) offers a way to numerically solve PDEs using discrete space and time spaces 
-to enable derivative functions approximation.&lt;/p&gt;
+to enable derivative functions approximation that we saw in $(1)$.&lt;/p&gt;
 
-&lt;p&gt;First, $\frac{\partial u}{\partial t}$ can be approximated with 
-$ \frac{u_{i,j}^{k+1} - u_{i,j}^{k}}{\Delta t} $.&lt;/p&gt;
+&lt;p&gt;A first order derivative like $ \frac{\partial u}{\partial t} $ can be approximated with&lt;/p&gt;
+
+&lt;center&gt;
+$$
+\begin{equation}
+\frac{u_{i,j}^{k+1} - u_{i,j}^{k}}{\Delta t}
+\end{equation}
+$$
+&lt;/center&gt;
 
 &lt;p&gt;Then for second order derivatives, we can transform this way:&lt;/p&gt;
 
 &lt;center&gt;
-$\frac{\partial^2 u}{\partial x} = \frac{\partial}{\partial x} \cdot (\frac{\partial u}{\partial x}) \approx \frac{u_{i+1,j}^{k} - 2u_{i,j}^{k} + u_{i-1,j}^{k}}{\Delta x^2} $ 
+$$
+\begin{equation}
+\frac{\partial^2 u}{\partial x} = \frac{\partial}{\partial x} \cdot (\frac{\partial u}{\partial x}) \approx \frac{u_{i+1,j}^{k} - 2u_{i,j}^{k} + u_{i-1,j}^{k}}{\Delta x^2}
+\end{equation}
+$$ 
 &lt;/center&gt;
 
-&lt;p&gt;If we transform the whole original equation we get:&lt;/p&gt;
+&lt;p&gt;If we transform the whole original equation $(1)$, we get:&lt;/p&gt;
 
 &lt;center&gt;
-$ \frac{u_{i,j}^{k+1} - u_{i,j}^{k}}{\Delta t} = \alpha (\frac{u_{i+1,j}^{k} - 2u_{i,j}^{k} + u_{i-1,j}^{k}}{\Delta x^2} + \frac{u_{i,j+1}^{k} - 2u_{i,j}^{k} + u_{i,j-1}^{k}}{\Delta y^2}) $
+$$
+\begin{equation}
+\frac{u_{i,j}^{k+1} - u_{i,j}^{k}}{\Delta t} = \alpha (\frac{u_{i+1,j}^{k} - 2u_{i,j}^{k} + u_{i-1,j}^{k}}{\Delta x^2} + \frac{u_{i,j+1}^{k} - 2u_{i,j}^{k} + u_{i,j-1}^{k}}{\Delta y^2})
+\end{equation}
+$$
 &lt;/center&gt;
 
 &lt;p&gt;Taking $\Delta x = \Delta y$ (a grid with steps of equal size in all directions), we can simplify the equation to:&lt;/p&gt;
 
 &lt;center&gt;
-$ u_{i,j}^{k+1} = \gamma(u_{i+1,j}^{k} + u_{i-1,j}^{k} + u_{i,j+1}^{k} + u_{i,j-1}^{k} -4u_{i,j}^{k}) + u_{i,j}^{k} $
+$$
+\begin{equation}
+u_{i,j}^{k+1} = \gamma(u_{i+1,j}^{k} + u_{i-1,j}^{k} + u_{i,j+1}^{k} + u_{i,j-1}^{k} -4u_{i,j}^{k}) + u_{i,j}^{k}
+\end{equation}
+$$
 &lt;/center&gt;
 &lt;p&gt;with $ \gamma = \alpha \frac{\Delta t}{\Delta x^2} $
-&lt;br /&gt;
-This can be quickly implemented using a 3 nested for loops in python, or you can go for a more efficient method using 
+&lt;br /&gt;&lt;br /&gt;
+$(5)$ can be quickly implemented using a 3 nested for loops in python, or you can go for a more efficient method using 
 Jax and its Just In Time (JIT) compiler:&lt;/p&gt;
 
 &lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;o&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;jax&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;jit&lt;/span&gt;
@@ -154,18 +181,93 @@ Jax and its Just In Time (JIT) compiler:&lt;/p&gt;
 
 &lt;h2 id=&quot;solving-with-pinn&quot;&gt;Solving with PINN&lt;/h2&gt;
 
+&lt;p&gt;Using PINN, we don’t explicitly solve the equation anymore, but it will be used to compute the loss during the training 
+of the neural network. Specifically, the loss will be computed against the derivative of the PDE, and the boundary and initial 
+conditions. In our present case, our heat equation PDE loss $L_{pde}$ can be defined to minimize residual of the heat equation $(1)$&lt;/p&gt;
+
+&lt;p&gt;Given that we want $ u_t - \alpha u_{xx} u_{yy} = 0 $, the loss can be obtained with&lt;/p&gt;
+
+&lt;center&gt;
+$$
+L_{eq} = \frac{1}{N} \sum_{i=1}^{n} \| u_t^i - \alpha u_{xx}^i u_{yy}^i \|^2
+$$
+&lt;/center&gt;
+
+&lt;p&gt;Similarly, residuals for boundary (BC) and initial (IC) conditions can be defined as&lt;/p&gt;
+
+&lt;center&gt;
+$$
+L_{bc} = \frac{1}{N} \sum_{i=1}^{n} \| u(t, x^b, y^b) - u_{bc} \|^2
+$$
+$$
+L_{ic} = \frac{1}{N} \sum_{i=1}^{n} \| u(0, x, y) - u_{ic} \|^2
+$$
+&lt;/center&gt;
+
+&lt;p&gt;The total loss is then:&lt;/p&gt;
+
+&lt;center&gt;
+$$
+L_{pde} = L_{eq} + L_{bc} + L_{ic}
+$$
+&lt;/center&gt;
+
+&lt;p&gt;PINN reveals to be a tractable solution because derivatives computation can be delegated to deep learning frameworks we 
+use to train neural networks: auto differentiation technique is already implemented, so we’ll use it for both back-propagation 
+but also to compute $L_{pde}$.&lt;/p&gt;
+
+&lt;p&gt;An example of using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;pytorch&lt;/code&gt; to compute $L_{eq}$:&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;torch.autograd&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;grad&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;# where u is the neural net module we train, so here we actually call forward()
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;u_value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;u&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; 
+&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;_grad&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;out&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;inp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;grad&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;out&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; 
+        &lt;span class=&quot;n&quot;&gt;inp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; 
+        &lt;span class=&quot;n&quot;&gt;grad_outputs&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;torch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ones_like&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;inp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; 
+        &lt;span class=&quot;n&quot;&gt;create_graph&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;True&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;)[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;loss_pde&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;_grad&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;u_value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; 
+        &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;alpha&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;_grad&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_grad&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;u_value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;_grad&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_grad&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;u_value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;results&quot;&gt;Results&lt;/h2&gt;
+
+&lt;p&gt;We train a PINN on 2000 epochs using IDRLnet library &lt;a href=&quot;#4&quot;&gt;[4]&lt;/a&gt; and compare visually against FDM method:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/pinn/fdm_solution.gif&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;
+&lt;img src=&quot;/assets/pinn/pinn_solution.gif&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;real-world-applications&quot;&gt;Real world applications&lt;/h2&gt;
+
+&lt;p&gt;Given that PDEs can be used to model a lot of problems, there are many possible real-world applications. With PINNs, it 
+becomes possible to control heating equipment, starting with minimal amount of field data. When field data is available, 
+training loss can be computed as $L_{total} = L_{pde} + L_{data}$. As more and more field data gets in, the weight of 
+$L_{data}$ can be increased to adapt the neural network to the specific environment, while $L_{pde}$ acts as a 
+regularizer to make sure predicted solution is still robust with respect to physics.&lt;/p&gt;
+
+&lt;p&gt;Another point in favor of PINNs is that boundary and initial conditions can be encoded as input. This will allow the 
+PINN to generalize to different environments, or contexts for a given environment. This way there would be no need to 
+retrain a model for every change in conditions.&lt;/p&gt;
+
 &lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
 
 &lt;p&gt;&lt;a id=&quot;1&quot;&gt;[1]&lt;/a&gt;
-Raissi, Maziar and Perdikaris, Paris and Karniadakis, George E
+Raissi, Maziar and Perdikaris, Paris and Karniadakis, George E.
 &lt;i&gt;Physics-informed neural networks: A deep learning framework for solving forward and inverse problems involving nonlinear partial differential equations&lt;/i&gt; &lt;a href=&quot;https://www.sciencedirect.com/science/article/pii/S0021999118307125&quot;&gt;2019&lt;/a&gt;&lt;/p&gt;
 
 &lt;p&gt;&lt;a id=&quot;2&quot;&gt;[2]&lt;/a&gt;
-Raissi, Maziar and Perdikaris, Paris and Karniadakis, George E
+Raissi, Maziar and Perdikaris, Paris and Karniadakis, George E.
 &lt;i&gt;Physics Informed Deep Learning (Part I): Data-driven Solutions of Nonlinear Partial Differential Equations&lt;/i&gt; &lt;a href=&quot;https://arxiv.org/abs/1711.10561&quot;&gt;2017&lt;/a&gt;&lt;/p&gt;
 
 &lt;p&gt;&lt;a id=&quot;3&quot;&gt;[3]&lt;/a&gt;
 &lt;a href=&quot;https://en.wikipedia.org/wiki/Heat_equation&quot;&gt;Heat Equation&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a id=&quot;4&quot;&gt;[4]&lt;/a&gt;
+&lt;a href=&quot;https://github.com/idrl-lab/idrlnet&quot;&gt;IDRLnet&lt;/a&gt;&lt;/p&gt;
 </description>
         <pubDate>Thu, 15 Sep 2022 02:00:00 +0200</pubDate>
         <link>https://airboxlab.github.io//ai/deeplearning/physics/2022/09/15/pinns-heat-equation.html</link>

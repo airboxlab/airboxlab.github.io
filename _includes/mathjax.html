@@ -1,23 +1,33 @@
 <script type="text/x-mathjax-config">
 MathJax.Hub.Config({
     TeX: {
-      equationNumbers: {
-        autoNumber: "AMS"
-      }
+        equationNumbers: {
+            autoNumber: "AMS"
+        }
     },
     tex2jax: {
-    inlineMath: [ ['$', '$'] ],
-    displayMath: [ ['$$', '$$'] ],
-    processEscapes: true,
-  }
+        inlineMath: [ ['$', '$'] ],
+        displayMath: [ ['$$', '$$'] ],
+        processEscapes: true,
+    },
+    "HTML-CSS": {
+        preferredFont: "TeX",
+        availableFonts: ["STIX","TeX"],
+        styles: {".MathJax": {color: "#CCCCCC"}}
+    }
 });
 MathJax.Hub.Register.MessageHook("Math Processing Error",function (message) {
-	  alert("Math Processing Error: "+message[1]);
-	});
+    alert("Math Processing Error: "+message[1]);
+});
 MathJax.Hub.Register.MessageHook("TeX Jax - parse error",function (message) {
-	  alert("Math Processing Error: "+message[1]);
-	});
+	alert("Math Processing Error: "+message[1]);
+});
 </script>
+<style type="text/css">
+.MathJax {
+    font-size: 2.3em;
+}
+</style>
 <script type="text/javascript" async
-  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+        src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
 </script>
