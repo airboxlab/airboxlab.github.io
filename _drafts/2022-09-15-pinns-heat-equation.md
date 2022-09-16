@@ -233,7 +233,10 @@ The PINN solution looks very close to the FDM one, that's what we wanted!
 
 ## Real world applications
 
-Given that PDEs can be used to model a lot of problems, there are many possible real-world applications. 
+Given that PDEs can be used to model a lot of problems, there are many possible real-world applications for PINNs. Looking for 
+recent papers exploiting them is sufficient to imagine the number of potential new AI-based solutions that may become practical.
+
+![sources]({{ site.baseurl }}/assets/pinn/pinn_papers.png){: .center }
 
 With PINNs, it becomes possible to quickly create efficient industrial controllers, starting with minimal amount of field data. When field 
 data is available, training loss can be computed as $L_{total} = L_{pde} + L_{data}$. As more and more field data becomes available, 
