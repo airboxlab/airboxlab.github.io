@@ -233,17 +233,18 @@ loss_pde = (
 
 ## Results
 
-We train a PINN on 2000 epochs using IDRLnet library [[4]](#4) and compare visually against FDM method:
+We train a small PINN on 2000 epochs using IDRLnet library [[4]](#4) and compare visually against FDM method:
 
 ![sources]({{ site.baseurl }}/assets/pinn/fdm_solution.gif){: .center }
 ![sources]({{ site.baseurl }}/assets/pinn/pinn_solution.gif){: .center }
 
 ## Real world applications
 
-Given that PDEs can be used to model a lot of problems, there are many possible real-world applications. With PINNs, it 
-becomes possible to control heating equipment, starting with minimal amount of field data. When field data is available, 
-training loss can be computed as $L_{total} = L_{pde} + L_{data}$. As more and more field data gets in, the weight of 
-$L_{data}$ can be increased to adapt the neural network to the specific environment, while $L_{pde}$ acts as a 
+Given that PDEs can be used to model a lot of problems, there are many possible real-world applications. 
+
+With PINNs, it becomes possible to control heating equipment, starting with minimal amount of field data. When field 
+data is available, training loss can be computed as $L_{total} = L_{pde} + L_{data}$. As more and more field data gets in, 
+the weight of $L_{data}$ can be increased to adapt the neural network to the specific environment, while $L_{pde}$ acts as a 
 regularizer to make sure predicted solution is still robust with respect to physics.
 
 Another point in favor of PINNs is that boundary and initial conditions can be encoded as input. This will allow the 
