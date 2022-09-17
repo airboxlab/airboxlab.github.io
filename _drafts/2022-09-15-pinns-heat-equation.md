@@ -145,7 +145,7 @@ u_{i,j}^{k+1} = \gamma(u_{i+1,j}^{k} + u_{i-1,j}^{k} + u_{i,j+1}^{k} + u_{i,j-1}
 $$
 </center>
 <br/><br/>
-$(5)$ can be quickly implemented using a 3 nested for loops in python, or you can go for a more efficient method using 
+$(4)$ can be quickly implemented using a 3 nested for loops in python, or you can go for a more efficient method using 
 Jax and its Just In Time (JIT) compiler:
 
 ```python
