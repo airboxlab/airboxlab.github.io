@@ -53,7 +53,7 @@ In real world problems, data is often scarce and noisy, limiting how fast an ML/
 in the field. Mathematical models of physical phenomena exist, but they require intractable computation times and level of
 details about the environment.
 
-Physics-informed neural networks (PINNs) were recently introduced as an elegant and efficient way to to mary the best of both worlds:
+Physics-informed neural networks (PINNs) were recently introduced as an elegant and efficient way to mary the best of both worlds:
 
 - learn from the theoretical model represented by a partial differential equation (PDE), to ensure robust predictions and limit amount of field data to collect
 - learn from field data to adapt the trained neural network to the target environment
