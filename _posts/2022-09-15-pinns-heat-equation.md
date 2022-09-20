@@ -172,7 +172,7 @@ def compute_next_k(u_k):
 
 Using PINN, we don't explicitly solve the equation anymore, but it will be used to compute the loss during the training 
 of the neural network. Specifically, the loss will be computed against the derivative of the PDE, and the boundary and initial 
-conditions. In our present case, our heat equation PDE loss $L_{pde}$ can be defined to minimize residual of the heat equation $(1)$
+conditions. In our present case, our loss $L_{eq}$ can be defined to minimize residual of the predicted heat equation $(1)$
 
 Given that we want $ u_t - \alpha u_{xx} u_{yy} = 0 $, the loss can be obtained with
 
@@ -209,7 +209,7 @@ An example of using `pytorch` to compute $L_{eq}$:
 
 ```python
 from torch.autograd import grad
-# where u is the neural net module we train, so here we actually call forward()
+# where u is the neural net module we train, so here we actually perform a forward pass
 u_value = u(t, x, y) 
 # diffusion coefficient
 alpha = 0.1
