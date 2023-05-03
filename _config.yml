@@ -8,6 +8,8 @@ url: "https://techblog.github.io/" # the base hostname & protocol for your site
 twitter_username: myfoobot
 # github_username:  airboxlab
 
+remote_theme: pages-themes/minimal@v0.2.0
+
 # Build settings
 markdown: kramdown
 kramdown:
@@ -15,6 +17,7 @@ kramdown:
 
 plugins:
   - jekyll-seo-tag
+  - jekyll-remote-theme
 
 # permalink: /:categories/:year/:month/:day/:title:output_ext
 permalink: /:categories/:title:output_ext
