@@ -5,6 +5,7 @@ date:   2016-06-21 08:00:00
 categories: spark streaming cluster ec2 aws lean
 comments: true
 author: Antoine Galataud
+published: false
 ---
 
 We've been using [Apache Spark](http://spark.apache.org) for 1 year, and we wanted to share some thoughts and tips about it.

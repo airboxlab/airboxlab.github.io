@@ -4,9 +4,9 @@ email: hello@foobot.io
 description: > # this means to ignore newlines until "baseurl:"
   The guys behind Foobot. Talking here about our achievements, failures & OSS contributions
 baseurl: "" # the subpath of your site, e.g. /blog/
-url: "https://airboxlab.github.io/" # the base hostname & protocol for your site
+url: "https://techblog.github.io/" # the base hostname & protocol for your site
 twitter_username: myfoobot
-github_username:  airboxlab
+# github_username:  airboxlab
 
 # Build settings
 markdown: kramdown
@@ -16,10 +16,13 @@ kramdown:
 plugins:
   - jekyll-seo-tag
 
+# permalink: /:categories/:year/:month/:day/:title:output_ext
+permalink: /:categories/:title:output_ext
+
 collections:
   drafts: 
     output: true
-    permalink: /:categories/:year/:month/:day/:title:output_ext
+    permalink: /:categories/:title:output_ext
 
 defaults:
   - scope:
@@ -29,5 +32,5 @@ defaults:
       comments: false
       share: false
       related: false
-      sitemap: false  #To hide from sitemap.xml
-      noindex: true   #To hide from robots and crawlers
+      sitemap: false  # To hide from sitemap.xml
+      noindex: true   # To hide from robots and crawlers

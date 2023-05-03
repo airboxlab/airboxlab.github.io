@@ -5,6 +5,7 @@ date:   2016-08-29 12:00:00
 categories: streaming microservices iot spark real-time
 comments: true
 author: Antoine Galataud
+published: false
 ---
 
 <style type="text/css">

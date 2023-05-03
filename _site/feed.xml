@@ -4,10 +4,10 @@
     <title>Foobot Technical Blog</title>
     <description>The guys behind Foobot. Talking here about our achievements, failures &amp; OSS contributions
 </description>
-    <link>https://airboxlab.github.io//</link>
-    <atom:link href="https://airboxlab.github.io//feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Fri, 16 Sep 2022 17:02:12 +0200</pubDate>
-    <lastBuildDate>Fri, 16 Sep 2022 17:02:12 +0200</lastBuildDate>
+    <link>https://techblog.github.io//</link>
+    <atom:link href="https://techblog.github.io//feed.xml" rel="self" type="application/rss+xml" />
+    <pubDate>Wed, 03 May 2023 09:20:34 +0200</pubDate>
+    <lastBuildDate>Wed, 03 May 2023 09:20:34 +0200</lastBuildDate>
     <generator>Jekyll v4.2.0</generator>
     
       <item>
@@ -50,16 +50,18 @@ ul {
 }
 &lt;/style&gt;
 
-&lt;p&gt;In real world problems, data is often scarce and noisy, limiting how fast an ML/AI-based solutions can become effective 
-in the field. Mathematical models of physical phenomenons exist, but they require intractable computation times and level of
+&lt;p&gt;In real world problems, data is often scarce and noisy, limiting how fast an ML/AI-based solution can become effective 
+in the field. Mathematical models of physical phenomena exist, but they require intractable computation times and level of
 details about the environment.&lt;/p&gt;
 
-&lt;p&gt;Physics-informed neural networks (PINNs) try to mary the best of both worlds:&lt;/p&gt;
+&lt;p&gt;Physics-informed neural networks (PINNs) were recently introduced as an elegant and efficient way to mary the best of both worlds:&lt;/p&gt;
 
 &lt;ul&gt;
   &lt;li&gt;learn from the theoretical model represented by a partial differential equation (PDE), to ensure robust predictions and limit amount of field data to collect&lt;/li&gt;
   &lt;li&gt;learn from field data to adapt the trained neural network to the target environment&lt;/li&gt;
 &lt;/ul&gt;
+
+&lt;p&gt;This article deals with how well a PINN can solve the well-known heat equation and shows that it could become an enabler for many real-world applications that are currently too complex to solve with deep learning.&lt;/p&gt;
 
 &lt;h2 id=&quot;pinns-an-overview&quot;&gt;PINNs, an overview&lt;/h2&gt;
 
@@ -148,7 +150,7 @@ u_{i,j}^{k+1} = \gamma(u_{i+1,j}^{k} + u_{i-1,j}^{k} + u_{i,j+1}^{k} + u_{i,j-1}
 $$
 &lt;/center&gt;
 &lt;p&gt;&lt;br /&gt;&lt;br /&gt;
-$(5)$ can be quickly implemented using a 3 nested for loops in python, or you can go for a more efficient method using 
+$(4)$ can be quickly implemented using a 3 nested for loops in python, or you can go for a more efficient method using 
 Jax and its Just In Time (JIT) compiler:&lt;/p&gt;
 
 &lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;delta_t&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;0.01&lt;/span&gt;
@@ -174,7 +176,7 @@ Jax and its Just In Time (JIT) compiler:&lt;/p&gt;
 
 &lt;p&gt;Using PINN, we don’t explicitly solve the equation anymore, but it will be used to compute the loss during the training 
 of the neural network. Specifically, the loss will be computed against the derivative of the PDE, and the boundary and initial 
-conditions. In our present case, our heat equation PDE loss $L_{pde}$ can be defined to minimize residual of the heat equation $(1)$&lt;/p&gt;
+conditions. In our present case, our loss $L_{eq}$ can be defined to minimize residual of the predicted heat equation $(1)$&lt;/p&gt;
 
 &lt;p&gt;Given that we want $ u_t - \alpha u_{xx} u_{yy} = 0 $, the loss can be obtained with&lt;/p&gt;
 
@@ -210,7 +212,7 @@ but also to compute $L_{pde}$.&lt;/p&gt;
 &lt;p&gt;An example of using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;pytorch&lt;/code&gt; to compute $L_{eq}$:&lt;/p&gt;
 
 &lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;torch.autograd&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;grad&lt;/span&gt;
-&lt;span class=&quot;c1&quot;&gt;# where u is the neural net module we train, so here we actually call forward()
+&lt;span class=&quot;c1&quot;&gt;# where u is the neural net module we train, so here we actually perform a forward pass
 &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;u_value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;u&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; 
 &lt;span class=&quot;c1&quot;&gt;# diffusion coefficient
 &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;alpha&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;0.1&lt;/span&gt;
@@ -282,8 +284,8 @@ Raissi, Maziar and Perdikaris, Paris and Karniadakis, George E.
 &lt;a href=&quot;https://github.com/idrl-lab/idrlnet&quot;&gt;IDRLnet&lt;/a&gt;&lt;/p&gt;
 </description>
         <pubDate>Thu, 15 Sep 2022 02:00:00 +0200</pubDate>
-        <link>https://airboxlab.github.io//ai/deeplearning/physics/2022/09/15/pinns-heat-equation.html</link>
-        <guid isPermaLink="true">https://airboxlab.github.io//ai/deeplearning/physics/2022/09/15/pinns-heat-equation.html</guid>
+        <link>https://techblog.github.io//ai/deeplearning/physics/pinns-heat-equation.html</link>
+        <guid isPermaLink="true">https://techblog.github.io//ai/deeplearning/physics/pinns-heat-equation.html</guid>
         
         
         <category>ai</category>
@@ -482,8 +484,8 @@ John Schulman, Filip Wolski, Prafulla Dhariwal, Alec Radford, Oleg Klimov.
 &lt;i&gt;Proximal Policy Optimization Algorithms&lt;/i&gt; &lt;a href=&quot;https://arxiv.org/abs/1707.06347&quot;&gt;2017&lt;/a&gt;&lt;/p&gt;
 </description>
         <pubDate>Wed, 23 Feb 2022 01:00:00 +0100</pubDate>
-        <link>https://airboxlab.github.io//hvac/rl/autoregressive/2022/02/23/ar_policy.html</link>
-        <guid isPermaLink="true">https://airboxlab.github.io//hvac/rl/autoregressive/2022/02/23/ar_policy.html</guid>
+        <link>https://techblog.github.io//hvac/rl/autoregressive/ar_policy.html</link>
+        <guid isPermaLink="true">https://techblog.github.io//hvac/rl/autoregressive/ar_policy.html</guid>
         
         
         <category>hvac</category>
@@ -491,230 +493,6 @@ John Schulman, Filip Wolski, Prafulla Dhariwal, Alec Radford, Oleg Klimov.
         <category>rl</category>
         
         <category>autoregressive</category>
-        
-      </item>
-    
-      <item>
-        <title>Crowd sourced classifier to identify air pollution sources</title>
-        <description>&lt;style type=&quot;text/css&quot;&gt;
-.center {
-    display:block;
-    margin: 0 auto;
-}
-&lt;/style&gt;
-
-&lt;h2 id=&quot;abstract&quot;&gt;Abstract&lt;/h2&gt;
-
-&lt;p&gt;Foobot designs and manufactures indoor air quality monitors since 2013. These monitors are connected to a cloud platform that collects and process sensor readings from around the world; customers can visualize their data from mobile or web interfaces. Foobots have been used in homes, offices and research context.&lt;/p&gt;
-
-&lt;p&gt;As a sensor device manufacturer, our goal isn’t only to provide a &lt;em&gt;thermometer&lt;/em&gt; for air quality, the end goal is to reduce exposure to air pollution for our customers. For that we have been involved in the engineering of several air purifier lines over the years. We also perceived that it is key for users to understand what actions lead to poorer air indoor. When one understands where pollution comes from, (s)he can perform remediation actions, or set an automated way to deal with it.&lt;/p&gt;
-
-&lt;h2 id=&quot;identify-pollution-sources&quot;&gt;Identify pollution sources&lt;/h2&gt;
-
-&lt;p&gt;Air quality is complex, and it is always challenging to identify a root cause when air pollution rises. It can be due to outdoor events, like wildfires or traffic pollution, but often, the pollution source is indoor. Within dwellings, there are a number of air quality events triggered by inhabitants. Our actions and behaviors indoor impact the air quality we live in; for the better, when we switch on the cooking hood, or for the worth when we are cleaning the bathroom with harsh chemicals.&lt;/p&gt;
-
-&lt;p&gt;Foobot home sensors measures four environmental parameters: fine particulates (PM), volatile organic compounds (VOC), temperature and relative humidity. The challenge in creating a feature that can show user a root cause for a pollution event is to identify a unsique &lt;em&gt;signature&lt;/em&gt; over these 4 environmental parameters measured.&lt;/p&gt;
-
-&lt;p&gt;This article describes the process we followed to collect a dataset and to setup an automated air quality event classifier.&lt;/p&gt;
-
-&lt;h3 id=&quot;crowd-collected-dataset&quot;&gt;Crowd collected dataset&lt;/h3&gt;
-
-&lt;p&gt;We created a feature for our users to label their data. It allowed enrolled users to receive a push notification each time an air quality event was detected. The push notification opens up Foobot mobile app where users were able to choose the action that was carried on, or to enter free text.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/viz_aqe/iphone_classify.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center&gt;&lt;i&gt;Push notification for classification&lt;/i&gt;&lt;/center&gt;
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;The detection of an event, meaning the kind sensor deviation that constitute it, and the timing to trigger a push notification to a user is a topic on its own. It took us several iterations to maximize the number of responses and to avoid bothering users for non-event, or for events that happened too long ago and that they couldn’t to identify anymore.&lt;/p&gt;
-
-&lt;p&gt;Thanks to this feature and the users enrolled we were able to collects tens of thousands of labeled events.&lt;/p&gt;
-
-&lt;h2 id=&quot;data-analysis&quot;&gt;Data analysis&lt;/h2&gt;
-
-&lt;p&gt;Now let’s introduce some basic techniques for data segmentation and classification we used to visualize labeled &lt;em&gt;air quality events&lt;/em&gt;.&lt;/p&gt;
-
-&lt;h3 id=&quot;dataset-description&quot;&gt;Dataset description&lt;/h3&gt;
-
-&lt;p&gt;The dataset that is used for the purpose of this article is a subset of Foobot full dataset. It contains &lt;em&gt;extracted features&lt;/em&gt; from sensor data time series and other continuous and categorical features, as well as associated tags given by users. These labels will be, used as classes to train a classifier. Selected samples are from devices and users located in the US and Europe.&lt;/p&gt;
-
-&lt;p&gt;For the sake of simplicity and readability we’ll only detail 3 specific labels, though we have proven our method to work with quite a few others:&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;&lt;strong&gt;&lt;em&gt;Cooking&lt;/em&gt;&lt;/strong&gt; consequence of a cooking action. This is one of the most common source of indoor air pollution. It is quite challenging to detect accurately because of the variety of event types it amalgamates. eg: frying, oven cooking, steaming.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;&lt;em&gt;Air renewal&lt;/em&gt;&lt;/strong&gt; opening a door, a window, switching ON some kind of ventilation. It appeared important to be able to detect remediation events. Either to reward users or to just to be able to prevent an automated system from asking users to perform an action already performed. We could also derive an airing score out of this metric.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;&lt;em&gt;Presence&lt;/em&gt;&lt;/strong&gt; people coming and going in the space. Whether someone is around or not is important for an automated system to decides what to communicate to an end user. It was also an interesting challenge since the Foobot home sensor doesn’t feature a CO2 sensor.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h3 id=&quot;tools&quot;&gt;Tools&lt;/h3&gt;
-
-&lt;p&gt;This short analysis uses &lt;a href=&quot;https://spark.apache.org&quot;&gt;Spark&lt;/a&gt; (mostly for data extraction) as well as &lt;a href=&quot;http://scikit-learn.org/&quot;&gt;scikit-learn&lt;/a&gt;. Visualizations are performed with &lt;a href=&quot;https://matplotlib.org/&quot;&gt;matplotlib&lt;/a&gt;.&lt;/p&gt;
-
-&lt;h3 id=&quot;overview&quot;&gt;Overview&lt;/h3&gt;
-
-&lt;p&gt;Intuitively, air quality events will have different “signatures”, that is they will be expressed differently in data. For instance, cooking could be a source of particulate matters, while air renewal can translate into change in temperature, humidity and/or volatile organic compounds (VOC). These are just a few examples to build our intuition, there are many others.&lt;/p&gt;
-
-&lt;p&gt;To get a first feeling of how they show up in data, let’s see how &lt;em&gt;difference between maximum and minimum value around event time&lt;/em&gt;* is characterized&lt;/p&gt;
-
-&lt;div style=&quot;font-size:12px;margin-bottom:15px&quot;&gt;*feature extraction in time windows isn't detailed in this article&lt;/div&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/viz_aqe/pm_diff_max_min_box.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center&gt;&lt;i&gt;Boxplot of difference between PM max and min values, by tag&lt;/i&gt;&lt;/center&gt;
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;A first interpretation of this &lt;a href=&quot;https://en.wikipedia.org/wiki/Box_plot&quot;&gt;box plot&lt;/a&gt; is that cooking is statistically the event that makes PM readings vary the most: difference in 25%-75% range is wider than for other events, and maximum is much higher. See also the shape of the plot for air renewal, showing that variance is also important: could be due to PM being cleared or moved by airflow.&lt;/p&gt;
-
-&lt;p&gt;Let’s see some other plots for VOCs and humidity.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/viz_aqe/voc_diff_max_min_box.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center&gt;&lt;i&gt;Boxplot of difference between VOC max and min values, by tag&lt;/i&gt;&lt;/center&gt;
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/viz_aqe/hum_diff_max_min_box.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center&gt;&lt;i&gt;Boxplot of difference between humidity max and min values, by tag&lt;/i&gt;&lt;/center&gt;
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;This time, we can see that VOC and humidity levels seem to be impacted the most by air renewal (first) and then presence.&lt;/p&gt;
-
-&lt;p&gt;We now have an intuition about how air quality changes affects some of Foobot’s sensors readings. We can go a bit further by checking how variance in data distinguish event types.&lt;/p&gt;
-
-&lt;h3 id=&quot;using-variance-in-data-with-principal-components-analysis&quot;&gt;Using variance in data with Principal Components Analysis&lt;/h3&gt;
-
-&lt;p&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/Principal_component_analysis&quot;&gt;Principal Components Analysis (PCA)&lt;/a&gt; is a common technique mostly used for&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;dimensionality reduction: if variance in data can be explained by few &lt;em&gt;principal components&lt;/em&gt; (where number of principal components &amp;lt; number of features) then one can use these components for further analysis, mining or model training&lt;/li&gt;
-  &lt;li&gt;visualization: 2 or 3 principal components are easy to plot, so PCA is convenient to visualize how variance is explained in data, especially when associating labels with data points.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;PCA also has its limits: it really works well when problem is linear, that is when data you want to split is linearly separable. Let’s not forget also that PCA just provides a rotation (or projection onto a different space) which maximizes the variance (principle: diagonalization of the covariance/correlation matrix) for the given data, using fewer dimensions. It can’t go beyond; it’s not a classifier.&lt;/p&gt;
-
-&lt;p&gt;Using PySpark and scikit-learn, it’s a straightforward task to setup a toy pipeline that pre-processes our dataset (like standardizing features), then applies PCA.
-Following plots are demonstrating PCA with 2 and 3 components.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/viz_aqe/pca_k_2.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center&gt;&lt;i&gt;PCA of air quality events (k=2)&lt;/i&gt;&lt;/center&gt;
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/viz_aqe/pca_k_3.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center&gt;&lt;i&gt;PCA of air quality events (k=3)&lt;/i&gt;&lt;/center&gt;
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;Here we achieve a visualization that projects all the features of our dataset onto the PCA features space (2 or 3 dimensions). We can see a trend in groups of points that seem to belong to each label. However, a simple interpretation can state that linear separability across tags isn’t achieved: although data belonging to air renewal and cooking groups seem to segregate from each other well, presence (&lt;em&gt;many people&lt;/em&gt;) has data points mixed up with the 2 previous classes. A simple intuition could explain this: presence could be true at the samae time than the other classes.&lt;/p&gt;
-
-&lt;h3 id=&quot;going-non-linear-with-polynomial-expansion&quot;&gt;Going non-linear with Polynomial Expansion&lt;/h3&gt;
-
-&lt;p&gt;Since we weren’t able to linearly separate data in a clear way, let’s try a non-linear method to see if we can better manage this. A first option is &lt;a href=&quot;https://en.wikipedia.org/wiki/Polynomial_expansion&quot;&gt;polynomial expansion&lt;/a&gt; (a particular method of basis expansion) which consists in projecting data onto a different space, here formed by polynomial combinations of all existing features. For instance, if you have features &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;[a b]&lt;/code&gt;, a 2nd degree expansion would result in &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;[ a b ab a² b²]&lt;/code&gt;. We can then use the result as an input for a linear transformer or classifier, which is good also to preserve the low complexity of a linear algorithm to make projections or decisions in a non-linear space.&lt;/p&gt;
-
-&lt;p&gt;Though you can guess it: it will require huge computational power if polynomial degree is high, and number of features is large. Also, the higher the degree, the more models using this new feature space will tend to overfit.&lt;/p&gt;
-
-&lt;p&gt;For the purpose of this article, we’ll only try 2nd degree polynomial.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/viz_aqe/pca_pe_k_2.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center&gt;&lt;i&gt;Polynomial expansion &amp;amp; PCA (k=2)&lt;/i&gt;&lt;/center&gt;
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/viz_aqe/pca_pe_k_3.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center&gt;&lt;i&gt;Polynomial expansion &amp;amp; PCA (k=3)&lt;/i&gt;&lt;/center&gt;
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;A clear change in projection, and a (visually) better separation of cooking and air renewal data. Presence (many people) is still not properly separated.&lt;/p&gt;
-
-&lt;h3 id=&quot;going-non-linear-with-kernel-pca&quot;&gt;Going non-linear with Kernel PCA&lt;/h3&gt;
-
-&lt;p&gt;Another method uses the &lt;a href=&quot;https://en.wikipedia.org/wiki/Kernel_method&quot;&gt;kernel trick&lt;/a&gt; applied to PCA. It’s basically also a change of space, as it projects data onto a higher dimensional space. A &lt;em&gt;kernel&lt;/em&gt; function is applied to each sample before PCA is applied.&lt;/p&gt;
-
-&lt;p&gt;Multiple “standard” kernel functions exist (like &lt;em&gt;gaussian radial basis function&lt;/em&gt; (RBF)). Choosing the right one is a difficult task when it’s meant to be used in a model training pipeline. Here we’re using the &lt;em&gt;cosine&lt;/em&gt; kernel function, only because it offers good visualization results.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/viz_aqe/kpca_k_2.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center&gt;&lt;i&gt;Kernel PCA (k=2)&lt;/i&gt;&lt;/center&gt;
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/viz_aqe/kpca_k_3.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center&gt;&lt;i&gt;Kernel PCA (k=3)&lt;/i&gt;&lt;/center&gt;
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;Again, separation between cooking and air renewal data is good. This time ‘presence’ (many people) seems to overlap with cooking only, which makes sense: people are usually in the room where they cook.&lt;/p&gt;
-
-&lt;h3 id=&quot;a-supervised-learning-technique-linear-discriminant-analysis&quot;&gt;A supervised learning technique: Linear Discriminant Analysis&lt;/h3&gt;
-
-&lt;p&gt;We didn’t manage to separate data between classes well with PCA in the previous section. In order to go further, we’re now going to use a supervised learning technique that takes into account classes (tags). Actually, it’s a well known classifier that has several advantages: efficient computing, no hyper parameter tuning, and possibility to reduce dimensionality.&lt;/p&gt;
-
-&lt;p&gt;This is what &lt;a href=&quot;https://en.wikipedia.org/wiki/Linear_discriminant_analysis&quot;&gt;Linear Discriminant Analysis&lt;/a&gt; is capable of. Like PCA, it’s a linear transformation, and the goal is to find a projection that maximizes variance, but this time between classes. It runs well under the assumptions that class densities are Gaussian and that each class covariance matrix is similar, assumptions that are not often met in real world problems.&lt;/p&gt;
-
-&lt;p&gt;We’re going to use it here only for its dimensionality reduction capability, and we’ll project our data onto a subspace made only of the number of dimensions we’re interested in: LDA lets us choose number of components &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;k&lt;/code&gt;, but it can only be such as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;k &amp;lt; n-1&lt;/code&gt; (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n&lt;/code&gt; = number of classes).&lt;/p&gt;
-
-&lt;p&gt;LDA remains a linear method (linear decision boundaries) and tends to overfit the data as number of features (dimensions) grows.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/viz_aqe/lda_k_2.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center&gt;&lt;i&gt;LDA (k=2)&lt;/i&gt;&lt;/center&gt;
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/viz_aqe/lda_k_3.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center&gt;&lt;i&gt;LDA (k=3)&lt;/i&gt;&lt;/center&gt;
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;This time, even if it’s not a strict visual separation of data, classes seem to form distinct groups.&lt;/p&gt;
-
-&lt;h3 id=&quot;non-linear-lda&quot;&gt;Non-linear LDA&lt;/h3&gt;
-
-&lt;p&gt;In order to obtain quadratic (no more linear) decision boundaries and improve our classification, we’re now going to project our data onto a higher dimensional space formed by using polynomial expansion before fitting LDA.&lt;/p&gt;
-
-&lt;p&gt;It’s also worth noting that &lt;em&gt;Quadratic Discriminant Analysis&lt;/em&gt; exists, and in practice gives very similar results.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/viz_aqe/qlda_k_2.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center&gt;&lt;i&gt;Polynomial LDA (k=2)&lt;/i&gt;&lt;/center&gt;
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/viz_aqe/qlda_k_3.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center&gt;&lt;i&gt;Polynomial LDA (k=3)&lt;/i&gt;&lt;/center&gt;
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;This time, a clear separation is obtained.&lt;/p&gt;
-
-&lt;h2 id=&quot;accuracy-verification&quot;&gt;Accuracy verification&lt;/h2&gt;
-
-&lt;p&gt;As we discovered, distinguishing or classifying air quality events classes is a non-trivial task. Pure linear methods do not give good results and we have to use the technique of basis expansion (polynomials) along with LDA in order to get a proper classification. Although results were promising to build a classifier, we also have to consider:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;Users live in different indoor and outdoor conditions: from one region of the world to another, habits are different, outdoor air quality is different, temperature and humidity vary greatly.&lt;/li&gt;
-  &lt;li&gt;Air quality events are difficult to track by nature: there can be several happening at the same time, there can be a delay between start of event and impact on sensor readings, same type of event will have a different expression from one place to another (e.g. air renewal in a polluted city vs countryside).&lt;/li&gt;
-  &lt;li&gt;Generalization capability of the classifier, which should be verified with (cross-)validation and testing.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;All these possible hurdles called for a verification to evaluate the performance of our classifier.&lt;/p&gt;
-
-&lt;h3 id=&quot;crowd-sourced-classification-check&quot;&gt;Crowd sourced classification check&lt;/h3&gt;
-
-&lt;p&gt;In the same way that we uses a subset of our users to help build a labeled dataset we proposed them to verify the accuracy of our classifier. We introduced a new feature that is, this time, not asking the user to label an event, but rather to check if the label to assigned to an event is correct:&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/viz_aqe/iphone_valid.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center&gt;&lt;i&gt;Event validation push notification&lt;/i&gt;&lt;/center&gt;
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;results&quot;&gt;Results&lt;/h3&gt;
-
-&lt;p&gt;With user being able to enter sub-categories or reclassify wrongly labeled events, we were able to iterate and improve. Today our accuracy in detecting the different events are the following for the main ones:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;strong&gt;Cooking&lt;/strong&gt; 88%&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Air renewal&lt;/strong&gt; 98%&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Presence&lt;/strong&gt; 96%&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Cleaning&lt;/strong&gt; 100%&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;Worth to be noticed is that we are able to label these events in a streaming fashion, meaning that data points are classified live while they are being collected thanks to Spark streaming.&lt;/p&gt;
-</description>
-        <pubDate>Thu, 01 Jul 2021 02:00:00 +0200</pubDate>
-        <link>https://airboxlab.github.io//data_science/air_quality/classifier/machine_learning/2021/07/01/events-class.html</link>
-        <guid isPermaLink="true">https://airboxlab.github.io//data_science/air_quality/classifier/machine_learning/2021/07/01/events-class.html</guid>
-        
-        
-        <category>data_science</category>
-        
-        <category>air_quality</category>
-        
-        <category>classifier</category>
-        
-        <category>machine_learning</category>
         
       </item>
     
@@ -749,7 +527,7 @@ ul {
 
 &lt;h2 id=&quot;foobot-smart-air-building-sab-project&quot;&gt;Foobot Smart Air Building (SAB) project&lt;/h2&gt;
 
-&lt;p&gt;In October 2020, SAB artificial intelligent agents took control over a 15000 m² commercial building HVAC system. This building, located in Northern Europe, was a real challenge:&lt;/p&gt;
+&lt;p&gt;In October last year, SAB artificial intelligent agents took control over a 15000 m² commercial building HVAC system. This building, located in Northern Europe, was a real challenge:&lt;/p&gt;
 
 &lt;ul&gt;
   &lt;li&gt;a recent (2015), awarded construction. It obtained the &lt;i&gt;DGNB Platinum&lt;/i&gt; construction certification.&lt;/li&gt;
@@ -779,13 +557,13 @@ ul {
 
 &lt;p&gt;Our smart agents’ performance is monitored using opensource tools like Grafana, and aggregated performance Key Performance Indicators (KPI) are continuously computed to track savings, comfort and AQI over the course of several months and years.&lt;/p&gt;
 
-&lt;p&gt;In early October 2020, we gave our agents the go-live and watched🍿&lt;/p&gt;
+&lt;p&gt;In early fall, we gave our agents the go-live and watched🍿&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;/assets/sab_after_9_months/day_1.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
 &lt;center&gt;&lt;i class=&quot;image-foot&quot;&gt;fig. 1: SAB AI agents performance comparison over a 4 days period (source: Grafana dashboard)&lt;/i&gt;&lt;/center&gt;
 &lt;p&gt;&lt;br /&gt;&lt;/p&gt;
 
-&lt;p&gt;This 7th of October 2020, there was a drastic cut in HVAC energy consumption. All HVAC energy uses (AHU electricity and per-floor heating, showed with different colors in stacked bars chart) were significantly reduced despite similar weather conditions compared to previous, non-SAB days.&lt;/p&gt;
+&lt;p&gt;This day of October, there was a drastic cut in HVAC energy consumption. All HVAC energy uses (AHU electricity and per-floor heating, showed with different colors in stacked bars chart) were significantly reduced despite similar weather conditions compared to previous, non-SAB days.&lt;/p&gt;
 
 &lt;p&gt;What it demonstrated:&lt;/p&gt;
 &lt;ul&gt;
@@ -832,8 +610,8 @@ ul {
 &lt;/ul&gt;
 </description>
         <pubDate>Mon, 21 Jun 2021 02:00:00 +0200</pubDate>
-        <link>https://airboxlab.github.io//hvac/control/ai/reinforcement_learning/2021/06/21/sab_after_9.html</link>
-        <guid isPermaLink="true">https://airboxlab.github.io//hvac/control/ai/reinforcement_learning/2021/06/21/sab_after_9.html</guid>
+        <link>https://techblog.github.io//hvac/control/ai/reinforcement_learning/sab_after_9.html</link>
+        <guid isPermaLink="true">https://techblog.github.io//hvac/control/ai/reinforcement_learning/sab_after_9.html</guid>
         
         
         <category>hvac</category>
@@ -1307,8 +1085,8 @@ suited for HVAC control optimizations. With a cost-effective and robust process 
 teaching in simulated environment, efficient control policies can be discovered to achieve significant savings.&lt;/p&gt;
 </description>
         <pubDate>Sun, 24 Jan 2021 01:00:00 +0100</pubDate>
-        <link>https://airboxlab.github.io//hvac/control/ai/reinforcement_learning/2021/01/24/smart_control.html</link>
-        <guid isPermaLink="true">https://airboxlab.github.io//hvac/control/ai/reinforcement_learning/2021/01/24/smart_control.html</guid>
+        <link>https://techblog.github.io//hvac/control/ai/reinforcement_learning/smart_control.html</link>
+        <guid isPermaLink="true">https://techblog.github.io//hvac/control/ai/reinforcement_learning/smart_control.html</guid>
         
         
         <category>hvac</category>
@@ -1318,566 +1096,6 @@ teaching in simulated environment, efficient control policies can be discovered 
         <category>ai</category>
         
         <category>reinforcement_learning</category>
-        
-      </item>
-    
-      <item>
-        <title>Data Science at Airboxlab - Part 2</title>
-        <description>&lt;style type=&quot;text/css&quot;&gt;
-.center {
-    display:block;
-    margin: 0 auto;
-}
-&lt;/style&gt;
-
-&lt;p&gt;This is the second article in a series of 2 (&lt;a href=&quot;/data_science/2018/07/01/data_science_at_abl_p1.html&quot;&gt;1st article here&lt;/a&gt;) about how we see and do data science at &lt;a href=&quot;https://foobot.io&quot;&gt;Airboxlab&lt;/a&gt;. This article delves into technical aspects, and presents data collection processes, pipelines, machine learning and infrastructure we have in place.&lt;/p&gt;
-
-&lt;h3 id=&quot;what-we-do&quot;&gt;What we do&lt;/h3&gt;
-
-&lt;p&gt;Let’s first explain main tasks we’re trying to tackle.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/ds_abl/pipeline_ml.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center&gt;&lt;i&gt;Overview of an end-to-end ML pipeline&lt;/i&gt;&lt;/center&gt;
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Correlations &amp;amp; causal inference&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;Looking for correlations, or better, causality, is a discipline that applies to a variety of situations. For instance when there is a doubt about a device feature that may have a side effect on another, or when we want to know what causes users to develop a particular habit or act a specific way. Another interesting application is to find how user habits or external factors like outdoor air pollution reflects on sensor data. A great example of one of our recent study demonstrates a temperature side effect called &lt;a href=&quot;https://foobot.io/resources/off-gassing/&quot;&gt;off-gassing&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Analytics and visualizations&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;Probably the most common aspect of data science: extracting value (metrics, KPIs, charts) from data and communicate it to stakeholders. In IoT, monitoring and analysing devices life cycle represents a significant part of this job. For instance, checking effect of a firmware release on a product (e.g has connectvity improved? how many upgrades are failing?). An other less common aspect is reporting about manufacturing: we build our own test equipments for products we manufacture, and of course these small servers (we call them &lt;em&gt;test rigs&lt;/em&gt;, they help testing electrical boards and components directly on the manufacturing assembly line) send us a lot of data from different factories. Consolidating this and detecting problems is crucial.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Machine learning to solve complex problems&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;Machine learning can be applied where problems start to be hard to solve with basic analytics or simple statistics. Modeling and productizing ML models adds significant overhead in terms of complexity and engineering, so we’re always cautious about how and when to apply ML. However, some of the problems we face require this level of sophistication in order to get an appropriate solution.&lt;/p&gt;
-
-&lt;p&gt;One of them is device calibration: we do real time calibration on some of sensors using regressions. A bit trickier, we developed (but still improving) air quality events detection and classification, using clustering, supervised and semi supervised learning techniques.&lt;/p&gt;
-
-&lt;p&gt;Some of our current biggest challenges also involve machine learning, like automatic hardware/software failures detection, maintenance prediction or automatic ventilation systems control (provide clean air without human intervention, no matter what activity is going on).&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Stream processing&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;Stream processing is inherent to IoT as we often need to react within a few seconds or minutes to events. A traditional batch approach doesn’t suit well in that case. For that purpose we use a stream processing framework along with appropriate techniques (like aggregations on sliding windows) and statistics (like moving averages). We also ship machine learning models in our real time pipeline so we can make predictions on fresh data (e.g. air quality classification).&lt;/p&gt;
-
-&lt;h3 id=&quot;how-we-do-it&quot;&gt;How we do it&lt;/h3&gt;
-
-&lt;p&gt;Diving deeper into technical matters, here are details about how data is processed.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Data pipelines&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/ds_abl/pipelines_infra.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center&gt;&lt;i&gt;Pipelines technical overview&lt;/i&gt;&lt;/center&gt;
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;We have 2 main types of pipelines: the hot path - &lt;em&gt;near real time processing pipelines&lt;/em&gt; - and the cold path - &lt;em&gt;analytics pipelines&lt;/em&gt; (batches). We generally use the hot path when a response is needed within a few minutes (max 1h), and batches otherwise.&lt;/p&gt;
-
-&lt;p&gt;Near real time processing serves the purpose of creating running/moving aggregations, reacting to events and sending alerts, or predicting using models. Batching is about creating new datasets and populating our data warehouse with data that will be used later.&lt;/p&gt;
-
-&lt;p&gt;The cold path is implemented first using ELT pattern (Extract Load &amp;amp; Transform as opposed to ETL): data we have is sent to our data lake without pre-processing, filtering or formatting of any sort. Schema is applied on read, mainly with transformers jobs that populate the warehouse, or when data analyst requires access to “raw” values. ELT pattern is particularly suitable to IoT as devices can fail, send inconsistent data, and data schemas can change rapidly.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/ds_abl/data_infra.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center&gt;&lt;i&gt;ELT infrastructure overview&lt;/i&gt;&lt;/center&gt;
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;Pipelines are then created by first dumping into the data lake, then pumping it into our data warehouse or through analytics jobs. As it’s easy to create new data sets and new pipelines, number of tables we have to handle grows rapidly (but we try to compensate with good documentation).&lt;/p&gt;
-
-&lt;p&gt;Most of our datasets are built on top of logs: every change is persisted with a timestamp (event time when available, processing time otherwise), which let’s us investigate things with accuracy.
-Eventually, the amount of data to store is much bigger, but it contains vital information, and we apply patterns like event sourcing to take full advantage of it. Also, most statistical programming language or framework (R, python’s pandas, SQL, Spark) have convenient routines and operators to deal with time series like these (lead/lag, rank, correlation operators, …)&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/ds_abl/aggreg.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center&gt;&lt;i&gt;Sample aggregations from logs&lt;/i&gt;&lt;/center&gt;
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Collaboration&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;One of our favorite collaboration tool is notebooks. We’re using Spark all the way down the data processing line, and &lt;a href=&quot;https://databricks.com/&quot;&gt;Databricks&lt;/a&gt; for most of our projects. Notebooks offer a perfect environment for sharing ideas, presenting results and demonstrating new analytics or algorithms. It’s also development cycle-friendly as it integrates with source code versioning (git).&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Data products&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;All that we do don’t always ship in production, but most of the time it does. When it comes to productizing, tasks like exposing an API endpoint, or creating a new view in our apps, are required. Recently, data science work we shipped in production include real time air quality classification, sensor calibration functions, and in app analytics.&lt;/p&gt;
-
-&lt;p&gt;Data products are complex artifacts to handle in terms of development, especially when ML is involved, as we’re adding complexity and new potential problem sources (data &amp;amp; models) to something already complex (coding). When it comes to shipping data science work in production, it can get tricky too: validation, user testing, or deployment require careful handling. That’s why we’re relying on a few reliable frameworks (like Spark) and techniques (like cross validation or A/B testing).&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Data as a service&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;A data warehouse is a good solution to apply a schema and extract value from large datasets. It’s also great to provide a simple way for data analysts or business people to interact with data. As there is often a “missing dimension” in your last chart, why not let them explore data and see what they can find? Of course this requires business users to be guided and learn some SQL basics. Alternatively, pre-defined data sources and charts can be a great asset for teams without sufficient technical knowledge to access data directly.&lt;/p&gt;
-
-&lt;p&gt;On our side we’re now using &lt;a href=&quot;https://superset.incubator.apache.org/&quot;&gt;Apache Superset&lt;/a&gt; which provides the best of both worlds, as it brings SQL capabilities with a great way of creating data sources (tables) and charts (slices). It’s easy for non technical users to pick existing assets, modify them, and create their own visualizations.&lt;/p&gt;
-
-&lt;p&gt;Another data exploration channel we’re exploring is accessing our data lake and warehouse (stored in S3) with new tools like &lt;a href=&quot;https://aws.amazon.com/athena/&quot;&gt;AWS Athena&lt;/a&gt;. You can manage a catalog of data sources, schemas, and query data directly from there using SQL without worrying about infrastructure. Powerful.&lt;/p&gt;
-
-&lt;h3 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h3&gt;
-
-&lt;p&gt;In this series of 2 articles, we’ve tried to give an overview of how we use data at Airboxlab and why. So far, this has been beneficial to many projects.&lt;/p&gt;
-
-&lt;p&gt;We are dedicated to continuous improvement and scaling of our data science process. There are big challenges ahead, and expectations are high.&lt;/p&gt;
-
-&lt;p&gt;Data is more than ever fueling products design, experimentations and discoveries, helping us innovate.&lt;/p&gt;
-</description>
-        <pubDate>Fri, 21 Sep 2018 14:00:00 +0200</pubDate>
-        <link>https://airboxlab.github.io//data_science/2018/09/21/data_science_at_abl_p2.html</link>
-        <guid isPermaLink="true">https://airboxlab.github.io//data_science/2018/09/21/data_science_at_abl_p2.html</guid>
-        
-        
-        <category>data_science</category>
-        
-      </item>
-    
-      <item>
-        <title>Data Science at Airboxlab - Part 1</title>
-        <description>&lt;style type=&quot;text/css&quot;&gt;
-.center {
-    display:block;
-    margin: 0 auto;
-}
-&lt;/style&gt;
-
-&lt;h3 id=&quot;data-science-at-airboxlab&quot;&gt;Data Science at Airboxlab&lt;/h3&gt;
-
-&lt;p&gt;This is a series of 2 articles that dives into data science discipline at &lt;a href=&quot;https://foobot.io&quot;&gt;Airboxlab&lt;/a&gt;:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;1st article (present one) is about the data-driven philosophy we have in our company, and how work is organized around it&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;/data_science/2018/09/21/data_science_at_abl_p2.html&quot;&gt;2nd article&lt;/a&gt; depicts main problems we try to solve by applying data science, and how it is technically designed.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h3 id=&quot;investing-in-data&quot;&gt;Investing in data&lt;/h3&gt;
-
-&lt;p&gt;Designing air quality monitors has a lot to do with data: real-time air quality readings are useful to our users in many cases: they can act directly whenever air quality degrades, or setup home automations using Nest, Ecobee, IFTTT or other integrations we developed to automate ventilation systems based on air quality. 
-But some key elements are missing: as a user, how do I know what the main pollution source is in my home? What can I do about it and when did air quality really start to degrade? Moreover, how efficient is the solution I have just put in place? These are some of the questions that require long term analysis and accurate responses.&lt;/p&gt;
-
-&lt;p&gt;There are many other areas where data analysis shines and where it can add value. For example how is air quality affected by common external factors (like outdoor particles, &lt;em&gt;NOx&lt;/em&gt;, weather, …), what habits a user has is able to bring the best solution or worsen air quality. One may also be interested in knowing how sensors behave and age in varying conditions: some sensors require calibration at different phases in their life, and some others react to external factors.&lt;/p&gt;
-
-&lt;p&gt;This article is about how the data science discipline can help us in creating value for our users and how central the discipline is in the development of our products.&lt;/p&gt;
-
-&lt;h3 id=&quot;our-gems&quot;&gt;Our gems&lt;/h3&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/ds_abl/streams.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center&gt;&lt;i&gt;Airboxlab data sources&lt;/i&gt;&lt;/center&gt;
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;There are multiple data streams ingested by our data platform, the 3 main being the following:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;strong&gt;Device’s data&lt;/strong&gt; coming from our units in the wild. Depending on the product, there can be from 5 to 20 sensors continuously sent by devices, to which we can add aggregations, error codes and unprocessed values also computed by the device itself. Some devices (like air purifiers) send commands and status about other components (like change of fan speed)&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;User’s data&lt;/strong&gt; coming from apps and dashboards. Think user profile, user interactions …&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;Outdoor data&lt;/strong&gt; integrated from external providers. It includes sources of outdoor pollution and weather.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;Additional data coming from different sources are also used on a day to day basis. Some of them have dedicated ingestion pipelines (e.g. server logs from operations), some others are ephemeral (e.g. an archive file containing pollen data for a specific area in order to check a correlation).&lt;/p&gt;
-
-&lt;p&gt;Compared to other IoT companies, we have kind of an advantage in that we design air quality monitors and air purifiers, but we also develop embedded software for them which sends data to our own services in the cloud, and we are able to update their embedded software (firmware) at anytime if needed. The whole data acquisition process is in our hands. That means that if a team member needs explanations about some new sensor value or if a next generation device needs to send metrics differently, we are able to quickly refer to the person sitting next us.&lt;/p&gt;
-
-&lt;p&gt;As an engineering company with data-driven processes at its heart, data quality is a matter of high importance. Data quality is never overlooked, trade-offs are often in favor of preserving quality. As a result, &lt;strong&gt;our data streams and data lake are well documented, pipelines are written in a way that fosters high quality data sources and sinks, and everyone in the company cares about it&lt;/strong&gt;.&lt;/p&gt;
-
-&lt;h3 id=&quot;our-goals&quot;&gt;Our goals&lt;/h3&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/ds_abl/ooda_loop.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center&gt;&lt;i&gt;Simplified data-driven decision process&lt;/i&gt;&lt;/center&gt;
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;Data Science team “customers” are both internal (business, but also tech teams who wants to find ways of improving reliability of our sensors, services or infrastructure), and external (our users, who are our main concern, and external partners, who want to keep track of their unit fleets with various metrics - manufacturing line metrics, sensors drift over long period of time, …).&lt;/p&gt;
-
-&lt;p&gt;Data is central in IoT. This makes an important difference when it comes to our day-to-day duties: &lt;strong&gt;extracting value out of data matters because products and features are built on top of it&lt;/strong&gt;. For our CEO, hardware engineers, project managers or sales people, it’s a source of truth for designing products, improving user experience or advertising about our expertise. This isn’t like we had sit on a huge pile of undocumented data sources for years then realized this could be of interest: we cared from day 1. As a consequence, data science is one of the hottest topic in the company, and we work with enlightened people who knows what to expect.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Data driven decisions&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;Our company sells primarily technology, and services around it. Data is key in the decision process in a wide variety of fields like new sensors assessment and selection, or new features development in mobile and web applications.&lt;/p&gt;
-
-&lt;p&gt;Our decision process includes answering &lt;em&gt;data questions&lt;/em&gt; early, with dedicated communication channels, like our internal Slack #data channel where questions are raised and where discussion begins.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Analytics &amp;amp; ML products (user-facing features or not)&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;We have around 20+ projects where data science is involved, and often key component of the project. It ranges from in-app analytics to hardware failure detection. Not all projects require the same set of skills or data science assets, and not all involve machine learning. But machine learning is ranking often high in our projects options list as complexity is kicking in and amount of data to deal with gets bigger.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Indoor Air Quality expertise&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;Air quality is a complex topic and there are tons of things we learn every time we dig into our data sources. We try to build a knowledge database from that so we can make our users benefit from it. It also applies to hardware components we select and ship in our products - especially sensors - as there are lot of different ones, with different behaviours and capabilities, aging mechanism, etc. It’s a great source of information for building new products.&lt;/p&gt;
-
-&lt;h3 id=&quot;projects-organization&quot;&gt;Projects organization&lt;/h3&gt;
-
-&lt;p&gt;We’re a small shop, so it’s crucial for people working with us to go beyond traditional role boundaries. Regarding data science, scientist is involved in business requirements gathering, data engineering (defining what data, at what frequency, …), productionizing models (e.g. embedding model in a real time pipeline), creating visualizations and communicating results. It’s an intense mission, but it comes with the reward of mastering the whole data life cycle.&lt;/p&gt;
-
-&lt;p&gt;This is also true for business people: while technical people may not be always available to answer data-related questions, it’s better if they can look by themselves. This requires well organized and documented datasets, as well as simplified access to data: saved SQL queries, table views, charts templates… So this can turn into a real efficient process. This is called &lt;strong&gt;data as a service&lt;/strong&gt; and it requires more than some tools or a dashboarding solution: making data available to others inside the company is also about communication.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/assets/ds_abl/ds_workflow.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
-&lt;center&gt;&lt;i&gt;Work-flow and ownership&lt;/i&gt;&lt;/center&gt;
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;The team.&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;Our backend team is composed of seasoned developers, who like to work on complex problems and huge datasets. With data science field gaining maturity, and ecosystem evolving rapidly towards more developer-friendly frameworks, it’s now doable for us to tackle complex projects. The most important thing about that is we’re intimate with the whole data process, which &lt;strong&gt;removes the traditional barriers of moving a project from concept phase towards product&lt;/strong&gt;. With the number of projects grows our expertise in analytics and ML.&lt;/p&gt;
-
-&lt;h3 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h3&gt;
-
-&lt;p&gt;In this 1st article we have exposed Airboxlab data science process and vision, from a functional perspective. Next article dives into more technical things, like data pipelines design and types of data-related tasks we’re tackling.&lt;/p&gt;
-</description>
-        <pubDate>Fri, 21 Sep 2018 13:00:00 +0200</pubDate>
-        <link>https://airboxlab.github.io//data_science/2018/09/21/data_science_at_abl_p1.html</link>
-        <guid isPermaLink="true">https://airboxlab.github.io//data_science/2018/09/21/data_science_at_abl_p1.html</guid>
-        
-        
-        <category>data_science</category>
-        
-      </item>
-    
-      <item>
-        <title>Scaling MQTT connections with RabbitMQ - Part II</title>
-        <description>&lt;style type=&quot;text/css&quot;&gt;
-.callout {
-    float: right;
-    margin-left: 5px;
-}
-&lt;/style&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://airboxlab.github.io/assets/scale_mqtt_2/drink-out-of-a-hose.jpg&quot; alt=&quot;firehose&quot; class=&quot;callout&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;We’ve been running our messaging gateways with a more distributed approach as described in &lt;a href=&quot;part I&quot;&gt;&lt;/a&gt; for more than a year now, and wanted to share problems we faced and solutions we found.&lt;/p&gt;
-
-&lt;p&gt;First of all, let’s face it: it has been a shaky road. After an initial period of a few weeks where everything seemed to run smoothly under control, new incidents and outages started to show up intermittently. This was due to several problems I describe here.
-&lt;br /&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h4 id=&quot;aws-ec2-instances-choosing-the-right-type&quot;&gt;AWS EC2 instances: choosing the right type&lt;/h4&gt;
-
-&lt;p&gt;When we deployed our new version in May 2017, we chose cheap instance types like &lt;em&gt;t2&lt;/em&gt; for our proxies, with the idea of scaling them in mind.&lt;/p&gt;
-
-&lt;p&gt;It revealed to be a bad choice: &lt;em&gt;t2&lt;/em&gt; network interfaces are flaky and we suffered several hiccups, with massive reconnection events as a result. They are also not well suited for medium to long burst periods, as cpu access is throttled after a few 10a of minutes running above credit line. And we needed that to deal with recovery during massive reconnection events.&lt;/p&gt;
-
-&lt;p&gt;Finally a bunch of weak instances compared to a fewer but stronger ones is strategically a non sense here: more maintenance, less predictability.&lt;/p&gt;
-
-&lt;p&gt;Our current gateways now use &lt;em&gt;m4&lt;/em&gt; instance family. Since that, network hiccups have disappeared.
-&lt;br /&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h4 id=&quot;haproxy-timeouts&quot;&gt;HAProxy timeouts&lt;/h4&gt;
-
-&lt;p&gt;At first we’ve let default or too high values for some we didn’t know about. Problem with persistent MQTT connections and nextwork connections from resource-constrained hardware is that you may endup with a lot of idle, half-opened connections that could pile up and prevent legitimate connections to open.&lt;/p&gt;
-
-&lt;p&gt;Hopefull for us, HAProxy has a very flexible configuration. And an extensive documentation. It’s possible to configure client, server and other type of timeouts. Here is an extract of one of our configs:&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&quot;language-cfg&quot;&gt;defaults
-    mode    tcp
-    option  abortonclose
-    timeout client      30s
-    timeout client-fin  15s
-    timeout connect     5s
-    timeout server      30s
-    timeout server-fin  15s
-    timeout queue       30s
-    timeout tunnel      30s
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;Some values may seem a bit aggressive but since MQTT clients are all configured to automatically reconnect, it’s fine.&lt;/p&gt;
-
-&lt;p&gt;One important thing to note is HAProxy &lt;em&gt;timeout tunnel&lt;/em&gt; supersedes &lt;em&gt;timeout client&lt;/em&gt; and &lt;em&gt;timeout server&lt;/em&gt;, for persistent connections it’s an important one to set. Also HAProxy doc recommends using &lt;em&gt;timeout client-fin&lt;/em&gt; and &lt;em&gt;timeout server-fin&lt;/em&gt; in conjunction, to close sockets in &lt;em&gt;FIN_WAIT&lt;/em&gt; state faster.&lt;/p&gt;
-
-&lt;p&gt;Finally, in order to maintain connections open, MQTT clients are using heartbeat messages with interval &amp;lt; 30s.
-&lt;br /&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h4 id=&quot;mqtt-clients-tuning&quot;&gt;MQTT clients tuning&lt;/h4&gt;
-
-&lt;p&gt;&lt;strong&gt;Clean session &amp;amp; QoS 1&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;em&gt;clean session&lt;/em&gt; is a MQTT flag that instructs server it can remove everything belonging to the client and connection is closed. We’ve used it to ensure we don’t end up in situations where a RabbitMQ cluster node would refuse a connection because a MQTT queue was still present on an other node (we finally gave up using RabbitMQ clustering, but we may come back to it one day).&lt;/p&gt;
-
-&lt;p&gt;&lt;em&gt;QoS 1&lt;/em&gt; is the intermediate level of guarantee for MQTT messages delivery. It ensures messages are delivered &lt;em&gt;at least once&lt;/em&gt; to the receiver (hence doesn’t guarantee the same message isn’t received several times).&lt;/p&gt;
-
-&lt;p&gt;Also, &lt;em&gt;TTL&lt;/em&gt; on messages is fairly low (never more than 30s) so they are lost when they aren’t consumed fast enough. This to prevent filling up queues on server side.&lt;/p&gt;
-
-&lt;p&gt;In order to cope with this client &amp;amp; server technical constraints, we also added a couple of application-level safeguards:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;important messages are resent to receivers upon connection. Even in case of short disconnection&lt;/li&gt;
-  &lt;li&gt;idempotency and statelessness are enforced: state is preserved in the backend, which decides when and how to send messages. MQTT clients are designed to support receiving same message several times. RabbitMQ only passes messages, doesn’t store them.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;strong&gt;Exponential backoff&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;MQTT clients may disconnect for different reasons: flky network quality, server-side closed, you name it. MQTT library we wrote is made to take care of reconnecting automatically. In order to avoid self-inflicted DDoS, clients will retry indefinitely but with an exponentially-increasing delay between each attempt every time.&lt;/p&gt;
-
-&lt;p&gt;As we were testing this, we noticed that this principle must be extended up to the reception of the first MQTT heartbeat answer from server: it’s only at that moment we know server is fully operational.
-&lt;br /&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h4 id=&quot;rabbitmq-tuning&quot;&gt;RabbitMQ tuning&lt;/h4&gt;
-
-&lt;p&gt;&lt;strong&gt;no more clustering&lt;/strong&gt;&lt;/p&gt;
-
-&lt;p&gt;RabbitMQ clustering let’s you form clusters of nodes with the benefit of possible fail-over in case of node failure, or queues high availability. However it’s not well suited for load-balancing tens of thousands of connections.&lt;/p&gt;
-
-&lt;p&gt;First of all, communication overhead between nodes is significant and requires to keep nodes in the network to prevent latency. Second, recovery and upgrade are far more complex than with a collection of single nodes. 
-Last but not least, RabbitMQ suffers a bug that’s not directly linked to clustering, but gets worse because of it: in case of node shutdown or massive reconnection, thousands of auto-delete queues get evicted. This triggers a Mnesia (distributed DB RabbitMQ is using) lock contention and it can get up to several minutes for the node to recover from that. See &lt;a href=&quot;https://groups.google.com/d/msg/rabbitmq-users/hgRmhpL8Y6o/F7UoGyDsCwAJ&quot;&gt;this dicussion on RabbitMQ users list&lt;/a&gt; and related &lt;a href=&quot;https://github.com/rabbitmq/rabbitmq-server/issues/1566&quot;&gt;bug opened&lt;/a&gt; (not fixed in 3.6 yet).
-&lt;br /&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h4 id=&quot;os-tuning-sysctl-tcp-stack--network-interfaces&quot;&gt;OS tuning: sysctl, TCP stack &amp;amp; network interfaces&lt;/h4&gt;
-
-&lt;p&gt;Our current architecture pairs several RabbitMQ nodes with 1 HAProxy instance. HAProxy resources consumption is pretty low for that type of workload so it’s possible to achieve hundreds of thousands of connections with a single HAProxy instance.&lt;/p&gt;
-
-&lt;p&gt;In order to that, there’s a major OS constraint that limits number of outbound connections for a specific IP. This is first controlled by &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;net.ipv4.ip_local_port_range&lt;/code&gt; sysctl option (very low by default on most distributions). But the maximum is &lt;em&gt;65535&lt;/em&gt;&lt;/p&gt;
-
-&lt;p&gt;There are several ways to go beyond, we chose to use AWS ENIs (Elastic Network Interface): our instance setup script allocates 4 ENIs then configures each network interface. Finally, it can be used n HAProxy configuration as following:&lt;/p&gt;
-
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;backend tcp-out-1883
-    default-server inter 30s rise 2 fall 2
-    timeout check 5s
-    option tcp-check
-    server server1-eni1 10.0.2.1:1883 source 10.0.1.1 check on-marked-down shutdown-sessions
-    server server1-eni2 10.0.2.1:1883 source 10.0.1.2 check on-marked-down shutdown-sessions
-    server server1-eni3 10.0.2.1:1883 source 10.0.1.3 check on-marked-down shutdown-sessions
-    server server1-eni4 10.0.2.1:1883 source 10.0.1.4 check on-marked-down shutdown-sessions
-    server server2-eni1 10.0.2.2:1883 source 10.0.1.1 check on-marked-down shutdown-sessions
-    server server2-eni2 10.0.2.2:1883 source 10.0.1.2 check on-marked-down shutdown-sessions
-    server server2-eni3 10.0.2.2:1883 source 10.0.1.3 check on-marked-down shutdown-sessions
-    server server2-eni4 10.0.2.2:1883 source 10.0.1.4 check on-marked-down shutdown-sessions
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;where &lt;em&gt;10.0.2.X&lt;/em&gt; are RabbitMQ nodes and &lt;em&gt;10.0.1.X&lt;/em&gt; are HAProxy network interfaces.&lt;/p&gt;
-
-&lt;p&gt;There are also a couple other sysctl options that can be tuned. &lt;a href=&quot;https://www.rabbitmq.com/networking.html&quot;&gt;RabbitMQ documentation&lt;/a&gt; gives some recommendations.
-&lt;br /&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h4 id=&quot;testing-a-load-testing-framework&quot;&gt;Testing: a load testing framework&lt;/h4&gt;
-
-&lt;p&gt;How can one validate settings at various levels without testing? For this purpose we created a small test framework that interacts with AWS EC2 and spawns desired number of instances, and execute several thousands of MQTT clients on each of them. MQTT client is using &lt;a href=&quot;https://www.eclipse.org/paho/&quot;&gt;Eclipse Paho&lt;/a&gt; library and is configurable (number of clients, ramp up period, interval between messages, QoS level, clean session).&lt;/p&gt;
-
-&lt;p&gt;This helped us validating client, server, OS, and software configurations, as well as finding the right amout of CPU/RAM required for the load.
-&lt;br /&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h4 id=&quot;automating-operations&quot;&gt;Automating operations&lt;/h4&gt;
-
-&lt;p&gt;It sounds obvious, but we didn’t have an end-to-end automated way of recreating our messaging gateways infrastructure. We know have ~90% scripted.&lt;/p&gt;
-
-&lt;p&gt;It’s of great help during testing phase, as we were able to simply trash a whole set of instances and configurations and restart from scratch. Now we use it for scaling operations.
-&lt;br /&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h4 id=&quot;high-availability-with-aws-route53&quot;&gt;High Availability with AWS Route53&lt;/h4&gt;
-
-&lt;p&gt;This was one of our goals in first article I wrote: we were first relying on clustering for HA, but it was only able to deal with AWS Availability Zone failures.&lt;/p&gt;
-
-&lt;p&gt;We implemented HA at a higher level, without RabbitMQ clustering. It’s using AWS Route53 and a combination of geo-location, weight and healtcheck rules to decide where to send clients. This offers both intra and cross region failover.&lt;/p&gt;
-
-&lt;p&gt;The whole thing is well described in &lt;a href=&quot;https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-complex-configs.html&quot;&gt;this document&lt;/a&gt;
-&lt;br /&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;final-notes&quot;&gt;Final notes&lt;/h2&gt;
-
-&lt;p&gt;We incrementally released this new version of our messaging infrastructure in December 2017 and January 2018. It proved to be a good move as we significantly recuded number of incidents and maintenance time, while improving scalability. There’s still work to do though!&lt;/p&gt;
-
-&lt;p&gt;Our next goals are about finalizing automation of gateway provisioning and setup. With that, we will be able to implement auto scaling: our workload doesn’t vary much, but in case of instance failure, automatically spawning and configuring a new can be a major improvement.&lt;/p&gt;
-
-</description>
-        <pubDate>Mon, 23 Apr 2018 10:00:00 +0200</pubDate>
-        <link>https://airboxlab.github.io//iot/mqtt/scalability/rabbitmq/haproxy/2018/04/23/scaling_mqtt_part2.html</link>
-        <guid isPermaLink="true">https://airboxlab.github.io//iot/mqtt/scalability/rabbitmq/haproxy/2018/04/23/scaling_mqtt_part2.html</guid>
-        
-        
-        <category>iot</category>
-        
-        <category>mqtt</category>
-        
-        <category>scalability</category>
-        
-        <category>rabbitmq</category>
-        
-        <category>haproxy</category>
-        
-      </item>
-    
-      <item>
-        <title>Scaling MQTT connections with RabbitMQ</title>
-        <description>&lt;h2 id=&quot;suddenly-it-failed&quot;&gt;Suddenly, it failed&lt;/h2&gt;
-
-&lt;p&gt;It happened at the beginning of 2017. Our number of clients had grown steadily so far, and we were confident our current MQTT clusters configuration was strong enough to cope with it for a while.&lt;/p&gt;
-
-&lt;p&gt;Wrong! So wrong! While we were quietly preparing for weekend leave, several alarm bells rang: rabbitmq node 1 not responding, then another, finally the entire cluster. Ok, no worries, let’s just restart it. Wrong again! While it’s easy to change a tire on a stopped car, doing it when you’re driving at 200 km/h is another thing: clients trying to automatically reconnect were preventing a smooth restart. After several unsuccessful attempts, lot of sweat, and placing the cluster in a safe mode, we finally managed to get it back to work.&lt;/p&gt;
-
-&lt;h2 id=&quot;after-the-storm-time-to-look-back&quot;&gt;After the storm, time to look back&lt;/h2&gt;
-
-&lt;p&gt;With this painful event, we realized we were still operating our message brokers, and everything around, as if they were handling a few hundreds of clients. Although we knew we would have to strengthen this core part of our infrastructure, it wasn’t showing any sign of weakness. The danger of things working well is you quickly forget them! And in a small but rapidly growing shop like ours, priorities change. Still, reality strikes back to make you face all the things you are missing:&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;strong&gt;strong isolation&lt;/strong&gt;: a single message brokers cluster that does everything (internal/external communication) is very convenient at the beginning: it’s cheap and easy to setup. But one piece failing and the entire system is out. Also, upgrading or simply tuning becomes a stressful operation.&lt;/li&gt;
-  &lt;li&gt;&lt;strong&gt;performance tests&lt;/strong&gt;: what are our needs if number of clients double? Are we able to deal with forecasted throughput? What happens under flaky network conditions? What harwdware for that?&lt;/li&gt;
-  &lt;li&gt;clear &lt;strong&gt;disaster recovery procedures&lt;/strong&gt;: a document with some basic steps isn’t enough. Let’s learn from disasters, and shape up a correct recovery plan with realistic scenarios and steps.&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;This article focuses on 1st point (but we worked also on the others, performance tests were one of the prerequisites for developing the solution).&lt;/p&gt;
-
-&lt;h2 id=&quot;divide-and-conquer&quot;&gt;Divide and conquer&lt;/h2&gt;
-
-&lt;p&gt;We expose our services through different APIs and protocols, but most of the activity comes from asynchronous messages processing that come from various sources: &lt;em&gt;internal&lt;/em&gt; (microservices communication based on AMQP) and &lt;em&gt;external&lt;/em&gt; (MQTT and STOMP, available for mobile apps, web apps, devices).&lt;/p&gt;
-
-&lt;p&gt;As a matter of fact, if something goes wrong with the broker, all communications stop. And things can go wrong in a lot of ways: broker crash (not so often), massive reconnection event (thousands of devices reconnecting at the same time), or sudden spike of messages in a specific exchange (if consumers aren’t fast enough, messages will pile up and performance can degrade for all the system).&lt;/p&gt;
-
-&lt;p&gt;Also, brokers exposing different protocols to various types of clients need to play with a lot of constraints: you need to tune for both throughput and high number of connections and you’re over-exposed to bugs due to the large number of plugins and custom settings you have to put in the game.&lt;/p&gt;
-
-&lt;p&gt;Finally, if you open communication channels to partners or external developers, you can’t easily isolate environments (privisioning, security, compliance, …) and probability of occurrence of a problem increases dramatically (for instance with bugs from incorrectly coded firmware), and you’re rapidly stuck with inextricable compatibility or upgrade issues (like impossibility to server different protocol versions to different clients).&lt;/p&gt;
-
-&lt;p&gt;Taking into account the experience we grew with RabbitMQ, and the large set of topologies you can build with it, it was a valid choice for us to help us build our next messaging system.&lt;/p&gt;
-
-&lt;h3 id=&quot;splitting-brokers&quot;&gt;Splitting brokers&lt;/h3&gt;
-
-&lt;p&gt;The plan was then to split the broker (actually cluster of brokers but we’re refering to it as a single entity). The plan was to create a &lt;em&gt;backend&lt;/em&gt; cluster to keep backend communications completely internal and expose external channels through &lt;em&gt;gateway&lt;/em&gt; brokers that could be located in different places of the world. But those brokers would have to send messages to each others (between backend and each gateway, not between gateways).&lt;/p&gt;
-
-&lt;p&gt;To do that, RabbitMQ has 2 plugins called &lt;a href=&quot;https://www.rabbitmq.com/federation.html&quot;&gt;federation&lt;/a&gt; and &lt;a href=&quot;https://www.rabbitmq.com/shovel.html&quot;&gt;shovel&lt;/a&gt;. Deciding which one to pick depends on target topology, patterns of message transfer and level of control you need.&lt;/p&gt;
-
-&lt;p&gt;We rolled out the plan in several phases, but are the 2 major steps:&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;
-    &lt;p&gt;&lt;strong&gt;1 backend cluster + 1 gateway cluster&lt;/strong&gt; with direct messages routing through federation. Below a logical representation of how they communicate:
-&lt;img src=&quot;https://airboxlab.github.io//assets/scale_mqtt/rabbitmq_split_step1.png&quot; alt=&quot;step 1&quot; /&gt;&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;&lt;strong&gt;1 backend cluster + X gateway clusters&lt;/strong&gt; with &lt;em&gt;intelligent&lt;/em&gt; routing: when messages need to be routed to more than 1 gateway, it becomes inefficient to send all messages to all gateways. We developped a simple message router that route messages based on known location of the client (and broadcasts in case of doubt).
-&lt;img src=&quot;https://airboxlab.github.io//assets/scale_mqtt/rabbitmq_split_step2.png&quot; alt=&quot;step 2&quot; /&gt;&lt;/p&gt;
-  &lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;Clients are routed using AWS Route53 latency-based configuration.&lt;/p&gt;
-
-&lt;h3 id=&quot;tuning-rabbitmq&quot;&gt;Tuning RabbitMQ&lt;/h3&gt;
-
-&lt;p&gt;It’s possible to tune RabbitMQ for throughput or for large number of connections. This is well documented &lt;a href=&quot;https://www.rabbitmq.com/networking.html&quot;&gt;here&lt;/a&gt;. We naturally applied those recommendations in order to maximize throughput on the backend cluster, and increase capacity to handle large number of connections on gateways.&lt;/p&gt;
-
-&lt;p&gt;We have also enabled HiPE compilation to increase throughput on some clusters and this is giving excellent results.&lt;/p&gt;
-
-&lt;p&gt;Running on AWS, we chose the ‘c’ type for our instances: RabbitMQ can be CPU intensive, for throughput intensive workloads, or when connections churn is high (which happens quite often if you have clients connecting from everywhere). We favored c3 instances (cheaper storage with SSD instance store volumes - requires snapshots for instance crash recovery) but c4 with proper IOPS configuration (gp2 or io1) does the trick (more expansive but data survives server crash or restart).&lt;/p&gt;
-
-&lt;h3 id=&quot;repeatability&quot;&gt;Repeatability&lt;/h3&gt;
-
-&lt;p&gt;The way we decide to deploy and locate gateways is data-driven: we do it depending on current number of customers per region/country, forecast in sells, new projects, and technical factors. Once we are aware of those parameters, it’s important to make the operation of setting up a new gateway as automatic as possible.&lt;/p&gt;
-
-&lt;p&gt;Of course, spinning up a new gateway isn’t just a matter of 1 new server in an AWS region: we have to setup the VPC, VPN connection with backend, proxy servers, and other IT support instances.&lt;/p&gt;
-
-&lt;p&gt;We did it using Hashicorp Terraform: it lets you declare and interact with AWS resources from declaration in simple configuration files. Almost all AWS resources are available, see &lt;a href=&quot;https://www.terraform.io/docs/providers/aws/&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
-
-&lt;p&gt;Now if need to spawn a new gateway, it’s a matter of hours.&lt;/p&gt;
-
-&lt;h2 id=&quot;where-we-are-now&quot;&gt;Where we are now&lt;/h2&gt;
-
-&lt;p&gt;We started deploying these solutions in productions in March, and now we have 2 gateways in production (US and Japan), handling tens of thousands of connections.&lt;/p&gt;
-
-&lt;p&gt;Scalability and resiliency improved, and we significantly reduced number of problems we used to have. Also, massive reconnections are much less massive, by design: fewer clients per node, and clients are geographically closer to brokers, which reduces risk of network hicups.&lt;/p&gt;
-
-&lt;p&gt;We also improved maintainability: upgrades are progressively applied accross clusters, and we aren’t tied to a single solution anymore: if we decide to go for another messaging implementation for a particular need, it will be much easier to plug in.&lt;/p&gt;
-
-&lt;h3 id=&quot;next-steps&quot;&gt;Next steps&lt;/h3&gt;
-
-&lt;p&gt;We want to achieve strong high availability, using AWS Route53 latency + health checks based routing. This will answer the question “what happens if the entire cluster of brokers is down?”. A good example can be found &lt;a href=&quot;http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-complex-configs.html&quot;&gt;here&lt;/a&gt;&lt;/p&gt;
-
-&lt;p&gt;Split, split again! Internal workloads handled by the core cluster can be further segragated, by sending messages to dedicated message brokers, where relevant. Specifically, some of our workloads are log-oriented, don’t need true real-time processing, and would benefit from several days of data retention. Using something like kafka or kinesis would help in that matter.&lt;/p&gt;
-
-</description>
-        <pubDate>Tue, 27 Jun 2017 06:00:00 +0200</pubDate>
-        <link>https://airboxlab.github.io//iot/mqtt/scalability/rabbitmq/2017/06/27/scaling_mqtt.html</link>
-        <guid isPermaLink="true">https://airboxlab.github.io//iot/mqtt/scalability/rabbitmq/2017/06/27/scaling_mqtt.html</guid>
-        
-        
-        <category>iot</category>
-        
-        <category>mqtt</category>
-        
-        <category>scalability</category>
-        
-        <category>rabbitmq</category>
-        
-      </item>
-    
-      <item>
-        <title>Tuning Quartz Scheduler for large number of small jobs</title>
-        <description>&lt;h2 id=&quot;what-we-do-with-quartz-scheduler&quot;&gt;What we do with Quartz Scheduler&lt;/h2&gt;
-
-&lt;p&gt;We used &lt;a href=&quot;http://www.quartz-scheduler.org/&quot;&gt;Quartz Scheduler&lt;/a&gt; in first place to schedule time-based events on a large number of our HVAC devices, in order to trigger changes from one mode to another, and define interactions between modes. We then extended usage of Quartz to different areas, but the main usage pattern remains to run short-lived jobs that perform a single action.&lt;/p&gt;
-
-&lt;h2 id=&quot;the-problem&quot;&gt;The problem&lt;/h2&gt;
-
-&lt;p&gt;Quoted from Quartz documentation: “&lt;em&gt;The clustering feature works best for scaling out long-running and/or cpu-intensive jobs (distributing the work-load over multiple nodes). If you need to scale out to support thousands of short-running (e.g 1 second) jobs, consider partitioning the set of jobs by using multiple distinct schedulers (including multiple clustered schedulers for HA). The scheduler makes use of a cluster-wide lock, a pattern that degrades performance as you add more nodes (when going beyond about three nodes - depending upon your database’s capabilities, etc.).&lt;/em&gt;”&lt;/p&gt;
-
-&lt;p&gt;Indeed, it’s easy to confirm that adding nodes to a cluster doesn’t improve things at all (tested with 4, 5 and 6 nodes).&lt;/p&gt;
-
-&lt;p&gt;Cluster-wide lock is obtained by the &lt;code&gt;QuartzSchedulerThread&lt;/code&gt; using a database lock (&lt;code&gt;SELECT ... FOR UPDATE&lt;/code&gt;). It “reserves” a certain amount of triggers to execute (amount decided by &lt;code&gt;org.quartz.scheduler.batchTriggerAcquisitionMaxCount&lt;/code&gt;), execute them (in parallel, number of worker threads can be configured using &lt;code&gt;org.quartz.threadPool.threadCount&lt;/code&gt;, should be equal to batchTriggerAcquisitionMaxCount), then release the lock.&lt;/p&gt;
-
-&lt;p&gt;What happens in reality, for a clustered scheduler, is that one instance will execute the desired number of triggers while the other will be doing nothing. Clustering in Quarz is for high availability, or for load-balancing long-running jobs, but as stated in the docs, doesn’t help to run high number of short-lived jobs.&lt;/p&gt;
-
-&lt;p&gt;The impact for our clients was directly visible: instead of seeing desired action triggered a few seconds after desired time, it could take several minutes before kicking in. This can be illustrated by below chart:&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://airboxlab.github.io//assets/scale_quartz/schedulerlab_14_00_06_06_2017.png&quot; alt=&quot;before sharding&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;As you can see, a large part of our end users chose to trigger events on their devices at very common times (top of hour), so we need to handle a huge burst in the number of jobs to execute at specific hours of the day.&lt;/p&gt;
-
-&lt;h2 id=&quot;sharding-to-the-rescue&quot;&gt;Sharding to the rescue&lt;/h2&gt;
-
-&lt;p&gt;Jobs sharding isn’t a feature proposed by Quartz, although database structure is ready for that. As proposed in the documentation, the idea is to spawn different scheduler instances, each one responsible for a set of shards.&lt;/p&gt;
-
-&lt;p&gt;Sharding can be done in different manners: creating meaningful shards (product category, company, …) or using hashing based on some key (device UUID, user ID, …). We choose the latest, as it offers best sharding capabilities (no risk to create “fat” shards) and our jobs were already stored with these IDs.&lt;/p&gt;
-
-&lt;p&gt;To ensure sharding will remain efficient in time, especially during re-sharding operations (adding/removing new scheduler instance), it was important to use consistent hashing: using the simple hashing approach &lt;em&gt;hash(k) mod n&lt;/em&gt;, any change of &lt;em&gt;n&lt;/em&gt; will require to move a large number of keys, which can degrade performance a lot during operation. Instead, it’s preferable to use a consistent hashing technique: a “ring” of virtual shards is created first and each node is responsible for a set of partitions. Adding a new node requires to move only &lt;em&gt;1/(n+1)&lt;/em&gt; keys to the new node (scheduler). If number of keys remain equal, time for resharding decreases when number of nodes increases.&lt;/p&gt;
-
-&lt;p&gt;In our case, re-sharding involves updating jobs, triggers and related definitions in DB, so the less time it takes, the better. Here is a small benchmark that illustrates time it takes to move keys (update tables) with the 2 hashing techniques:&lt;/p&gt;
-
-&lt;p&gt;&lt;em&gt;Re-sharding after node addition benchmark (local MySQL, 8800 keys)&lt;/em&gt;&lt;/p&gt;
-
-&lt;table&gt;
-  &lt;thead&gt;
-    &lt;tr&gt;
-      &lt;th style=&quot;text-align: center&quot;&gt;nb shards&lt;/th&gt;
-      &lt;th style=&quot;text-align: center&quot;&gt;naive hashing&lt;/th&gt;
-      &lt;th style=&quot;text-align: center&quot;&gt;consistent hashing&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;2&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;4400 keys moved / 360 sec&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;4290 keys moved / 349 sec&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;3&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;4800 keys moved / 460 sec&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;2440 keys moved / 190 sec&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;4&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;5500 keys moved / 570 sec&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;1820 keys moved / 145 sec&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;This consistent hashing mechanism has then to be made available to our scheduler API clients, so they can pick the right scheduler instance. To do that, each scheduler registers in our service discovery tool with a custom attribute (we use Consul, so the service registers with a custom tag) that represents its node ID. Then, each client discovers the service using the tag computed from hashing job key.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://airboxlab.github.io//assets/scale_quartz/scheduler_sharding.png&quot; alt=&quot;sharding&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;In above diagram we see multiple MySQL databases, which is a possible solution for further increasing throughput (although not tested). On our side, we still use the same table structures to store all schedulers data.&lt;/p&gt;
-
-&lt;h2 id=&quot;benchmarking&quot;&gt;Benchmarking&lt;/h2&gt;
-
-&lt;p&gt;Here we’re presenting results from up to 4 schedulers: with more, we faced bottlenecks in downstream processes (benchmarks were done with “real-life” jobs), and we hit the limits of the instance we were running the jobs on (&amp;gt; 90% CPU usage). With 8 schedulers, and if all downstream communications are disabled, we reached &lt;strong&gt;1350 jobs/sec&lt;/strong&gt;.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://airboxlab.github.io//assets/scale_quartz/benchmark.png&quot; alt=&quot;benchmark&quot; /&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;deploying-in-production&quot;&gt;Deploying in production&lt;/h2&gt;
-
-&lt;p&gt;We deployed 3 distinct scheduler instances in our target datacenter. Deployment took the scheduler API down for 4 minutes while resharding operation was in progress. The operation is triggered automatically by the service, if it’s configured with a node ID that has no associated job in database. Adding a new scheduler is automatic and doesn’t require any additional configuration.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://airboxlab.github.io//assets/scale_quartz/schedulerlab_14_00_12_06_2017.png&quot; alt=&quot;after sharding&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;Jobs at this hour now execute within an acceptable time, and most importantly we are confident we can now handle much more and keep execution times low.&lt;/p&gt;
-</description>
-        <pubDate>Tue, 20 Jun 2017 10:00:00 +0200</pubDate>
-        <link>https://airboxlab.github.io//performance/scalability/scheduler/quartz/2017/06/20/perf_tuning_quartz.html</link>
-        <guid isPermaLink="true">https://airboxlab.github.io//performance/scalability/scheduler/quartz/2017/06/20/perf_tuning_quartz.html</guid>
-        
-        
-        <category>performance</category>
-        
-        <category>scalability</category>
-        
-        <category>scheduler</category>
-        
-        <category>quartz</category>
         
       </item>
     

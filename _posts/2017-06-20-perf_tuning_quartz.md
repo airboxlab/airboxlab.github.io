@@ -5,6 +5,7 @@ date:   2017-06-20 08:00:00
 categories: "performance scalability scheduler quartz"
 comments: true
 author: Antoine Galataud
+published: false
 ---
 
 ## What we do with Quartz Scheduler

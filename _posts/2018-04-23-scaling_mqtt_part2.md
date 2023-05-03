@@ -5,6 +5,7 @@ date:   2018-04-23 08:00:00
 categories: "iot mqtt scalability rabbitmq haproxy"
 comments: true
 author: Antoine Galataud
+published: false
 ---
 
 <style type="text/css">
