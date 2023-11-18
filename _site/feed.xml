@@ -4,11 +4,361 @@
     <title>Foobot Technical Blog</title>
     <description>The guys behind Foobot. Talking here about our achievements, failures &amp; OSS contributions
 </description>
-    <link>https://techblog.github.io//</link>
-    <atom:link href="https://techblog.github.io//feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Wed, 03 May 2023 09:33:35 +0200</pubDate>
-    <lastBuildDate>Wed, 03 May 2023 09:33:35 +0200</lastBuildDate>
-    <generator>Jekyll v4.2.0</generator>
+    <link>http://localhost:4000/</link>
+    <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
+    <pubDate>Sat, 18 Nov 2023 21:13:41 +0100</pubDate>
+    <lastBuildDate>Sat, 18 Nov 2023 21:13:41 +0100</lastBuildDate>
+    <generator>Jekyll v4.3.2</generator>
+    
+      <item>
+        <title>Masking in the RL &amp; Transformers era</title>
+        <description>
+&lt;style type=&quot;text/css&quot;&gt;
+.center {
+    display:block;
+    margin: 0 auto;
+}
+.double-left-sm {
+    width:25%;
+    display:block;
+    float:left;
+    margin: 0 auto;
+    margin-right: 2rem;
+}
+.double-right-m {
+    width:35%;
+    display:block;
+    float:right;
+    margin: 0 auto;
+    margin-right: 2rem;
+}
+.add-margin-right {
+    margin-right: 20px;
+}
+.double {
+    width: 49%;
+    margin: 0 auto;
+}
+.double-unconst {
+    width: auto;
+    margin: 0 auto;
+    margin-left: 1.5rem;
+}
+.image-foot {
+    font-size:10pt;
+    max-width: 30rem;
+    margin: 0 auto;
+}
+.small-img {
+  width: 45%;
+}
+ul {
+  display: table;
+}
+pre {
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+code {
+  font-size: 0.9rem;
+}
+&lt;/style&gt;
+
+&lt;h2 id=&quot;masking-in-classic-rl&quot;&gt;Masking in classic RL&lt;/h2&gt;
+
+&lt;p&gt;A Closer Look at Invalid Action Masking in Policy Gradient Algorithms
+https://arxiv.org/abs/2006.14171&lt;/p&gt;
+
+&lt;h2 id=&quot;masking-in-transformers-based-rl&quot;&gt;Masking in Transformers-based RL&lt;/h2&gt;
+
+&lt;h3 id=&quot;use-cases-of-transformers-in-rl&quot;&gt;Use cases of Transformers in RL&lt;/h3&gt;
+
+&lt;p&gt;Several papers and studies demonstrate the efficiency of Transformers-based architectures employed as a component of neural networks used in classic RL algorithms such as PPO.&lt;/p&gt;
+
+&lt;p&gt;For instance, &lt;a href=&quot;#2&quot;&gt;[2]&lt;/a&gt; empirically demonstrates its superiority over LSTM in challenging environments. &lt;a href=&quot;#3&quot;&gt;[3]&lt;/a&gt; explains why Transformers improve training results on memory-based tasks.&lt;/p&gt;
+
+&lt;p&gt;Recently, a new paradigm was introduced that heavily relies on Transformers capabilities to store massive amount of information and generalization across multiple execution contexts and tasks: the concept was names &lt;strong&gt;Decision Transformers&lt;/strong&gt; &lt;a href=&quot;#4&quot;&gt;[4]&lt;/a&gt;. It bridges the gap between sequence modeling problems and reinforcement learning, and attemtps to replicate impressive performance demonstrated on natural language processing or vision tasks to control optimization.&lt;/p&gt;
+
+&lt;center&gt;
+$$ 
+\begin{equation} 
+\begin{split}
+p(O_t | a_t, s_t) &amp;amp; \propto p(a_t | s_t, O_t) &amp;amp; \text{ Bayes} \\ 
+&amp;amp; \Rightarrow p(a_t | s_t, R_t) &amp;amp; \text{ MDP} \\ 
+&amp;amp; \Rightarrow p(a_t | s_t, R_t, H_t) &amp;amp; \text{ POMDP}
+\end{split} \\
+\text{with } H_t = a_{t-1}, s_{t-1}, R_{t-1}, ...
+\end{equation}
+$$
+&lt;/center&gt;
+
+&lt;p&gt;The main idea, summarized in equation $(1)$, is that &lt;strong&gt;finding control optimality given an action and a state is proportional to the probability of sampling an action given a state and a goal&lt;/strong&gt; (or an history of states, actions and returns in a partially observable environment). In short, the probability distribution over actions is now return-conditioned, or goal-conditioned.&lt;/p&gt;
+
+&lt;p&gt;Compared to a Large Language Model (LLM), words or images tokens are replaced by trajectories made of actions, observations and returns. As for any other Transformers-based applications, the use of the self-attention mechanism is the core concept of the architecture, and we’ll see next &lt;strong&gt;how masks can be used in elegant and useful ways to fullfil specific training needs&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;h3 id=&quot;causal-masks-in-the-self-attention-mechanism&quot;&gt;Causal masks in the self-attention mechanism&lt;/h3&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/masking/scaled_dot_product_attn.svg&quot; alt=&quot;sources&quot; class=&quot;double-left-sm&quot; /&gt;&lt;/p&gt;
+
+&lt;div style=&quot;margin-top: 2rem&quot;&gt;&lt;/div&gt;
+
+&lt;p&gt;The now famous “Attention is all you need” paper &lt;a href=&quot;#5&quot;&gt;[5]&lt;/a&gt; introduces several concepts, including a causal mask which intends to hide future tokens we aim to predict: the model is allowed to look only at past tokens and current time step token to predict next token(s), the latter remainining hidden so that future tokens aren’t visible.&lt;/p&gt;
+
+&lt;p&gt;Imagine training a model to generate the last token in a sentence: during training you’ll present first tokens in the sentence only and hide the last, otherwise it would be too simple and wouldn’t generalize well.&lt;/p&gt;
+
+&lt;p&gt;Notice that this mask is marked optional in the graph, and can be modified to satisfy other purposes! That’s what we’ll be using in the next section.&lt;/p&gt;
+
+&lt;p&gt;But for now, let’s see with an example how a basic causal mask can be constructed. The operation of masking then using softmax are consecutive operation, which is equivalent to &lt;strong&gt;a weigthed average over all input vectors using lower triangular matrix to mask out future tokens&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;First a lower triangular matrix (with zeroes on the upper triangular part and ones on the lower part) is used to mask the future. Then, since the next operation is in the execution graph is a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;softmax&lt;/code&gt;, replacing all zeros by $-\infty$ will take advantage of the function $\frac{e^{z_{i}}}{\sum_{j=1}^K e^{z_{j}}}$, knowing that $\lim_{x \to -\infty}e(x) = 0$&lt;/p&gt;
+
+&lt;p&gt;Here is a toy example that shows how masking is used in the scaled dot-product attention (see &lt;a href=&quot;#1&quot;&gt;[1]&lt;/a&gt; for a complete example):&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;torch&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;torch.nn&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;functional&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;F&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;T&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;tril&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;torch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;tril&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;torch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;ones&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;wei&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;torch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;zeros&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;wei&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;wei&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;masked_fill&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tril&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;float&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;-inf&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;wei&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;F&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;softmax&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;wei&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dim&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;wei&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;gives&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;tensor([[1.0000, 0.0000, 0.0000, 0.0000],
+        [0.5000, 0.5000, 0.0000, 0.0000],
+        [0.3333, 0.3333, 0.3333, 0.0000],
+        [0.2500, 0.2500, 0.2500, 0.2500]])
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;When &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;wei&lt;/code&gt; is multiplied with any second matrix (of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(T, ?)&lt;/code&gt; shape), it will perform a weighted average over the vectors from this second matrix.&lt;/p&gt;
+
+&lt;p&gt;Here is an example:&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;torch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;tensor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mf&quot;&gt;0.3107&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;  &lt;span class=&quot;mf&quot;&gt;0.2057&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;  &lt;span class=&quot;mf&quot;&gt;0.9657&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;  &lt;span class=&quot;mf&quot;&gt;0.7057&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;wei&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;@&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;which gives&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nf&quot;&gt;tensor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mf&quot;&gt;0.3107&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mf&quot;&gt;0.0525&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;  &lt;span class=&quot;mf&quot;&gt;0.2869&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;  &lt;span class=&quot;mf&quot;&gt;0.3916&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;where, for instance:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;-0.0525 = -0.3107 * 0.5 + 0.2057 * 0.5 + 0.9657 * 0.0 + 0.7057 * 0.0
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;masking-for-self-supervised-learning&quot;&gt;Masking for self-supervised learning&lt;/h2&gt;
+
+&lt;p&gt;However, Decision Transformers have important limitations: recent studies showed that training a large model in a single step had some flows. One of them was that return-conditioned policies would fail in stochastic environments &lt;a href=&quot;#8&quot;&gt;[8]&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Going further with applying successful designs from LLM to RL, the concepts of &lt;strong&gt;pre-training and fine-tuning&lt;/strong&gt; were introduced. The idea is to &lt;strong&gt;decouple representation learning from policy learning&lt;/strong&gt;, using the pre-training step to create a first generative model, later fine-tuning it for specific tasks. The fine-tuning step aims to build the actual control policy, and isn’t limited to a RL-like, return-conditioned goal learning. Imitation learning (IL) or Model Predictive Control (MPC) can take advantage of the pre-trained model that stores robust knowledge of the system dynamics.&lt;/p&gt;
+
+&lt;p&gt;In the next sections, we’ll dive into how efficient pre-training is achieved with self-supervised learning. Again, masks are an interesting ingredient to create control-centric objectives that help learn how the environment behaves.&lt;/p&gt;
+
+&lt;h3 id=&quot;decoupling-representation-learning-from-policy-learning&quot;&gt;Decoupling Representation Learning from Policy Learning&lt;/h3&gt;
+
+&lt;p&gt;Several studies demonstrated how representation learning, that is learning a useful representation of the environment (a “latent state”) that contains significant information on the original state and ignores the rest, can dramatically improve performance in a variety of tasks.&lt;/p&gt;
+
+&lt;p&gt;“Decoupling Representation Learning from Reinforcement Learning” &lt;a href=&quot;#9&quot;&gt;[9]&lt;/a&gt; defines an unsupervised learning task that requires the model to associate an observation with one from a specified, near-future time step. In “Guaranteed Discovery of Control-Endogenous Latent States with Multi-Step Inverse Models” &lt;a href=&quot;#10&quot;&gt;[10]&lt;/a&gt;, authors introduce another unsupersived method that consists in predicting actions from observations to discover a latent representation of the system. In “Which Mutual-Information Representation Learning Objectives are Sufficient for Control?” &lt;a href=&quot;#11&quot;&gt;[11]&lt;/a&gt;, the study assesses 3 representation learning methods. Finally, “SMART: Self-supervised Multi-task pretrAining with contRol Transformers” &lt;a href=&quot;#12&quot;&gt;[12]&lt;/a&gt; builds on these techniques and shows how a self-supervised pre-training task formed by 3 sub-objectives can outperform other Decision Transformers models on many challenging environments.&lt;/p&gt;
+
+&lt;p&gt;Let’s see some of these representation learning techniques, that rely on masking.&lt;/p&gt;
+
+&lt;h4 id=&quot;forward-dynamics-prediction&quot;&gt;Forward dynamics prediction&lt;/h4&gt;
+
+&lt;p&gt;TODO&lt;/p&gt;
+
+&lt;h4 id=&quot;inverse-dynamics-prediction&quot;&gt;Inverse dynamics prediction&lt;/h4&gt;
+
+&lt;p&gt;TODO&lt;/p&gt;
+
+&lt;h4 id=&quot;dealing-with-multiple-tokens-for-a-single-observation&quot;&gt;Dealing with multiple tokens for a single observation&lt;/h4&gt;
+
+&lt;p&gt;Sometimes there is more than one token for a single observation. Let’s say you have images divided into 2 patches, the ideal mask would be:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;prettyprint&quot;&gt;&lt;b&gt;   P1 P2  R  a P1 P2&lt;/b&gt; ... (Ps: image patches, R: return to go, a: action)
+&lt;b&gt;P1&lt;/b&gt;  1  &lt;span style=&quot;background-color:yellow&quot;&gt;1&lt;/span&gt;  0  0  0  0
+&lt;b&gt;P2&lt;/b&gt;  1  1  0  0  0  0
+&lt;b&gt;R &lt;/b&gt;  1  1  1  0  0  0
+&lt;b&gt;a &lt;/b&gt;  1  1  1  1  0  0
+&lt;b&gt;P1&lt;/b&gt;  1  1  1  1  1  &lt;span style=&quot;background-color:yellow&quot;&gt;1&lt;/span&gt;
+&lt;b&gt;P2&lt;/b&gt;  1  1  1  1  1  1
+...&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Higlights are parts of the observation that need to be preserved, as we can’t mask out some patches from others. In this scenario, the default causal mask wouldn’t fit well the purpose.&lt;/p&gt;
+
+&lt;p&gt;Here is a sample implementation:&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;T&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;8&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;# number of obs, action and reward tokens
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tokens_per_step&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;# number of obs tokes, should be &amp;gt; 1 for the given example
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;num_obs_tokens&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;# the initial causal mask (lower triangular matrix)
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;causal_mask&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;torch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;tril&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;torch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;ones&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;num_timesteps&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;//&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tokens_per_step&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;num_non_obs_tokens&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tokens_per_step&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;num_obs_tokens&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;diag&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;torch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;ones&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;num_obs_tokens&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;num_obs_tokens&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; 
+  &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt; 
+  &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;torch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;zeros&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;num_non_obs_tokens&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;num_non_obs_tokens&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;range&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;num_timesteps&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;block_diag&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;torch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;block_diag&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;diag&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;custom_mask&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;torch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;add&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;causal_mask&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;block_diag&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;bool&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;float&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;gives&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;prettyprint&quot;&gt;tensor([[1., &lt;span style=&quot;background-color:yellow&quot;&gt;1.&lt;/span&gt;, 0., 0., 0., 0., 0., 0.],
+        [1., 1., 0., 0., 0., 0., 0., 0.],
+        [1., 1., 1., 0., 0., 0., 0., 0.],
+        [1., 1., 1., 1., 0., 0., 0., 0.],
+        [1., 1., 1., 1., 1., &lt;span style=&quot;background-color:yellow&quot;&gt;1.&lt;/span&gt;, 0., 0.],
+        [1., 1., 1., 1., 1., 1., 0., 0.],
+        [1., 1., 1., 1., 1., 1., 1., 0.],
+        [1., 1., 1., 1., 1., 1., 1., 1.]])&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&quot;random-trajectory-masking&quot;&gt;Random trajectory masking&lt;/h4&gt;
+
+&lt;p&gt;Instead of using a separate mask, that can be sometimes difficult to construct, it is also possible to mask out tokens directly. This is an effective technique in generative tasks like text and images generation. For instance, BERT &lt;a href=&quot;#6&quot;&gt;[6]&lt;/a&gt; randomly replaces some tokens with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;[MASK]&lt;/code&gt; or a random word. As stated in the paper:&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;The advantage of this procedure is that the Transformer encoder does not know which words it will be asked to predict or which have been replaced by random words, so it is forced to keep a distributional contextual representation of every input token.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/masking/mae.png&quot; alt=&quot;sources&quot; class=&quot;double-right-m&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;In the image processing field, a good example comes from “Masked Autoencoders Are Scalable Vision Learners” &lt;a href=&quot;#7&quot;&gt;[7]&lt;/a&gt;. It shows how an efficient masking strategy using image patches can bring both greater generalization and better scalability.&lt;/p&gt;
+
+&lt;p&gt;Figure on the right comes from the paper and shows image reconstruction capabilities using different masking ratios.&lt;/p&gt;
+
+&lt;div style=&quot;margin-top: 3rem;&quot;&gt;&lt;/div&gt;
+
+&lt;p&gt;These techniques can also be used in control-related problems. The intuition would be to hide part of a trajectory (actions, observations), so that the model learns to reconstruct it. Again, &lt;strong&gt;the model would learn system dynamics by guessing what action(s) and observation(s) led to a specific state&lt;/strong&gt;, given at least a first observation. Obsiously, the difficulty increases with the size of the mask.&lt;/p&gt;
+
+&lt;p&gt;Let’s take a simple example where we want to mask the first 2 action tokens in a trajectory. Here is how the tokens should look like after masking them, given that &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;-1&lt;/code&gt; is used as a masking value.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;prettyprint&quot;&gt;&lt;b&gt;o1 a1 o2  a2 o3 a3&lt;/b&gt;...
+ 1 &lt;span style=&quot;background-color:yellow&quot;&gt;-1&lt;/span&gt;  1  &lt;span style=&quot;background-color:yellow&quot;&gt;-1&lt;/span&gt;  1  1
+ 1 &lt;span style=&quot;background-color:yellow&quot;&gt;-1&lt;/span&gt;  1  &lt;span style=&quot;background-color:yellow&quot;&gt;-1&lt;/span&gt;  1  1
+ 1 &lt;span style=&quot;background-color:yellow&quot;&gt;-1&lt;/span&gt;  1  &lt;span style=&quot;background-color:yellow&quot;&gt;-1&lt;/span&gt;  1  1
+ 1 &lt;span style=&quot;background-color:yellow&quot;&gt;-1&lt;/span&gt;  1  &lt;span style=&quot;background-color:yellow&quot;&gt;-1&lt;/span&gt;  1  1&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The implementation is quite straightfoward.&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;torch&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;numpy&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;# our dimensions
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;B&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;C&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;8&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;# tokens that will be partially masked
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;token_embeddings&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;torch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;ones&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;B&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;C&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;# the index of vectors, here actions, that will be masked
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;mask_idx&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;# masked token value
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;emb_mask_value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;j&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;range&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;len&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;mask_idx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)):&lt;/span&gt;
+  &lt;span class=&quot;c1&quot;&gt;# actions are at odd indices
+&lt;/span&gt;  &lt;span class=&quot;n&quot;&gt;token_embeddings&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[:,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mask_idx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;j&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;emb_mask_value&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Result (reduced to 2 dimensions for the sake of clarity):&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;prettyprint&quot;&gt;tensor([[ 1., &lt;span style=&quot;background-color:yellow&quot;&gt;-1.&lt;/span&gt;,  1., &lt;span style=&quot;background-color:yellow&quot;&gt;-1.&lt;/span&gt;,  1.,  1.,  1.,  1.],
+        [ 1., &lt;span style=&quot;background-color:yellow&quot;&gt;-1.&lt;/span&gt;,  1., &lt;span style=&quot;background-color:yellow&quot;&gt;-1.&lt;/span&gt;,  1.,  1.,  1.,  1.],
+        [ 1., &lt;span style=&quot;background-color:yellow&quot;&gt;-1.&lt;/span&gt;,  1., &lt;span style=&quot;background-color:yellow&quot;&gt;-1.&lt;/span&gt;,  1.,  1.,  1.,  1.],
+        [ 1., &lt;span style=&quot;background-color:yellow&quot;&gt;-1.&lt;/span&gt;,  1., &lt;span style=&quot;background-color:yellow&quot;&gt;-1.&lt;/span&gt;,  1.,  1.,  1.,  1.]])&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;What’s next? Once we have our masked tokens, we’ll want to predict them and compute our loss against actual targets.&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;torch.nn&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;functional&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;F&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;# this is a pass-all-through mask (only ones), so attention blocks can see in the future
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;noop_mask&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;torch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;ones&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;B&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;C&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;# forward pass on multi-head attention blocks
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;attn_blocks&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;token_embeddings&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;noop_mask&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;# forward pass on a prediction head, typically a set of linear layers
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;logits&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;pred_head&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[:,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mask_idx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:])&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;# actual targets
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;action_targets&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;actions&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[:,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mask_idx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:]&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;# loss computation. MSE used for continuous actions, cross entropy for discrete ones
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;loss&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;F&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;mse_loss&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;logits&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;action_targets&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;conclusion-and-opportunities&quot;&gt;Conclusion and opportunities&lt;/h2&gt;
+
+&lt;p&gt;Representation learning and self-supervised/unsupervised pre-training for building control-related fundation models.&lt;/p&gt;
+
+&lt;script src=&quot;https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js&quot;&gt;&lt;/script&gt;
+
+&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
+
+&lt;p&gt;&lt;a id=&quot;1&quot;&gt;[1]&lt;/a&gt;
+Andrej Karpathy.
+&lt;i&gt;Let’s build GPT: from scratch, in code, spelled out. &lt;/i&gt;&lt;a href=&quot;https://www.youtube.com/watch?v=kCc8FmEb1nY&quot;&gt;2023&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a id=&quot;2&quot;&gt;[2]&lt;/a&gt;
+Emilio Parisotto and H. Francis Song and Jack W. Rae and Razvan Pascanu and Caglar Gulcehre and Siddhant M. Jayakumar and Max Jaderberg and Raphael Lopez Kaufman and Aidan Clark and Seb Noury and Matthew M. Botvinick and Nicolas Heess and Raia Hadsell.
+&lt;i&gt;Stabilizing Transformers for Reinforcement Learning. &lt;/i&gt;&lt;a href=&quot;https://arxiv.org/abs/1910.06764&quot;&gt;2019&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a id=&quot;3&quot;&gt;[3]&lt;/a&gt;
+Tianwei Ni and Michel Ma and Benjamin Eysenbach and Pierre-Luc Bacon.
+&lt;i&gt;When Do Transformers Shine in RL? Decoupling Memory from Credit Assignment. &lt;/i&gt;&lt;a href=&quot;https://arxiv.org/abs/2307.03864&quot;&gt;2023&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a id=&quot;4&quot;&gt;[4]&lt;/a&gt;
+Lili Chen and Kevin Lu and Aravind Rajeswaran and Kimin Lee and Aditya Grover and Michael Laskin and Pieter Abbeel and Aravind Srinivas and Igor Mordatch.
+&lt;i&gt;Decision Transformer: Reinforcement Learning via Sequence Modeling. &lt;/i&gt;&lt;a href=&quot;https://arxiv.org/abs/2106.01345&quot;&gt;2021&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a id=&quot;5&quot;&gt;[5]&lt;/a&gt;
+Ashish Vaswani and Noam Shazeer and Niki Parmar and Jakob Uszkoreit and Llion Jones and Aidan N. Gomez and Lukasz Kaiser and Illia Polosukhin.
+&lt;i&gt;Attention Is All You Need. &lt;/i&gt;&lt;a href=&quot;https://arxiv.org/abs/1706.03762&quot;&gt;2017&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a id=&quot;6&quot;&gt;[6]&lt;/a&gt;
+Jacob Devlin and Ming-Wei Chang and Kenton Lee and Kristina Toutanova.
+&lt;i&gt;BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding. &lt;/i&gt;&lt;a href=&quot;https://arxiv.org/abs/1810.04805&quot;&gt;2019&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a id=&quot;7&quot;&gt;[7]&lt;/a&gt;
+Kaiming He and Xinlei Chen and Saining Xie and Yanghao Li and Piotr Dollár and Ross Girshick
+&lt;i&gt;Masked Autoencoders Are Scalable Vision Learners. &lt;/i&gt;&lt;a href=&quot;https://arxiv.org/abs/2111.06377&quot;&gt;2021&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a id=&quot;8&quot;&gt;[8]&lt;/a&gt;
+Keiran Paster and Sheila McIlraith and Jimmy Ba
+&lt;i&gt;You Can’t Count on Luck: Why Decision Transformers and RvS Fail in Stochastic Environments. &lt;/i&gt;&lt;a href=&quot;https://arxiv.org/abs/2205.15967&quot;&gt;2022&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a id=&quot;9&quot;&gt;[9]&lt;/a&gt;
+Adam Stooke and Kimin Lee and Pieter Abbeel and Michael Laskin.
+&lt;i&gt;Decoupling Representation Learning from Reinforcement Learning. &lt;/i&gt;&lt;a href=&quot;https://arxiv.org/abs/2009.08319&quot;&gt;2021&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a id=&quot;10&quot;&gt;[10]&lt;/a&gt;
+Alex Lamb and Riashat Islam and Yonathan Efroni and Aniket Didolkar and Dipendra Misra and Dylan Foster and Lekan Molu and Rajan Chari and Akshay Krishnamurthy and John Langford.
+&lt;i&gt;Guaranteed Discovery of Control-Endogenous Latent States with Multi-Step Inverse Models. &lt;/i&gt;&lt;a href=&quot;https://arxiv.org/abs/2207.08229&quot;&gt;2022-arxiv&lt;/a&gt; &lt;a href=&quot;https://controllable-latent-state.github.io/&quot;&gt;2022-blog&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a id=&quot;11&quot;&gt;[11]&lt;/a&gt;
+Kate Rakelly and Abhishek Gupta and Carlos Florensa and Sergey Levine.
+&lt;i&gt;Which Mutual-Information Representation Learning Objectives are Sufficient for Control?. &lt;/i&gt;&lt;a href=&quot;https://arxiv.org/abs/2106.07278&quot;&gt;2021&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a id=&quot;12&quot;&gt;[12]&lt;/a&gt;
+Yanchao Sun and Shuang Ma and Ratnesh Madaan and Rogerio Bonatti and Furong Huang and Ashish Kapoor.
+&lt;i&gt;SMART: Self-supervised Multi-task pretrAining with contRol Transformers. &lt;/i&gt;&lt;a href=&quot;https://arxiv.org/abs/2301.09816&quot;&gt;2023&lt;/a&gt;&lt;/p&gt;
+</description>
+        <pubDate>Wed, 15 Nov 2023 01:00:00 +0100</pubDate>
+        <link>http://localhost:4000/ai/deeplearning/transformers/mask/masking.html</link>
+        <guid isPermaLink="true">http://localhost:4000/ai/deeplearning/transformers/mask/masking.html</guid>
+        
+        
+        <category>ai</category>
+        
+        <category>deeplearning</category>
+        
+        <category>transformers</category>
+        
+        <category>mask</category>
+        
+      </item>
     
       <item>
         <title>Using Physics-informed Neural Networks to solve 2D heat equation</title>
@@ -157,19 +507,19 @@ Jax and its Just In Time (JIT) compiler:&lt;/p&gt;
 &lt;span class=&quot;n&quot;&gt;delta_x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;0.1&lt;/span&gt;
 &lt;span class=&quot;n&quot;&gt;gamma&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;alpha&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;delta_t&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;/&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;delta_x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;**&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;
 
-&lt;span class=&quot;o&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;jax&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;jit&lt;/span&gt;
+&lt;span class=&quot;nd&quot;&gt;@jax.jit&lt;/span&gt;
 &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;compute_next_k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;u_k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;next_u&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;jnp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;array&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;u_k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;next_u&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;jnp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;array&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;u_k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
 
     &lt;span class=&quot;n&quot;&gt;u_next_k&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;gamma&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;jnp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;roll&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;u_k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;axis&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;jnp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;roll&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;u_k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;axis&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;jnp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;roll&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;u_k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;axis&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;jnp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;roll&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;u_k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;axis&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;jnp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;roll&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;u_k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;axis&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;jnp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;roll&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;u_k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;axis&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;jnp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;roll&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;u_k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;axis&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;jnp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;roll&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;u_k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;axis&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
             &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;u_k&lt;/span&gt;
     &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;u_k&lt;/span&gt;
 
-    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;next_u&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;at&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;].&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;set&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;u_next_k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;next_u&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;at&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;].&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;set&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;u_next_k&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;h2 id=&quot;solving-with-pinn&quot;&gt;Solving with PINN&lt;/h2&gt;
@@ -211,26 +561,26 @@ but also to compute $L_{pde}$.&lt;/p&gt;
 
 &lt;p&gt;An example of using &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;pytorch&lt;/code&gt; to compute $L_{eq}$:&lt;/p&gt;
 
-&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;torch.autograd&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;grad&lt;/span&gt;
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;torch.autograd&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;grad&lt;/span&gt;
 &lt;span class=&quot;c1&quot;&gt;# where u is the neural net module we train, so here we actually perform a forward pass
-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;u_value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;u&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; 
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;u_value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;u&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; 
 &lt;span class=&quot;c1&quot;&gt;# diffusion coefficient
 &lt;/span&gt;&lt;span class=&quot;n&quot;&gt;alpha&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;0.1&lt;/span&gt;
 
 &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;_grad&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;out&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;inp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
-  &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;grad&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;grad&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
       &lt;span class=&quot;n&quot;&gt;out&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; 
       &lt;span class=&quot;n&quot;&gt;inp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; 
-      &lt;span class=&quot;n&quot;&gt;grad_outputs&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;torch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ones_like&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;inp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; 
+      &lt;span class=&quot;n&quot;&gt;grad_outputs&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;torch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;ones_like&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;inp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; 
       &lt;span class=&quot;n&quot;&gt;create_graph&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;True&lt;/span&gt;
   &lt;span class=&quot;p&quot;&gt;)[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
 
 &lt;span class=&quot;n&quot;&gt;loss_eq&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-  &lt;span class=&quot;n&quot;&gt;_grad&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;u_value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; 
+  &lt;span class=&quot;nf&quot;&gt;_grad&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;u_value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; 
   &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
     &lt;span class=&quot;n&quot;&gt;alpha&lt;/span&gt; 
-    &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;_grad&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_grad&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;u_value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; 
-    &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;_grad&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_grad&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;u_value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;_grad&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;_grad&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;u_value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; 
+    &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;_grad&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;_grad&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;u_value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
   &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
 &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
@@ -284,8 +634,8 @@ Raissi, Maziar and Perdikaris, Paris and Karniadakis, George E.
 &lt;a href=&quot;https://github.com/idrl-lab/idrlnet&quot;&gt;IDRLnet&lt;/a&gt;&lt;/p&gt;
 </description>
         <pubDate>Thu, 15 Sep 2022 02:00:00 +0200</pubDate>
-        <link>https://techblog.github.io//ai/deeplearning/physics/pinns-heat-equation.html</link>
-        <guid isPermaLink="true">https://techblog.github.io//ai/deeplearning/physics/pinns-heat-equation.html</guid>
+        <link>http://localhost:4000/ai/deeplearning/physics/pinns-heat-equation.html</link>
+        <guid isPermaLink="true">http://localhost:4000/ai/deeplearning/physics/pinns-heat-equation.html</guid>
         
         
         <category>ai</category>
@@ -484,8 +834,8 @@ John Schulman, Filip Wolski, Prafulla Dhariwal, Alec Radford, Oleg Klimov.
 &lt;i&gt;Proximal Policy Optimization Algorithms&lt;/i&gt; &lt;a href=&quot;https://arxiv.org/abs/1707.06347&quot;&gt;2017&lt;/a&gt;&lt;/p&gt;
 </description>
         <pubDate>Wed, 23 Feb 2022 01:00:00 +0100</pubDate>
-        <link>https://techblog.github.io//hvac/rl/autoregressive/ar_policy.html</link>
-        <guid isPermaLink="true">https://techblog.github.io//hvac/rl/autoregressive/ar_policy.html</guid>
+        <link>http://localhost:4000/hvac/rl/autoregressive/ar_policy.html</link>
+        <guid isPermaLink="true">http://localhost:4000/hvac/rl/autoregressive/ar_policy.html</guid>
         
         
         <category>hvac</category>
@@ -610,8 +960,8 @@ ul {
 &lt;/ul&gt;
 </description>
         <pubDate>Mon, 21 Jun 2021 02:00:00 +0200</pubDate>
-        <link>https://techblog.github.io//hvac/control/ai/reinforcement_learning/sab_after_9.html</link>
-        <guid isPermaLink="true">https://techblog.github.io//hvac/control/ai/reinforcement_learning/sab_after_9.html</guid>
+        <link>http://localhost:4000/hvac/control/ai/reinforcement_learning/sab_after_9.html</link>
+        <guid isPermaLink="true">http://localhost:4000/hvac/control/ai/reinforcement_learning/sab_after_9.html</guid>
         
         
         <category>hvac</category>
@@ -1085,8 +1435,8 @@ suited for HVAC control optimizations. With a cost-effective and robust process 
 teaching in simulated environment, efficient control policies can be discovered to achieve significant savings.&lt;/p&gt;
 </description>
         <pubDate>Sun, 24 Jan 2021 01:00:00 +0100</pubDate>
-        <link>https://techblog.github.io//hvac/control/ai/reinforcement_learning/smart_control.html</link>
-        <guid isPermaLink="true">https://techblog.github.io//hvac/control/ai/reinforcement_learning/smart_control.html</guid>
+        <link>http://localhost:4000/hvac/control/ai/reinforcement_learning/smart_control.html</link>
+        <guid isPermaLink="true">http://localhost:4000/hvac/control/ai/reinforcement_learning/smart_control.html</guid>
         
         
         <category>hvac</category>
