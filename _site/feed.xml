@@ -6,8 +6,8 @@
 </description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Mon, 20 Nov 2023 20:33:05 +0100</pubDate>
-    <lastBuildDate>Mon, 20 Nov 2023 20:33:05 +0100</lastBuildDate>
+    <pubDate>Mon, 20 Nov 2023 20:34:45 +0100</pubDate>
+    <lastBuildDate>Mon, 20 Nov 2023 20:34:45 +0100</lastBuildDate>
     <generator>Jekyll v4.3.2</generator>
     
       <item>
@@ -197,6 +197,8 @@ $$
 1  &lt;span style=&quot;background-color:yellow&quot;&gt;0&lt;/span&gt;  1  0  0
 1  1  1  1  0
 1  1  1  &lt;span style=&quot;background-color:yellow&quot;&gt;0&lt;/span&gt;  1&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Using Python, here is an implementation&lt;/p&gt;
 
 &lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;itertools&lt;/span&gt;
 &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;torch&lt;/span&gt;
