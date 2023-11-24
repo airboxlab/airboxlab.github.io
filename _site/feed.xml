@@ -6,8 +6,8 @@
 </description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Tue, 21 Nov 2023 12:45:22 +0100</pubDate>
-    <lastBuildDate>Tue, 21 Nov 2023 12:45:22 +0100</lastBuildDate>
+    <pubDate>Fri, 24 Nov 2023 20:42:59 +0100</pubDate>
+    <lastBuildDate>Fri, 24 Nov 2023 20:42:59 +0100</lastBuildDate>
     <generator>Jekyll v4.3.2</generator>
     
       <item>
@@ -134,33 +134,33 @@ $$
 &lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;torch.nn&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;functional&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;F&lt;/span&gt;
 
 &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;tril&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;torch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;tril&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;torch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;ones&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;wei&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;torch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;zeros&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;wei&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;wei&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;masked_fill&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tril&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;float&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;-inf&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;wei&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;F&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;softmax&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;wei&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dim&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;wei&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;gives&lt;/p&gt;
-&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;tensor([[1.0000, 0.0000, 0.0000, 0.0000],
-        [0.5000, 0.5000, 0.0000, 0.0000],
-        [0.3333, 0.3333, 0.3333, 0.0000],
-        [0.2500, 0.2500, 0.2500, 0.2500]])
+&lt;span class=&quot;n&quot;&gt;lower_tril&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;torch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;tril&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;torch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;ones&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;weights&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;torch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;zeros&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;weights&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;weights&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;masked_fill&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lower_tril&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;float&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;-inf&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;weights&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;F&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;softmax&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;weights&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dim&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;weights&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;When &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;wei&lt;/code&gt; is multiplied with any second matrix (of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(T, ?)&lt;/code&gt; shape), it will perform a weighted average over the vectors from this second matrix.&lt;/p&gt;
+&lt;p&gt;gives&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;prettyprint&quot;&gt;tensor([[1.0000, 0.0000, 0.0000, 0.0000],
+        [&lt;span style=&quot;background-color:#3396FF&quot;&gt;0.5000, 0.5000, 0.0000, 0.0000&lt;/span&gt;],
+        [0.3333, 0.3333, 0.3333, 0.0000],
+        [0.2500, 0.2500, 0.2500, 0.2500]])&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;When &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;weights&lt;/code&gt; are multiplied with any second matrix (of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;(T, ?)&lt;/code&gt; shape), it will perform a weighted average over the vectors from this second matrix.&lt;/p&gt;
 
 &lt;p&gt;Here is an example:&lt;/p&gt;
 
-&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;torch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;tensor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mf&quot;&gt;0.3107&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;  &lt;span class=&quot;mf&quot;&gt;0.2057&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;  &lt;span class=&quot;mf&quot;&gt;0.9657&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;  &lt;span class=&quot;mf&quot;&gt;0.7057&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;wei&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;@&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;pre&gt;&lt;code class=&quot;prettyprint&quot;&gt;x = torch.tensor([&lt;span style=&quot;background-color:#FF8633&quot;&gt;-0.3107,  0.2057,  0.9657,  0.7057&lt;/span&gt;])
+weights @ x&lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;which gives&lt;/p&gt;
+&lt;p&gt;Which gives:&lt;/p&gt;
 
-&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nf&quot;&gt;tensor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mf&quot;&gt;0.3107&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mf&quot;&gt;0.0525&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;  &lt;span class=&quot;mf&quot;&gt;0.2869&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;  &lt;span class=&quot;mf&quot;&gt;0.3916&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;pre&gt;&lt;code class=&quot;prettyprint&quot;&gt;tensor([-0.3107, &lt;span style=&quot;background-color:yellow&quot;&gt;-0.0525&lt;/span&gt;,  0.2869,  0.3916])&lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;&lt;span class=&quot;small-txt&quot;&gt;* where, for instance &lt;/span&gt;&lt;code class=&quot;language-plaintext small-txt highlighter-rouge&quot;&gt;-0.0525 = -0.3107 * 0.5 + 0.2057 * 0.5 + 0.9657 * 0.0 + 0.7057 * 0.0&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Where, for instance:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;prettyprint&quot;&gt;&lt;span style=&quot;background-color:yellow&quot;&gt;-0.0525&lt;/span&gt; = &lt;span style=&quot;background-color:#FF8633&quot;&gt;-0.3107&lt;/span&gt; * &lt;span style=&quot;background-color:#3396FF&quot;&gt;0.5&lt;/span&gt; + &lt;span style=&quot;background-color:#FF8633&quot;&gt;0.2057&lt;/span&gt; * &lt;span style=&quot;background-color:#3396FF&quot;&gt;0.5&lt;/span&gt; + &lt;span style=&quot;background-color:#FF8633&quot;&gt;0.9657&lt;/span&gt; * &lt;span style=&quot;background-color:#3396FF&quot;&gt;0.0&lt;/span&gt; + &lt;span style=&quot;background-color:#FF8633&quot;&gt;0.7057&lt;/span&gt; * &lt;span style=&quot;background-color:#3396FF&quot;&gt;0.0&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
 
 &lt;p&gt;Masks don’t need to be causal, and are actually useful in many different situations; that’s what we’re going to explore in the next section.&lt;/p&gt;
 
@@ -285,8 +285,6 @@ gives
 
 &lt;h4 id=&quot;random-trajectory-masking&quot;&gt;Random trajectory masking&lt;/h4&gt;
 
-&lt;p&gt;&lt;img src=&quot;/assets/masking/rand_traj_pred.svg&quot; alt=&quot;sources&quot; class=&quot;double-left&quot; /&gt;&lt;/p&gt;
-
 &lt;p&gt;Instead of using a separate mask, it is also possible to mask out tokens directly. This is an effective technique in generative tasks like text and images generation.&lt;/p&gt;
 
 &lt;p&gt;For instance, in “&lt;i&gt;BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding&lt;/i&gt;” &lt;a href=&quot;#6&quot;&gt;[6]&lt;/a&gt; authors randomly replace some tokens with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;[MASK]&lt;/code&gt; or a random word. As stated in the paper:&lt;/p&gt;
@@ -306,6 +304,10 @@ gives
 &lt;p&gt;These techniques can also be used in control-related problems. The intuition would be to hide part of a trajectory (actions, observations), so that the model learns to reconstruct it. Again, &lt;strong&gt;the model would learn system dynamics by guessing what action(s) and/or observation(s) led to a specific state&lt;/strong&gt;. Obsiously, the difficulty increases with the size of the mask.&lt;/p&gt;
 
 &lt;p&gt;The main difference with “Inverse dynamics prediction” here will stand in the mask itself: instead of predicting a single action while hiding the future, we’ll let the model see it and predict the whole trajectory (or part of it). While the 2 technics seem pretty similar, their addition demonstrates benefits in model performance.&lt;/p&gt;
+
+&lt;p&gt;Here is an illustration of such trajectory with hidden actions but no future masking:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/masking/rand_traj_pred.svg&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;Let’s take a simple example where we want to mask the first 2 action tokens in a trajectory. Here is how the tokens should look like after masking them, given that &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;-1&lt;/code&gt; is used as a masking value.&lt;/p&gt;
 
@@ -363,6 +365,8 @@ gives
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;If we have multiple pre-training objectives, we can simply add up the losses together and optimize a single loss, for a complex and informative control-oriented pre-training task.&lt;/p&gt;
+
+&lt;p&gt;For instance, let’s say we have an inverse dynamics prediction loss $L_{inv}$ and a random masking loss $L_{rnd}$. The total loss that we’d aim to minizie would simply be $L_{tot} = L_{inv} + L_{rnd}$&lt;/p&gt;
 
 &lt;h2 id=&quot;conclusion-and-opportunities&quot;&gt;Conclusion and opportunities&lt;/h2&gt;
 
