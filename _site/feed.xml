@@ -6,12 +6,12 @@
 </description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Fri, 24 Nov 2023 20:51:59 +0100</pubDate>
-    <lastBuildDate>Fri, 24 Nov 2023 20:51:59 +0100</lastBuildDate>
+    <pubDate>Mon, 03 Jun 2024 11:18:50 +0200</pubDate>
+    <lastBuildDate>Mon, 03 Jun 2024 11:18:50 +0200</lastBuildDate>
     <generator>Jekyll v4.3.2</generator>
     
       <item>
-        <title>Masking for Representation Learning</title>
+        <title>Learning to control with masks and pre-training objectives</title>
         <description>
 &lt;style type=&quot;text/css&quot;&gt;
 .center {
@@ -78,6 +78,8 @@ h1, h2, h3, h4 {
   margin: 1rem 0pt 1rem 0pt;
 }
 &lt;/style&gt;
+
+&lt;p&gt;In this article we’ll review how the technique of pre-training using task-specific objectives is central in many recent advances that affect several AI domains. We’ll focus specifically on how masks can be employed to forge control-centric objectives, in sequential decision-making problems.&lt;/p&gt;
 
 &lt;h2 id=&quot;masking-in-transformer-based-reinforcement-learning&quot;&gt;Masking in Transformer-based Reinforcement Learning&lt;/h2&gt;
 
@@ -365,7 +367,7 @@ gives
 
 &lt;p&gt;If we have multiple pre-training objectives, we can simply add up the losses together and optimize a single loss, for a complex and informative control-oriented pre-training task.&lt;/p&gt;
 
-&lt;p&gt;For instance, let’s say we have an inverse dynamics prediction loss $L_{inv}$ and a random masking loss $L_{rnd}$. The total loss that we’d aim to minizie would simply be $L_{tot} = L_{inv} + L_{rnd}$&lt;/p&gt;
+&lt;p&gt;For instance, let’s say we have an inverse dynamics prediction and random masking as pre-training objectives. There respective losses would be $L_{inv}$ and $L_{rnd}$. The total loss that we’d aim to minimize would then be $L_{tot} = L_{inv} + L_{rnd}$&lt;/p&gt;
 
 &lt;h2 id=&quot;conclusion-and-opportunities&quot;&gt;Conclusion and opportunities&lt;/h2&gt;
 
@@ -435,8 +437,8 @@ Andrej Karpathy.
 
 </description>
         <pubDate>Wed, 15 Nov 2023 01:00:00 +0100</pubDate>
-        <link>http://localhost:4000/ai/deeplearning/transformers/mask/masking.html</link>
-        <guid isPermaLink="true">http://localhost:4000/ai/deeplearning/transformers/mask/masking.html</guid>
+        <link>http://localhost:4000/ai/deeplearning/transformers/control/masking.html</link>
+        <guid isPermaLink="true">http://localhost:4000/ai/deeplearning/transformers/control/masking.html</guid>
         
         
         <category>ai</category>
@@ -445,7 +447,7 @@ Andrej Karpathy.
         
         <category>transformers</category>
         
-        <category>mask</category>
+        <category>control</category>
         
       </item>
     
@@ -803,8 +805,15 @@ Many equipment are involved, like fans, heating and cooling coils, chilled and h
 &lt;p&gt;This is the most common case. In many classic problems, each action of a multi-decision problem is modeled and its probability distribution is estimated as independent from other actions. This doesn’t allow to account for relationships between actions that can be encountered in many problems.&lt;/p&gt;
 
 &lt;h3 id=&quot;introducing-action-dependence-with-autoregressive-policies&quot;&gt;Introducing action dependence with autoregressive policies&lt;/h3&gt;
-&lt;p&gt;Given a policy &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=\pi_{\theta}&quot; /&gt; to optimize with regards to parameters &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=\theta&quot; /&gt;, state &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=s \in \mathcal{S}&quot; /&gt;, a set of n actions &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=a_{i} \in \mathcal{A}&quot; /&gt;, we can represent the policy as following:&lt;/p&gt;
-&lt;center&gt;&lt;img src=&quot;https://render.githubusercontent.com/render/math?math=\pi_{\theta}(a, s) = \prod_{i=1}^{n} \pi_{\theta}(a_{i} \bigm\lvert a_{k&amp;lt;i}, s)&quot; /&gt;&lt;/center&gt;
+&lt;p&gt;Given a policy $\pi_{\theta}$ to optimize with regards to parameters $\theta$, state $s \in \mathcal{S}$, a set of n actions $a_{i} \in \mathcal{A}$, we can represent the policy as following:&lt;/p&gt;
+
+&lt;center&gt;
+$$
+\begin{equation}
+\pi_{\theta}(a, s) = \prod_{i=1}^{n} \pi_{\theta}(a_{i} \bigm\lvert a_{k&amp;lt;i}, s)
+\end{equation}
+$$
+&lt;/center&gt;
 &lt;p&gt;&lt;br /&gt;&lt;/p&gt;
 
 &lt;p&gt;This simple formulation is generic and describes simple relationships and order with action at rank i being dependent on all previous actions.&lt;/p&gt;
@@ -821,7 +830,7 @@ Many equipment are involved, like fans, heating and cooling coils, chilled and h
   &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 1&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 2&lt;/code&gt; are actually parameters of their respective probability distributions (PD).&lt;/li&gt;
   &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 1&lt;/code&gt; scalar value (sampled from estimated PD) is passed as input for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 2&lt;/code&gt; distribution estimation&lt;/li&gt;
   &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 1&lt;/code&gt; &lt;em&gt;logits&lt;/em&gt; could be passed as input instead of scalar value. This can help preserve information on large discrete/categorical distributions.&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 2&lt;/code&gt; inputs could be solely made of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 1&lt;/code&gt; output (scalar or logits). In such case policy can be formulated as &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=\pi_{\theta}(a, s) = \pi_{\theta}(a_1, s) \cdot \prod_{i=2}^{n} \pi_{\theta}(a_{i} \bigm\lvert a_{k&amp;lt;i})&quot; /&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 2&lt;/code&gt; inputs could be solely made of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Action 1&lt;/code&gt; output (scalar or logits). In such case policy can be formulated as $\pi_{\theta}(a, s) = \pi_{\theta}(a_1, s) \cdot \prod_{i=2}^{n} \pi_{\theta}(a_{i} \bigm\lvert a_{k&amp;lt;i})$&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;p&gt;Note that this model wouldn’t scale well for the estimation of a large number of action distributions. For large action spaces, one can refer to the &lt;em&gt;MADE&lt;/em&gt; architecture &lt;a href=&quot;#1&quot;&gt;[1]&lt;/a&gt;.&lt;/p&gt;
@@ -882,13 +891,13 @@ Below animations capture sample trajectories after 50 training iterations.&lt;/p
 &lt;p&gt;To do that, we’ll first map our system and learned policy with functions approximations that govern it. They can be seen as forward models that predict the behavior of our policy.&lt;/p&gt;
 
 &lt;ul&gt;
-  &lt;li&gt;&lt;em&gt;transitions&lt;/em&gt; that associates an action and a state to a next state &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=f_{tr}(a_{t}, s_{t}) \Rightarrow s_{t'}&quot; /&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;em&gt;rewards&lt;/em&gt; that maps action and state with its immediate reward &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=f_{rew}(a_{t}, s_{t'}) \Rightarrow r_{t}&quot; /&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;em&gt;policy&lt;/em&gt; that maps a state and the next action &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=f_{p}(s_{t}) \Rightarrow a_{t'}&quot; /&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;em&gt;autoregression&lt;/em&gt; that looks for correlation between action 1 and action 2 &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=f_{ar}(a_{1, t}) \Rightarrow a_{2, t}&quot; /&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;transitions&lt;/em&gt; that associates an action and a state to a next state $f_{tr}(a_{t}, s_{t}) \Rightarrow s_{t’}$&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;rewards&lt;/em&gt; that maps action and state with its immediate reward $f_{rew}(a_{t}, s_{t’}) \Rightarrow r_{t}$&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;policy&lt;/em&gt; that maps a state and the next action $f_{p}(s_{t}) \Rightarrow a_{t’}$&lt;/li&gt;
+  &lt;li&gt;&lt;em&gt;autoregression&lt;/em&gt; that looks for correlation between action 1 and action 2 $f_{ar}(a_{1, t}) \Rightarrow a_{2, t}$&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;We then compute the jacobian of each function in order to differentiate with respect to relevant parameters. For instance, to highlight what part of the state space is directly influenced by agent decisions, we’ll use the jacobian of the transitions function &lt;img src=&quot;https://render.githubusercontent.com/render/math?math=\mathbb{J}({f_{tr}})&quot; /&gt; and differentiate with respect to agent actions.&lt;/p&gt;
+&lt;p&gt;We then compute the jacobian of each function in order to differentiate with respect to relevant parameters. For instance, to highlight what part of the state space is directly influenced by agent decisions, we’ll use the jacobian of the transitions function $\mathbb{J}({f_{tr}})$ and differentiate with respect to agent actions.&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;/assets/ar_policy/jac_f_p1.png&quot; alt=&quot;sources&quot; class=&quot;double-unconst&quot; /&gt;
 &lt;img src=&quot;/assets/ar_policy/jac_f_p2.png&quot; alt=&quot;sources&quot; class=&quot;double-unconst&quot; /&gt;&lt;/p&gt;
