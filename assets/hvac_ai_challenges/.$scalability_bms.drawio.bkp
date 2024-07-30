@@ -1,0 +1,28 @@
+<mxfile host="Electron" modified="2024-07-24T09:05:10.360Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.5.3 Chrome/124.0.6367.207 Electron/30.0.6 Safari/537.36" etag="3xW5BSg2togqxMvcXWpR" version="24.5.3" type="device">
+  <diagram name="Page-1" id="dBMrY1sAy0kbCKGE9TMt">
+    <mxGraphModel dx="1384" dy="843" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="TtAZGiuE-PIxpERINSoc-18" value="No BMS&lt;div&gt;Equipment not connected&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#e51400;strokeColor=#B20000;direction=south;fontColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="80" y="630" width="240" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="TtAZGiuE-PIxpERINSoc-27" value="Unique data schema" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#f0a30a;strokeColor=#BD7000;direction=south;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="80" y="500" width="240" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="TtAZGiuE-PIxpERINSoc-28" value="Complex, old&amp;nbsp;&lt;div&gt;internal communication protocol&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#fa6800;strokeColor=#C73500;direction=south;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="80" y="565" width="240" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="TtAZGiuE-PIxpERINSoc-29" value="Undiscoverable, unadressable&amp;nbsp;&lt;div&gt;data points&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#e3c800;strokeColor=#B09500;direction=south;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="80" y="435" width="240" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="TtAZGiuE-PIxpERINSoc-30" value="No external interface" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#fff2cc;strokeColor=#d6b656;direction=south;" vertex="1" parent="1">
+          <mxGeometry x="80" y="370" width="240" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="TtAZGiuE-PIxpERINSoc-31" value="Scalable BMS integration" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#d5e8d4;strokeColor=#82b366;direction=south;" vertex="1" parent="1">
+          <mxGeometry x="80" y="305" width="240" height="65" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

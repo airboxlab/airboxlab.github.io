@@ -1,0 +1,98 @@
+<mxfile host="Electron" modified="2024-07-24T09:12:08.368Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.5.3 Chrome/124.0.6367.207 Electron/30.0.6 Safari/537.36" etag="yJdrc0tVTBjaa6SgPCic" version="24.5.3" type="device">
+  <diagram name="Page-1" id="dBMrY1sAy0kbCKGE9TMt">
+    <mxGraphModel dx="1384" dy="843" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="TtAZGiuE-PIxpERINSoc-18" value="No BMS&lt;div&gt;Equipment not connected&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#e51400;strokeColor=#B20000;direction=south;fontColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="80" y="630" width="240" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="TtAZGiuE-PIxpERINSoc-27" value="Unique data schema" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#f0a30a;strokeColor=#BD7000;direction=south;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="80" y="500" width="240" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="TtAZGiuE-PIxpERINSoc-28" value="Complex, old&amp;nbsp;&lt;div&gt;internal communication protocol&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#fa6800;strokeColor=#C73500;direction=south;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="80" y="565" width="240" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="TtAZGiuE-PIxpERINSoc-29" value="Undiscoverable, unadressable&amp;nbsp;&lt;div&gt;data points&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#e3c800;strokeColor=#B09500;direction=south;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="80" y="435" width="240" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="TtAZGiuE-PIxpERINSoc-30" value="No external interface" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#fff2cc;strokeColor=#d6b656;direction=south;" vertex="1" parent="1">
+          <mxGeometry x="80" y="370" width="240" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="TtAZGiuE-PIxpERINSoc-31" value="Scalable BMS integration" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#d5e8d4;strokeColor=#82b366;direction=south;" vertex="1" parent="1">
+          <mxGeometry x="80" y="305" width="240" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="TtAZGiuE-PIxpERINSoc-32" value="" style="shape=flexArrow;endArrow=classic;html=1;rounded=0;exitX=0.25;exitY=0;exitDx=0;exitDy=0;entryX=0.75;entryY=0;entryDx=0;entryDy=0;edgeStyle=entityRelationEdgeStyle;fillColor=#dae8fc;strokeColor=#6c8ebf;" edge="1" parent="1" source="TtAZGiuE-PIxpERINSoc-18" target="TtAZGiuE-PIxpERINSoc-28">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="630" y="460" as="sourcePoint" />
+            <mxPoint x="680" y="410" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="370" y="630" />
+              <mxPoint x="380" y="630" />
+              <mxPoint x="390" y="630" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="TtAZGiuE-PIxpERINSoc-34" value="" style="shape=flexArrow;endArrow=classic;html=1;rounded=0;exitX=0.25;exitY=0;exitDx=0;exitDy=0;entryX=0.75;entryY=0;entryDx=0;entryDy=0;edgeStyle=entityRelationEdgeStyle;fillColor=#dae8fc;strokeColor=#6c8ebf;" edge="1" parent="1" source="TtAZGiuE-PIxpERINSoc-28" target="TtAZGiuE-PIxpERINSoc-27">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="330" y="673" as="sourcePoint" />
+            <mxPoint x="330" y="608" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="380" y="640" />
+              <mxPoint x="390" y="640" />
+              <mxPoint x="400" y="640" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="TtAZGiuE-PIxpERINSoc-35" value="" style="shape=flexArrow;endArrow=classic;html=1;rounded=0;exitX=0.25;exitY=0;exitDx=0;exitDy=0;entryX=0.75;entryY=0;entryDx=0;entryDy=0;edgeStyle=entityRelationEdgeStyle;fillColor=#dae8fc;strokeColor=#6c8ebf;" edge="1" parent="1" source="TtAZGiuE-PIxpERINSoc-27" target="TtAZGiuE-PIxpERINSoc-29">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="330" y="591" as="sourcePoint" />
+            <mxPoint x="330" y="543" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="390" y="650" />
+              <mxPoint x="400" y="650" />
+              <mxPoint x="410" y="650" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="TtAZGiuE-PIxpERINSoc-36" value="" style="shape=flexArrow;endArrow=classic;html=1;rounded=0;exitX=0.25;exitY=0;exitDx=0;exitDy=0;entryX=0.75;entryY=0;entryDx=0;entryDy=0;edgeStyle=entityRelationEdgeStyle;fillColor=#dae8fc;strokeColor=#6c8ebf;" edge="1" parent="1" source="TtAZGiuE-PIxpERINSoc-29" target="TtAZGiuE-PIxpERINSoc-30">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="330" y="526" as="sourcePoint" />
+            <mxPoint x="330" y="494" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="400" y="660" />
+              <mxPoint x="410" y="660" />
+              <mxPoint x="420" y="660" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="TtAZGiuE-PIxpERINSoc-37" value="" style="shape=flexArrow;endArrow=classic;html=1;rounded=0;exitX=0.25;exitY=0;exitDx=0;exitDy=0;entryX=0.75;entryY=0;entryDx=0;entryDy=0;edgeStyle=entityRelationEdgeStyle;fillColor=#dae8fc;strokeColor=#6c8ebf;" edge="1" parent="1" source="TtAZGiuE-PIxpERINSoc-30" target="TtAZGiuE-PIxpERINSoc-31">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="330" y="461" as="sourcePoint" />
+            <mxPoint x="330" y="429" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="410" y="670" />
+              <mxPoint x="420" y="670" />
+              <mxPoint x="430" y="670" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="TtAZGiuE-PIxpERINSoc-38" value="Install BMS&lt;div&gt;Install gateway&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;strokeColor=#6c8ebf;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="360" y="616" width="200" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="TtAZGiuE-PIxpERINSoc-40" value="Upgrade BMS and&amp;nbsp;&lt;div&gt;equipment communication interfaces&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;strokeColor=#6c8ebf;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="360" y="547" width="200" height="35" as="geometry" />
+        </mxCell>
+        <mxCell id="TtAZGiuE-PIxpERINSoc-41" value="Apply standards&lt;div&gt;Use ML-driven schema discovery&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;strokeColor=#6c8ebf;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="360" y="486" width="200" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="TtAZGiuE-PIxpERINSoc-42" value="Apply auto-discovery and exposition&amp;nbsp;&lt;div&gt;techniques&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;strokeColor=#6c8ebf;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="360" y="420" width="200" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="TtAZGiuE-PIxpERINSoc-43" value="Upgrade BMS, use plugin&lt;div&gt;Install gateway&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;strokeColor=#6c8ebf;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="360" y="357" width="200" height="30" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,116 @@
+<mxfile host="Electron" modified="2024-07-24T19:16:27.038Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.5.3 Chrome/124.0.6367.207 Electron/30.0.6 Safari/537.36" etag="GRJRWVMvdm9iwpW2rLE8" version="24.5.3" type="device">
+  <diagram name="Page-1" id="6ak82wpBA29UJML2oisR">
+    <mxGraphModel dx="1384" dy="843" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="VK04MKRg_IQUKB9lIK7K-12" value="" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillWeight=4;hachureGap=8;hachureAngle=45;fillColor=#B9E0A5;sketch=1;gradientColor=none;fillOpacity=50;strokeOpacity=100;" parent="1" vertex="1">
+          <mxGeometry x="830" y="296" width="180" height="279" as="geometry" />
+        </mxCell>
+        <mxCell id="VK04MKRg_IQUKB9lIK7K-10" value="" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillWeight=4;hachureGap=8;hachureAngle=45;fillColor=#B9E0A5;sketch=1;gradientColor=none;fillOpacity=50;strokeOpacity=100;" parent="1" vertex="1">
+          <mxGeometry x="598" y="291.5" width="180" height="279" as="geometry" />
+        </mxCell>
+        <mxCell id="VK04MKRg_IQUKB9lIK7K-9" value="" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillWeight=4;hachureGap=8;hachureAngle=45;fillColor=#1ba1e2;sketch=1;gradientColor=none;fillOpacity=50;strokeOpacity=100;" parent="1" vertex="1">
+          <mxGeometry x="240" y="291" width="190" height="279" as="geometry" />
+        </mxCell>
+        <mxCell id="DWJ79edaiGirSP9IxKuk-1" value="" style="image;points=[];aspect=fixed;html=1;align=left;shadow=0;dashed=0;image=img/lib/allied_telesis/buildings/Large_Building.svg;labelBackgroundColor=none;labelPosition=right;verticalLabelPosition=middle;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="638" y="380.75" width="100" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="DWJ79edaiGirSP9IxKuk-2" value="" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#01A88D;strokeColor=none;dashed=0;verticalLabelPosition=top;verticalAlign=bottom;align=right;html=1;fontSize=12;fontStyle=0;aspect=fixed;pointerEvents=1;shape=mxgraph.aws4.sagemaker_model;labelPosition=left;" parent="1" vertex="1">
+          <mxGeometry x="490" y="392" width="78" height="78" as="geometry" />
+        </mxCell>
+        <mxCell id="DWJ79edaiGirSP9IxKuk-3" value="state + reward" style="endArrow=classic;html=1;rounded=0;labelBackgroundColor=none;strokeWidth=2;" parent="1" target="DWJ79edaiGirSP9IxKuk-2" edge="1">
+          <mxGeometry x="-0.441" y="10" width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="320" y="360" as="sourcePoint" />
+            <mxPoint x="530" y="370" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="320" y="320" />
+              <mxPoint x="530" y="320" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="DWJ79edaiGirSP9IxKuk-4" value="action" style="endArrow=classic;html=1;rounded=0;labelBackgroundColor=none;strokeWidth=2;" parent="1" source="DWJ79edaiGirSP9IxKuk-2" edge="1">
+          <mxGeometry x="-0.0345" y="10" width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="530" y="500" as="sourcePoint" />
+            <mxPoint x="320" y="500" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="530" y="540" />
+              <mxPoint x="320" y="540" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="DWJ79edaiGirSP9IxKuk-5" value="&lt;b&gt;Environment Model&lt;/b&gt;" style="shape=mxgraph.cisco.buildings.generic_building;html=1;pointerEvents=1;dashed=0;fillColor=#036897;strokeColor=#ffffff;strokeWidth=2;verticalLabelPosition=bottom;verticalAlign=top;align=center;outlineConnect=0;" parent="1" vertex="1">
+          <mxGeometry x="290" y="350" width="90" height="136" as="geometry" />
+        </mxCell>
+        <mxCell id="DWJ79edaiGirSP9IxKuk-8" value="action" style="endArrow=classic;html=1;rounded=0;labelBackgroundColor=none;strokeWidth=2;" parent="1" source="DWJ79edaiGirSP9IxKuk-2" target="DWJ79edaiGirSP9IxKuk-1" edge="1">
+          <mxGeometry x="0.1874" y="-10" width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="568" y="499.75" as="sourcePoint" />
+            <mxPoint x="758" y="509.75" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="529" y="540" />
+              <mxPoint x="688" y="539.75" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="DWJ79edaiGirSP9IxKuk-9" value="state" style="endArrow=classic;html=1;rounded=0;labelBackgroundColor=none;exitX=0.48;exitY=0;exitDx=0;exitDy=0;exitPerimeter=0;strokeWidth=2;" parent="1" source="DWJ79edaiGirSP9IxKuk-1" target="DWJ79edaiGirSP9IxKuk-2" edge="1">
+          <mxGeometry x="-0.1932" y="-10" width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="758" y="369.75" as="sourcePoint" />
+            <mxPoint x="568" y="369.75" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="686" y="319.75" />
+              <mxPoint x="529" y="320" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="DWJ79edaiGirSP9IxKuk-10" value="Training environment" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="240" y="261" width="130" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="DWJ79edaiGirSP9IxKuk-12" value="Real-world&amp;nbsp;&lt;span style=&quot;background-color: initial;&quot;&gt;environment 1&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="626" y="265.5" width="152" height="21" as="geometry" />
+        </mxCell>
+        <mxCell id="VK04MKRg_IQUKB9lIK7K-2" value="" style="image;points=[];aspect=fixed;html=1;align=left;shadow=0;dashed=0;image=img/lib/allied_telesis/buildings/Large_Building.svg;labelBackgroundColor=none;labelPosition=right;verticalLabelPosition=middle;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="870" y="385.5" width="100" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="VK04MKRg_IQUKB9lIK7K-3" value="action" style="endArrow=classic;html=1;rounded=0;labelBackgroundColor=none;entryX=0.5;entryY=0.985;entryDx=0;entryDy=0;entryPerimeter=0;strokeWidth=2;" parent="1" target="VK04MKRg_IQUKB9lIK7K-2" edge="1">
+          <mxGeometry x="0.534" y="-10" width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="472" y="540" as="sourcePoint" />
+            <mxPoint x="1060" y="510" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="870" y="540" />
+              <mxPoint x="920" y="540" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="VK04MKRg_IQUKB9lIK7K-4" value="state" style="endArrow=classic;html=1;rounded=0;labelBackgroundColor=none;exitX=0.47;exitY=0.015;exitDx=0;exitDy=0;exitPerimeter=0;strokeWidth=2;" parent="1" source="VK04MKRg_IQUKB9lIK7K-2" target="DWJ79edaiGirSP9IxKuk-2" edge="1">
+          <mxGeometry x="-0.5223" y="-10" width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1060" y="370" as="sourcePoint" />
+            <mxPoint x="530" y="368" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="917" y="320" />
+              <mxPoint x="870" y="320" />
+              <mxPoint x="530" y="320" />
+            </Array>
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="VK04MKRg_IQUKB9lIK7K-6" value="Real-world&amp;nbsp;&lt;span style=&quot;background-color: initial;&quot;&gt;environment n&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="860" y="270" width="150" height="21" as="geometry" />
+        </mxCell>
+        <mxCell id="VK04MKRg_IQUKB9lIK7K-13" value="Control Policy" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="460" y="370" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="VK04MKRg_IQUKB9lIK7K-14" value="Actual Building 1" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="690" y="355.5" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="VK04MKRg_IQUKB9lIK7K-15" value="Actual Building n" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="920" y="355.5" width="60" height="30" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
