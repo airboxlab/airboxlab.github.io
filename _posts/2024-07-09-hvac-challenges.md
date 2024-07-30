@@ -194,7 +194,7 @@ Bricks / Haystack / ASHRAE 223P for metadata), the problem won't be solved in th
 
 In above diagram, we see steps that can be taken to reach a "scalable BMS solution" from the extreme of a building not yet 
 equipped with a BMS - which actually represents the largest part of the building stock (small buildings). 
-For people familiar with BMS and integration, this looks like utopia. Applying this reasoning, building by building, 
+For people familiar with BMS and integration, this looks like a lifetime challenge. Applying this reasoning, building by building, 
 doesn't seem doable in a reasonable time frame, not to mention the cost.
 
 ## Moving towards data-driven solutions
