@@ -6,9 +6,463 @@
 </description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Mon, 03 Jun 2024 11:18:50 +0200</pubDate>
-    <lastBuildDate>Mon, 03 Jun 2024 11:18:50 +0200</lastBuildDate>
+    <pubDate>Fri, 26 Jul 2024 14:10:20 +0200</pubDate>
+    <lastBuildDate>Fri, 26 Jul 2024 14:10:20 +0200</lastBuildDate>
     <generator>Jekyll v4.3.2</generator>
+    
+      <item>
+        <title>Hvac_opt_challenges_ideas</title>
+        <description>Unique challenges in HVAC control optimization
+
+- buildings are snowflakes: scalability options and creating custom or off-the-shelf solutions
+- data-driven solutions and the marble cake dilemna
+	- black box models
+	- fog of war -&gt; marble cake
+- physics-based solutions: 
+	- limits of white or gray box models: complexity, fidelity
+- dealing with uncertainty
+	- sim2real gap: how close are pd of states and state transitions between the simulated and the real env? system dynamics, transition functions. OPE
+	- randomness
+	- partial observability
+	- episodic control and the start time and initial state conditions
+- contradictory multi-objectives optimization
+- research to production:
+	- very few research end up in prod
+	- reported application of AI for HVAC control: almost anecdotical
+
+
+
+
+### Complexity of white-box models
+
+### Assessing the fidelity of a model
+
+## Dealing with uncertainty
+
+### The importance of robustness
+
+### sim2real gap
+
+How close are the probability distributions of states and state transitions between the simulated and the real env?
+
+System dynamics, transition functions
+
+Off-policy evaluation for better evaluation of the model
+
+
+#### Policy optimization
+
+Here we discuss known potential solutions to the scalability problem in the context of HVAC control optimization.
+
+| #   |  Candidate solution   | Main scale type  |
+|:---:|:---------------------:|:----------------:|
+| 1   |   Transfer learning   |       Out        |
+| 2   |   Multi-task models   |        Up        |
+| 3   | Parameterized models  |        Up        |
+| 4   | Large decision models |       Out        |
+| 5   |  Multi-agent systems  |       Out        |
+| 6   |     Meta learning     |       Out        |
+
+&lt;br/&gt;
+_Scale type_: Up and/or Out, denoting the ability of a solution to handle a larger environment than what it was initially designed for (up)
+and/or a large number of environments (out), respectively.
+
+Each solution comes with its own trade-offs in terms of scalability, complexity, and robustness.
+
+For instance, transfer learning (1) is a generic solution that can be applied to a wide range of problems, but it requires a fine-tuning phase on the target environment to be effective, that may reduce
+its scalability if it still requires to model a large number of environments or if fine-tuning isn't sample efficient enough.
+
+Both multi-task (2) and parameterized models (3) can be scalable, but they require a complex model architecture, which can reduce the performance and the robustness of the solution. As the state and action spaces grow, the model complexity grows exponentially, and RL has yet to prove good performance in high-dimensional spaces.
+
+Multi-agent systems (5) are another way to scale out the solution, by distributing the control problem among multiple agents, but it requires a more complex coordination mechanism and may introduce additional sources of uncertainty.
+
+On the front of more novel approaches, we can cite large decision models (4) and meta learning (6).
+
+Large decision models (4) are a typical example of scaling up the model itself to handle more diverse environments, but comes with data and computational costs, as well as challenges in representation learning (e.g. how to represent the state space in a way that is generalizable to a large number of environments).
+
+Meta learning (6) aims at learning to learn, by training a model on a distribution of tasks and environments, so that it can adapt quickly to new tasks and environments. However, it hasn't been studied extensively in the context of HVAC control optimization, and it may require a large amount of data to be effective.
+
+These solutions have been the topic of more or less successful research, but, to the best of my knowledge, none of them has been applied to real-world HVAC control optimization problems.
+An important aspect to assess the scalability of the solution is also to consider whether
+
+## Research to production: the last forgotten mile
+
+Very little fraction of research end up with a real world test, not to mention a production deployment.
+Reported applications of AI for HVAC control: almost anecdotal
+
+## Benefits of scalable solutions
+
+Reverse integration
+APIs and SDKs
+</description>
+        <pubDate>Tue, 23 Jul 2024 14:36:33 +0200</pubDate>
+        <link>http://localhost:4000/hvac_opt_challenges_ideas.txt</link>
+        <guid isPermaLink="true">http://localhost:4000/hvac_opt_challenges_ideas.txt</guid>
+        
+        
+      </item>
+    
+      <item>
+        <title>Unique challenges in scaling AI-driven HVAC control</title>
+        <description>
+&lt;style type=&quot;text/css&quot;&gt;
+.center {
+    display:block;
+    margin: 0 auto;
+    margin-top: 1.5rem;
+    margin-bottom: 3rem;
+}
+.center-m {
+    display:block;
+    margin: 0 auto;
+    width: 75%;
+    margin-top: 1.5rem;
+    margin-bottom: 3rem;
+}
+.center-sm {
+    display:block;
+    margin: 0 auto;
+    width: 50%;
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+.double-left {
+    width:49%;
+    display:block;
+    float:left;
+    margin: 0 auto;
+    margin-right: 2rem;
+}
+.double-left-sm {
+    width:35%;
+    display:block;
+    float:left;
+    margin: 0 auto;
+    margin-right: 2rem;
+}
+.double-right {
+    width:49%;
+    display:block;
+    float:right;
+    margin: 0 auto;
+    margin-right: 2rem;
+    margin-left: 2rem;
+}
+.double-right-sm {
+    width:35%;
+    display:block;
+    float:right;
+    margin: 0 auto;
+    margin-right: 2rem;
+    margin-left: 2rem;
+}
+.add-margin-right {
+    margin-right: 20px;
+}
+.double {
+    width: 49%;
+    margin: 0 auto;
+}
+.double-unconst {
+    width: auto;
+    margin: 0 auto;
+    margin-left: 1.5rem;
+}
+.image-foot {
+    font-size:10pt;
+    max-width: 30rem;
+    margin: 0 auto;
+    margin-bottom: 2rem;
+}
+.small-img {
+  width: 45%;
+}
+.small-txt {
+  font-size: 0.8rem;
+}
+ul {
+  display: table;
+}
+pre {
+  white-space: pre-wrap;
+  overflow-x: auto;
+  margin: 1rem 0pt 1rem 0pt;
+}
+code {
+  font-size: 0.9rem;
+  margin: 1rem 0pt 1rem 0pt;
+}
+h1, h2, h3, h4 {
+  margin: 1rem 0pt 1rem 0pt;
+}
+table {
+    width: 60%;
+    margin: auto;
+    border-collapse: collapse;
+    border-spacing: 0;
+    border: 1px solid #ddd;
+}
+thead {
+    font-weight: bold;
+    background-color: #f2f2f2;
+}
+&lt;/style&gt;
+
+&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
+
+&lt;p&gt;The building stock is vast: in the US, there are more than 5.6 million commercial buildings (as of 2018), and in Europe (UK included), 
+the number of non-residential buildings is around 12 million. This represents a huge potential for energy savings, 
+as buildings are responsible for a large part of the energy consumption in these regions. One of the largest consumers of energy in buildings 
+is the Heating, Ventilation, and Air Conditioning (HVAC) system, which can account for up to 60% of the total energy consumption of a building. 
+That’s why many actors in the building industry are looking at solutions to optimize the control of these systems, whether it’s to reduce 
+energy consumption (energy savings-driven), power demand (cost savings-driven), while maintaining or improving the comfort of the occupants.&lt;/p&gt;
+
+&lt;p&gt;However, each building is unique (hence the “snowflake” metaphor). Research has shown that available optimization techniques are not 
+easily transferable from one building to another, and that the engineering effort required to adapt a solution to a new building 
+is significant.&lt;/p&gt;
+
+&lt;p&gt;In this article, we’ll focus precisely on this matter: &lt;strong&gt;the challenges of scaling AI-driven HVAC control optimization solutions&lt;/strong&gt;, or 
+what is missing to make these solutions easily deployable in a large number of buildings. We’ll attempt to open perspectives on 
+how to tackle these challenges, while most of them are still open questions.&lt;/p&gt;
+
+&lt;h2 id=&quot;scalability-in-the-context-of-building-control-optimization&quot;&gt;Scalability in the context of building control optimization&lt;/h2&gt;
+
+&lt;p&gt;Designing a control optimization solution requires considering two main efforts: modeling the system dynamics and training an optimal control policy. 
+Whether we’re talking about Deep Reinforcement Learning (DRL) or Model Predictive Control (MPC), these two efforts exist, although their respective intensity 
+in terms of engineering effort may vary depending on the modeling approach (white-box, grey-box, black-box), and the technique used to train the control policy.&lt;/p&gt;
+
+&lt;p&gt;The &lt;em&gt;scalability&lt;/em&gt; of the solution will then depend on its ability to reduce the engineering effort required to model the 
+system dynamics &lt;em&gt;and&lt;/em&gt; to train a control policy. It will also be measured by the engineering effort to transfer an existing 
+set of models and policies to a new environment, and to adapt them to this new environment.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hvac_ai_challenges/rl_training_actual.svg&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Let’s first bring a definition of the measure of “scalability”: it could be summarized by the number of distinct real-world 
+control environments that can be handled by a certain number of “units of work”, provided by engineering time. We’ll assume first 
+that engineering time is mostly spent on system dynamics modeling and policy training (although deployment, integration and maintenance 
+are also important parts of the engineering effort).&lt;/p&gt;
+
+&lt;p&gt;The table below gives two arbitrary examples of unscalable and scalable solutions. Numbers give an order of 
+magnitude of the engineering effort required to handle a certain number of environments, and what we should aim for.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hvac_ai_challenges/scalability_resources.svg&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;A first angle to approach the problem is by defining how scalability of the solution is impacted by the complexity of a project. 
+Intuitively, the larger the control perimeter, the more complex it gets, and the less likely it is that we’d be able to 
+apply a generic solution to it. For instance, controlling a large building with many different systems and usages with a single 
+policy seems to require a custom solution. On the other end, a zone-level controller may be easier to design for 
+reusability.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hvac_ai_challenges/scalability_vs_complexity.svg&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;In above graph, the red-dotted line represents the limit of the complexity of a project that can be handled by a generic solution. 
+It’s placed quite arbitrarily, but experimental evidence shows that a single air or water loop controller is already a challenge to design for 
+reusability. Red and green boxes are here to remind us what we could achieve at each end of the spectrum, “off-the-shelf” product 
+pointing to a very generic solution, that doesn’t require significant effort for deployment, hence ensuring scalability.&lt;/p&gt;
+
+&lt;p&gt;Another dimension to the problem is the generalization and adaptability of the modeling techniques we use to create the 
+control policy. For instance, we know now that the larger the number of parameters of a neural network, the better its ability to 
+generalize (a recent example is Large Language Model - LLM). 
+Another way to design the solution for better scalability is to split the control problem into smaller sub-problems, each with its own control and 
+modeling requirements, and then to select the appropriate controller at deployment time. This is the idea behind agents pooling or 
+agents library, that may be specialized by task, by type of environment, or by system.
+In both cases, dataset size is also a key factor. The larger the number of parameters of the model, the larger the dataset 
+needed to train it.&lt;/p&gt;
+
+&lt;p&gt;System dynamics modeling is also part of the equation, with scalability ranging from 0 with custom white-box models to 1 
+if we can acquire one or more generic models that can be re-parameterized for a new environment with minimal engineering effort or if 
+offline RL can be used to learn a model from collected data.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hvac_ai_challenges/scalability_vs_model.svg&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;For now, we’ve seen scalability from the perspective of the control optimization problem only, and it could be seen
+as a synonym of “generalization capability”, or “transferability”, which are known challenges specific to AI-driven solutions.&lt;/p&gt;
+
+&lt;p&gt;However, here, the scalability will also depend on the connectivity and interoperability of the Building Management System (BMS). 
+This won’t be the focus of this article, but it’s worth mentioning that deployment time in a building energy optimization project 
+can account for up to 50% of the total project time and cost, given the heterogeneity of systems, internal and external communication 
+protocols, and globally the lack of standardization. Even if efforts are made towards this direction (BACnet for communication, 
+Bricks / Haystack / ASHRAE 223P for metadata), the problem won’t be solved in the near future, as old buildings won’t be upgraded overnight.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hvac_ai_challenges/scalability_bms.svg&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;In above diagram, we see steps that can be taken to reach a “scalable BMS solution” from the extreme of a building not yet 
+equipped with a BMS - which actually represents the largest part of the building stock (small buildings). 
+For people familiar with BMS and integration, this looks like utopia. Applying this reasoning, building by building, 
+doesn’t seem doable in a reasonable time frame, not to mention the cost.&lt;/p&gt;
+
+&lt;h2 id=&quot;moving-towards-data-driven-solutions&quot;&gt;Moving towards data-driven solutions&lt;/h2&gt;
+
+&lt;p&gt;If we want to achieve scalability, adopting data-driven techniques seems natural. Indeed, 
+white-box or even grey-box models require a lot of engineering effort to be adapted to a new environment, and constructing then maintaining 
+a library of detailed models for a large number of environments is not tractable. Similarly, training policies 
+online in a simulator is not scalable, due to the engineering and computing resources needed. Doing it online in the real world isn’t scalable either, 
+due to the sample inefficiency of available RL techniques and the nature of the controlled system (risks of discomfort, hardware failures, etc.).&lt;/p&gt;
+
+&lt;p&gt;But as we’ll see now, despite the appeal of going purely data-driven, the road is paved with challenges.&lt;/p&gt;
+
+&lt;h3 id=&quot;the-marble-cake-dilemma&quot;&gt;The marble cake dilemma&lt;/h3&gt;
+
+&lt;p&gt;We often refer to the problem of limited data for crafting predictive models by using the metaphor of the “fog of war”: the 
+collected data gives satisfactory information about the “central” parts of a distribution, 
+but the further we go from the “center”, the less information we have.&lt;/p&gt;
+
+&lt;p&gt;However, in industrial control, and typically in HVAC control, the problem is more akin to “&lt;i&gt;the marble cake dilemma&lt;/i&gt;”: most parts of 
+the cake (chocolate) and surroundings are unknown, other parts (very few) are known.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hvac_ai_challenges/dall_e_marble_cake_anot-mh.png&quot; alt=&quot;sources&quot; class=&quot;center-m&quot; /&gt;&lt;/p&gt;
+&lt;center class=&quot;image-foot&quot;&gt;&lt;i&gt;Source: DALL-E&lt;/i&gt;&lt;/center&gt;
+
+&lt;p&gt;Why? Because the system dynamics (state space, transition function) is not a single, continuous distribution, but a mixture of different distributions, each corresponding to a 
+different operating mode of the system, under specific conditions (occupancy, weather). Moreover, the collected data is likely to reflect only steady-state conditions, 
+and not the transient dynamics of the system, which are crucial for control. In addition to that, classic controllers 
+aren’t meant to explore the state space, so there is a good chance that large parts of the state space and the transition dynamics 
+are unexplored.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hvac_ai_challenges/steady_state_pid.svg&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;More theoretically, we can state the problem as an offline RL problem, where we would want to learn a policy under system dynamics 
+that are partially known. The actual dynamics or transition function could be expressed as follows:&lt;/p&gt;
+
+&lt;p&gt;
+$$ 
+\begin{equation} 
+p(s'_t | a_t, s_t) = 
+  \begin{cases}
+    p_{known}(s'_t | a_t, s_t) &amp;amp; [s,a] \in \mathcal{D_{known}} \\
+    p_{unknown}(s'_t | a_t, s_t) &amp;amp; [s,a] \in \mathcal{D_{unknown}}
+  \end{cases}
+\end{equation}
+$$
+&lt;/p&gt;
+
+&lt;p&gt;No being able to identify the unknown system dynamics would severely impact the response of the model when prompted 
+on out-of-support regions, which can lead to catastrophic failures in control.&lt;/p&gt;
+
+&lt;p&gt;How to deal with this problem when we need to build a predictive model of the system dynamics?&lt;/p&gt;
+
+&lt;p&gt;One way to mitigate this issue is to use a model that can provide uncertainty estimates, and to use these estimates to 
+decide whether to trust the model or not. We also have probabilistic tools like bayesian optimization, or the use of a model ensemble, 
+than can better capture the uncertainty of the model. However, these approaches are not always applicable in the context of HVAC control, where the system dynamics are complex.&lt;/p&gt;
+
+&lt;p&gt;Hybrid approaches could also be employed, where a white-box or grey-box model with reduced order of complexity is used to complement the 
+data-driven model. But this brings us one step back in terms of scalability.&lt;/p&gt;
+
+&lt;p&gt;Although no single answer exists to this problem, we can think of a few directions to explore and principles to follow:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;there is never enough data. A data-driven approach must account for this and aim for data collection strategies that maximize the amount and quality of the data. In practice, that would 
+mean the first step in a project would be to deploy sensors and data loggers to collect as much data as possible. Inventory of historical data should also be done, and data augmentation 
+techniques should be used to increase the amount of data available for training. Continuous data collection for model retraining will be key too.&lt;/li&gt;
+  &lt;li&gt;the model should be able to provide uncertainty estimates.&lt;/li&gt;
+  &lt;li&gt;complementing the data-driven model with &lt;em&gt;generic&lt;/em&gt; white or grey-box models, that can help the policy learn strategies backed by physics.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;characterizing-the-execution-context&quot;&gt;Characterizing the execution context&lt;/h3&gt;
+
+&lt;p&gt;We said already that buildings are snowflakes, and that the state space we provide as input to a control policy can be 
+a complex mixture of different distributions.&lt;/p&gt;
+
+&lt;p&gt;Transition dynamics of the system in two different buildings will produce different trajectories in the state space, given 
+the same set of actions. In the following graph, we see that the same action applied to two different systems governed by 
+different transition dynamics will lead to two different trajectories in the state space.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hvac_ai_challenges/state_transition_diverg.svg&quot; alt=&quot;sources&quot; class=&quot;center-sm&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The reason is simple: for the control policy to be effective, we can’t only provide sensor data like temperature, humidity, etc. 
+We need to provide the policy with a context, from which it can infer the “static” properties of the building. This context 
+must inform about the building envelope properties (conductivity, inertia), the HVAC system capabilities, etc.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hvac_ai_challenges/full_state.svg&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;When a policy is trained for a task in a specific building (online or offline), this context is implicitly provided in the training data. 
+The policy infers the context through its interactions with the environment or by learning from a replay buffer, thus 
+avoiding the need to explicitly provide it.&lt;/p&gt;
+
+&lt;p&gt;However, when we want to deploy the policy in a new building, we need to provide this context explicitly. This is particularly 
+tricky given the number of possible combinations of “static” properties, and the fact that this context is not always 
+directly available.&lt;/p&gt;
+
+&lt;p&gt;Can we employ existing techniques to perform system identification and contextualization of the policy execution? 
+Domain randomization, state augmentation, uncertainty estimation, 
+aren’t truly satisfactory. For instance state augmentation seems intractable given the number of possible combinations of 
+building properties. A multi-modal input could be used, like mixing sensor data with a static definition (layout, conductivity, equipment power, …) 
+but it requires upstream meta-data specification for each execution context, which may significantly degrade scalability.&lt;/p&gt;
+
+&lt;p&gt;Studies have been made also on transfer learning, where a policy is pre-trained on an environment, then fine-tuned on the 
+target environment. How much can we transfer from one environment to another? We lack real-world examples of successful 
+experiments. Also, zero-shot or few-shot fine-tuning is what we should aim for to minimize the risk of discomfort or hardware failures. 
+However, the order of magnitude of the number of samples required to fine-tune, in a real world environment, is still an open question.&lt;/p&gt;
+
+&lt;p&gt;Online system identification is also at the center of recent research, as in “Offline Model-based Adaptable Policy Learning” (Chen et al., 2021), 
+in which authors propose an offline RL method which performs identification by probing the system to select 
+a suitable policy at deployment time. This is a promising approach, but performed in fully observable and deterministic environments (MuJoCo), 
+and by prompting online, thus its transferability to building control is uncertain.&lt;/p&gt;
+
+&lt;p&gt;To summarize, and to give a more general definition of the problem, we could state that:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;a large part of the system dynamics will greatly vary and will be unknown in the target environment. 
+The partial observability nature of the system will make it even more difficult to identify.&lt;/li&gt;
+  &lt;li&gt;pure offline system identification may not be scalable, given the number of possible combinations of building properties.&lt;/li&gt;
+  &lt;li&gt;online system identification is possible only if few shot learning is possible.&lt;/li&gt;
+  &lt;li&gt;hybrid and model-based approaches seem to be the most promising, but they will require a significant research and engineering effort.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;evaluating-a-control-policy-trained-offline&quot;&gt;Evaluating a control policy trained offline&lt;/h3&gt;
+
+&lt;p&gt;For critical systems like HVAC, we need to build trust in the control policy before deploying it. This is particularly 
+true for data-driven policies, which are often seen as black-boxes, and can’t offer strong guarantees on their behavior.&lt;/p&gt;
+
+&lt;p&gt;Since the true performance of the trained policy will only be known when it’s deployed in the real world, we need to 
+rely on estimates. Many approaches exist, let’s cite a few:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;baseline comparison: the policy is compared to a baseline policy, like a PID controller, or a rule-based controller, in a generic, simulated environment. 
+This is a simple and quite scalable approach, but it doesn’t provide strong guarantees on the performance of the policy. To improve on that, benchmarking
+can be seen as a way to mitigate uncertainty, as the policy is evaluated on a set of benchmark environments, that are representative of the environments where the policy will be deployed. 
+This is a scalable approach, but it may require a significant initial effort to build the benchmark environments. In HVAC control, we particularly lack reference benchmarks, with 
+standard environments and tasks to evaluate the performance of a policy.&lt;/li&gt;
+  &lt;li&gt;off-policy evaluation (OPE): the policy is evaluated on a dataset of collected data, generated by a different policy. This is 
+particularly useful when the policy can’t be evaluated online, and it’s a scalable approach. It isn’t
+a widely adopted technique, but it’s backed by scientific research. At Foobot, we’ve started to work on that and open-sourced a tool in that direction, 
+called &lt;a href=&quot;https://github.com/airboxlab/hopes&quot;&gt;Hopes&lt;/a&gt;. Below diagram shows the principle of OPE.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Note that these estimates, which are not based on a comparison with an accurate model of the system, are more subject to bias than, 
+for instance, estimates based on reference white-box models. Designing a scalable evaluation framework for a control policy 
+is a challenge in itself, and could be of great value for the industry.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/hvac_ai_challenges/off_policy_eval.svg&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;Why seeking for scalability? Buildings represent one of the largest sources of energy consumption (40% of total energy consumed in the US and in Europe), 
+and HVAC systems are responsible for a large part of this consumption (a 40%-60% range will sound familiar to many building owners). 
+If we’re only able to optimize a small fraction of these systems, the impact will be too limited.&lt;/p&gt;
+
+&lt;p&gt;Whether it’s used to build predictors for model-based control or to train a policy offline, a fully scalable data-driven 
+solution seems still far from reach. We have to think about novel approaches to tackle this problem. Reducing 
+the problem space, pre-training and fine-tuning, efficient representation learning, large models for control, are all 
+possible directions to explore.&lt;/p&gt;
+
+&lt;p&gt;Scalability of the control optimization will unlock the potential for large-scale energy savings, in which 
+engineers , building maintainers, system integrators, and BMS vendors will all play a significant role. 
+Specifically, “off-the-shelf” products being easier to adopt and integrate, their deployment will be faster and less costly, 
+as they could be managed by the existing teams in charge of the building systems.&lt;/p&gt;
+</description>
+        <pubDate>Tue, 09 Jul 2024 02:00:00 +0200</pubDate>
+        <link>http://localhost:4000/ai/hvac/control/hvac-challenges.html</link>
+        <guid isPermaLink="true">http://localhost:4000/ai/hvac/control/hvac-challenges.html</guid>
+        
+        
+        <category>ai</category>
+        
+        <category>hvac</category>
+        
+        <category>control</category>
+        
+      </item>
     
       <item>
         <title>Learning to control with masks and pre-training objectives</title>
