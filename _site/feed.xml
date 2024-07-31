@@ -6,8 +6,8 @@
 </description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Fri, 26 Jul 2024 14:10:20 +0200</pubDate>
-    <lastBuildDate>Fri, 26 Jul 2024 14:10:20 +0200</lastBuildDate>
+    <pubDate>Wed, 31 Jul 2024 15:28:42 +0200</pubDate>
+    <lastBuildDate>Wed, 31 Jul 2024 15:28:42 +0200</lastBuildDate>
     <generator>Jekyll v4.3.2</generator>
     
       <item>
@@ -245,7 +245,7 @@ are also important parts of the engineering effort).&lt;/p&gt;
 &lt;p&gt;The table below gives two arbitrary examples of unscalable and scalable solutions. Numbers give an order of 
 magnitude of the engineering effort required to handle a certain number of environments, and what we should aim for.&lt;/p&gt;
 
-&lt;p&gt;&lt;img src=&quot;/assets/hvac_ai_challenges/scalability_resources.svg&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/assets/hvac_ai_challenges/scalability_resources.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;A first angle to approach the problem is by defining how scalability of the solution is impacted by the complexity of a project. 
 Intuitively, the larger the control perimeter, the more complex it gets, and the less likely it is that we’d be able to 
@@ -288,7 +288,7 @@ Bricks / Haystack / ASHRAE 223P for metadata), the problem won’t be solved in 
 
 &lt;p&gt;In above diagram, we see steps that can be taken to reach a “scalable BMS solution” from the extreme of a building not yet 
 equipped with a BMS - which actually represents the largest part of the building stock (small buildings). 
-For people familiar with BMS and integration, this looks like utopia. Applying this reasoning, building by building, 
+For people familiar with BMS and integration, this looks like a lifetime challenge. Applying this reasoning, building by building, 
 doesn’t seem doable in a reasonable time frame, not to mention the cost.&lt;/p&gt;
 
 &lt;h2 id=&quot;moving-towards-data-driven-solutions&quot;&gt;Moving towards data-driven solutions&lt;/h2&gt;
@@ -336,7 +336,7 @@ p(s'_t | a_t, s_t) =
 $$
 &lt;/p&gt;
 
-&lt;p&gt;No being able to identify the unknown system dynamics would severely impact the response of the model when prompted 
+&lt;p&gt;Not being able to identify the unknown system dynamics would severely impact the response of the model when prompted 
 on out-of-support regions, which can lead to catastrophic failures in control.&lt;/p&gt;
 
 &lt;p&gt;How to deal with this problem when we need to build a predictive model of the system dynamics?&lt;/p&gt;

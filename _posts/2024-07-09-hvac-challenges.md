@@ -151,7 +151,7 @@ are also important parts of the engineering effort).
 The table below gives two arbitrary examples of unscalable and scalable solutions. Numbers give an order of 
 magnitude of the engineering effort required to handle a certain number of environments, and what we should aim for.
 
-![sources]({{ site.baseurl }}/assets/hvac_ai_challenges/scalability_resources.svg){: .center }
+![sources]({{ site.baseurl }}/assets/hvac_ai_challenges/scalability_resources.png){: .center }
 
 A first angle to approach the problem is by defining how scalability of the solution is impacted by the complexity of a project. 
 Intuitively, the larger the control perimeter, the more complex it gets, and the less likely it is that we'd be able to 
