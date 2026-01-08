@@ -15,7 +15,7 @@ published: true
 }
 </style>
 
-![firehose]({{ site.url }}/assets/scale_mqtt_2/drink-out-of-a-hose.jpg){: .callout}
+![firehose]({{ site.baseurl }}/assets/scale_mqtt_2/drink-out-of-a-hose.jpg){: .callout}
 
 We’ve been running our messaging gateways with a more distributed approach as described in [](part I) for more than a year now, and wanted to share problems we faced and solutions we found.
 

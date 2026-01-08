@@ -24,7 +24,7 @@ What happens in reality, for a clustered scheduler, is that one instance will ex
 
 The impact for our clients was directly visible: instead of seeing desired action triggered a few seconds after desired time, it could take several minutes before kicking in. This can be illustrated by below chart:
 
-![before sharding]({{ site.url }}/assets/scale_quartz/schedulerlab_14_00_06_06_2017.png)
+![before sharding]({{ site.baseurl }}/assets/scale_quartz/schedulerlab_14_00_06_06_2017.png)
 
 As you can see, a large part of our end users chose to trigger events on their devices at very common times (top of hour), so we need to handle a huge burst in the number of jobs to execute at specific hours of the day.
 
@@ -50,7 +50,7 @@ In our case, re-sharding involves updating jobs, triggers and related definition
   
 This consistent hashing mechanism has then to be made available to our scheduler API clients, so they can pick the right scheduler instance. To do that, each scheduler registers in our service discovery tool with a custom attribute (we use Consul, so the service registers with a custom tag) that represents its node ID. Then, each client discovers the service using the tag computed from hashing job key.
 
-![sharding]({{ site.url }}/assets/scale_quartz/scheduler_sharding.png)
+![sharding]({{ site.baseurl }}/assets/scale_quartz/scheduler_sharding.png)
 
 In above diagram we see multiple MySQL databases, which is a possible solution for further increasing throughput (although not tested). On our side, we still use the same table structures to store all schedulers data.
 
@@ -58,12 +58,12 @@ In above diagram we see multiple MySQL databases, which is a possible solution f
 
 Here we're presenting results from up to 4 schedulers: with more, we faced bottlenecks in downstream processes (benchmarks were done with "real-life" jobs), and we hit the limits of the instance we were running the jobs on (> 90% CPU usage). With 8 schedulers, and if all downstream communications are disabled, we reached **1350 jobs/sec**.
 
-![benchmark]({{ site.url }}/assets/scale_quartz/benchmark.png)
+![benchmark]({{ site.baseurl }}/assets/scale_quartz/benchmark.png)
 
 ## Deploying in production
 
 We deployed 3 distinct scheduler instances in our target datacenter. Deployment took the scheduler API down for 4 minutes while resharding operation was in progress. The operation is triggered automatically by the service, if it's configured with a node ID that has no associated job in database. Adding a new scheduler is automatic and doesn't require any additional configuration.
 
-![after sharding]({{ site.url }}/assets/scale_quartz/schedulerlab_14_00_12_06_2017.png)
+![after sharding]({{ site.baseurl }}/assets/scale_quartz/schedulerlab_14_00_12_06_2017.png)
 
 Jobs at this hour now execute within an acceptable time, and most importantly we are confident we can now handle much more and keep execution times low.

@@ -45,10 +45,10 @@ To do that, RabbitMQ has 2 plugins called [federation](https://www.rabbitmq.com/
 We rolled out the plan in several phases, but are the 2 major steps:
 
 1. **1 backend cluster + 1 gateway cluster** with direct messages routing through federation. Below a logical representation of how they communicate:
-![step 1]({{ site.url }}/assets/scale_mqtt/rabbitmq_split_step1.png)
+![step 1]({{ site.baseurl }}/assets/scale_mqtt/rabbitmq_split_step1.png)
 
 2. **1 backend cluster + X gateway clusters** with *intelligent* routing: when messages need to be routed to more than 1 gateway, it becomes inefficient to send all messages to all gateways. We developped a simple message router that route messages based on known location of the client (and broadcasts in case of doubt).
-![step 2]({{ site.url }}/assets/scale_mqtt/rabbitmq_split_step2.png)
+![step 2]({{ site.baseurl }}/assets/scale_mqtt/rabbitmq_split_step2.png)
 
 Clients are routed using AWS Route53 latency-based configuration.
 
