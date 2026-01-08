@@ -5,7 +5,7 @@ date:   2018-04-23 08:00:00
 categories: "iot mqtt scalability rabbitmq haproxy"
 comments: true
 author: Antoine Galataud
-published: false
+published: true
 ---
 
 <style type="text/css">
@@ -15,7 +15,7 @@ published: false
 }
 </style>
 
-![firehose]({{ site.url }}assets/scale_mqtt_2/drink-out-of-a-hose.jpg){: .callout}
+![firehose]({{ site.url }}/assets/scale_mqtt_2/drink-out-of-a-hose.jpg){: .callout}
 
 We’ve been running our messaging gateways with a more distributed approach as described in [](part I) for more than a year now, and wanted to share problems we faced and solutions we found.
 
