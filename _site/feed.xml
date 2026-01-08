@@ -6,8 +6,8 @@
 </description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Wed, 24 Dec 2025 11:08:41 +0100</pubDate>
-    <lastBuildDate>Wed, 24 Dec 2025 11:08:41 +0100</lastBuildDate>
+    <pubDate>Thu, 08 Jan 2026 13:53:12 +0100</pubDate>
+    <lastBuildDate>Thu, 08 Jan 2026 13:53:12 +0100</lastBuildDate>
     <generator>Jekyll v4.3.2</generator>
     
       <item>
@@ -148,8 +148,7 @@ thead {
 &lt;p&gt;But our answer looks aims at &lt;strong&gt;being able to say that two temperature trajectories are “similar” if they correspond to 
 similar thermal behavior and/or control policies&lt;/strong&gt;, not just if they are numerically close or show similar shapes.&lt;/p&gt;
 
-&lt;p&gt;Ultimately, similarity metrics are proxies for causal equivalence. This is useful, but often not a substitute for explicit 
-modeling.&lt;/p&gt;
+&lt;p&gt;Ultimately, we’re looking for similarity metrics that are proxies for &lt;strong&gt;causal equivalence&lt;/strong&gt;.&lt;/p&gt;
 
 &lt;p&gt;This blog post explores several ways to compare indoor temperature time series, ranging from 
 &lt;strong&gt;purely mathematical distances&lt;/strong&gt; to &lt;strong&gt;model-based approaches&lt;/strong&gt; rooted in building physics. 
@@ -707,98 +706,6 @@ bridging building control, reinforcement learning, and bandit theory.&lt;/p&gt;
         <category>hvac</category>
         
         <category>control</category>
-        
-      </item>
-    
-      <item>
-        <title>Hvac_opt_challenges_ideas</title>
-        <description>Unique challenges in HVAC control optimization
-
-- buildings are snowflakes: scalability options and creating custom or off-the-shelf solutions
-- data-driven solutions and the marble cake dilemna
-	- black box models
-	- fog of war -&gt; marble cake
-- physics-based solutions: 
-	- limits of white or gray box models: complexity, fidelity
-- dealing with uncertainty
-	- sim2real gap: how close are pd of states and state transitions between the simulated and the real env? system dynamics, transition functions. OPE
-	- randomness
-	- partial observability
-	- episodic control and the start time and initial state conditions
-- contradictory multi-objectives optimization
-- research to production:
-	- very few research end up in prod
-	- reported application of AI for HVAC control: almost anecdotical
-
-
-
-
-### Complexity of white-box models
-
-### Assessing the fidelity of a model
-
-## Dealing with uncertainty
-
-### The importance of robustness
-
-### sim2real gap
-
-How close are the probability distributions of states and state transitions between the simulated and the real env?
-
-System dynamics, transition functions
-
-Off-policy evaluation for better evaluation of the model
-
-
-#### Policy optimization
-
-Here we discuss known potential solutions to the scalability problem in the context of HVAC control optimization.
-
-| #   |  Candidate solution   | Main scale type  |
-|:---:|:---------------------:|:----------------:|
-| 1   |   Transfer learning   |       Out        |
-| 2   |   Multi-task models   |        Up        |
-| 3   | Parameterized models  |        Up        |
-| 4   | Large decision models |       Out        |
-| 5   |  Multi-agent systems  |       Out        |
-| 6   |     Meta learning     |       Out        |
-
-&lt;br/&gt;
-_Scale type_: Up and/or Out, denoting the ability of a solution to handle a larger environment than what it was initially designed for (up)
-and/or a large number of environments (out), respectively.
-
-Each solution comes with its own trade-offs in terms of scalability, complexity, and robustness.
-
-For instance, transfer learning (1) is a generic solution that can be applied to a wide range of problems, but it requires a fine-tuning phase on the target environment to be effective, that may reduce
-its scalability if it still requires to model a large number of environments or if fine-tuning isn't sample efficient enough.
-
-Both multi-task (2) and parameterized models (3) can be scalable, but they require a complex model architecture, which can reduce the performance and the robustness of the solution. As the state and action spaces grow, the model complexity grows exponentially, and RL has yet to prove good performance in high-dimensional spaces.
-
-Multi-agent systems (5) are another way to scale out the solution, by distributing the control problem among multiple agents, but it requires a more complex coordination mechanism and may introduce additional sources of uncertainty.
-
-On the front of more novel approaches, we can cite large decision models (4) and meta learning (6).
-
-Large decision models (4) are a typical example of scaling up the model itself to handle more diverse environments, but comes with data and computational costs, as well as challenges in representation learning (e.g. how to represent the state space in a way that is generalizable to a large number of environments).
-
-Meta learning (6) aims at learning to learn, by training a model on a distribution of tasks and environments, so that it can adapt quickly to new tasks and environments. However, it hasn't been studied extensively in the context of HVAC control optimization, and it may require a large amount of data to be effective.
-
-These solutions have been the topic of more or less successful research, but, to the best of my knowledge, none of them has been applied to real-world HVAC control optimization problems.
-An important aspect to assess the scalability of the solution is also to consider whether
-
-## Research to production: the last forgotten mile
-
-Very little fraction of research end up with a real world test, not to mention a production deployment.
-Reported applications of AI for HVAC control: almost anecdotal
-
-## Benefits of scalable solutions
-
-Reverse integration
-APIs and SDKs
-</description>
-        <pubDate>Tue, 23 Jul 2024 14:36:33 +0200</pubDate>
-        <link>http://localhost:4000/hvac_opt_challenges_ideas.txt</link>
-        <guid isPermaLink="true">http://localhost:4000/hvac_opt_challenges_ideas.txt</guid>
-        
         
       </item>
     
@@ -2698,6 +2605,365 @@ teaching in simulated environment, efficient control policies can be discovered 
         <category>ai</category>
         
         <category>reinforcement_learning</category>
+        
+      </item>
+    
+      <item>
+        <title>Scaling MQTT connections with RabbitMQ - Part II</title>
+        <description>&lt;style type=&quot;text/css&quot;&gt;
+.callout {
+    float: right;
+    margin-left: 5px;
+}
+&lt;/style&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/scale_mqtt_2/drink-out-of-a-hose.jpg&quot; alt=&quot;firehose&quot; class=&quot;callout&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;We’ve been running our messaging gateways with a more distributed approach as described in &lt;a href=&quot;part I&quot;&gt;&lt;/a&gt; for more than a year now, and wanted to share problems we faced and solutions we found.&lt;/p&gt;
+
+&lt;p&gt;First of all, let’s face it: it has been a shaky road. After an initial period of a few weeks where everything seemed to run smoothly under control, new incidents and outages started to show up intermittently. This was due to several problems I describe here.
+&lt;br /&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;aws-ec2-instances-choosing-the-right-type&quot;&gt;AWS EC2 instances: choosing the right type&lt;/h4&gt;
+
+&lt;p&gt;When we deployed our new version in May 2017, we chose cheap instance types like &lt;em&gt;t2&lt;/em&gt; for our proxies, with the idea of scaling them in mind.&lt;/p&gt;
+
+&lt;p&gt;It revealed to be a bad choice: &lt;em&gt;t2&lt;/em&gt; network interfaces are flaky and we suffered several hiccups, with massive reconnection events as a result. They are also not well suited for medium to long burst periods, as cpu access is throttled after a few 10a of minutes running above credit line. And we needed that to deal with recovery during massive reconnection events.&lt;/p&gt;
+
+&lt;p&gt;Finally a bunch of weak instances compared to a fewer but stronger ones is strategically a non sense here: more maintenance, less predictability.&lt;/p&gt;
+
+&lt;p&gt;Our current gateways now use &lt;em&gt;m4&lt;/em&gt; instance family. Since that, network hiccups have disappeared.
+&lt;br /&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;haproxy-timeouts&quot;&gt;HAProxy timeouts&lt;/h4&gt;
+
+&lt;p&gt;At first we’ve let default or too high values for some we didn’t know about. Problem with persistent MQTT connections and nextwork connections from resource-constrained hardware is that you may endup with a lot of idle, half-opened connections that could pile up and prevent legitimate connections to open.&lt;/p&gt;
+
+&lt;p&gt;Hopefull for us, HAProxy has a very flexible configuration. And an extensive documentation. It’s possible to configure client, server and other type of timeouts. Here is an extract of one of our configs:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-cfg&quot;&gt;defaults
+    mode    tcp
+    option  abortonclose
+    timeout client      30s
+    timeout client-fin  15s
+    timeout connect     5s
+    timeout server      30s
+    timeout server-fin  15s
+    timeout queue       30s
+    timeout tunnel      30s
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Some values may seem a bit aggressive but since MQTT clients are all configured to automatically reconnect, it’s fine.&lt;/p&gt;
+
+&lt;p&gt;One important thing to note is HAProxy &lt;em&gt;timeout tunnel&lt;/em&gt; supersedes &lt;em&gt;timeout client&lt;/em&gt; and &lt;em&gt;timeout server&lt;/em&gt;, for persistent connections it’s an important one to set. Also HAProxy doc recommends using &lt;em&gt;timeout client-fin&lt;/em&gt; and &lt;em&gt;timeout server-fin&lt;/em&gt; in conjunction, to close sockets in &lt;em&gt;FIN_WAIT&lt;/em&gt; state faster.&lt;/p&gt;
+
+&lt;p&gt;Finally, in order to maintain connections open, MQTT clients are using heartbeat messages with interval &amp;lt; 30s.
+&lt;br /&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;mqtt-clients-tuning&quot;&gt;MQTT clients tuning&lt;/h4&gt;
+
+&lt;p&gt;&lt;strong&gt;Clean session &amp;amp; QoS 1&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;clean session&lt;/em&gt; is a MQTT flag that instructs server it can remove everything belonging to the client and connection is closed. We’ve used it to ensure we don’t end up in situations where a RabbitMQ cluster node would refuse a connection because a MQTT queue was still present on an other node (we finally gave up using RabbitMQ clustering, but we may come back to it one day).&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;QoS 1&lt;/em&gt; is the intermediate level of guarantee for MQTT messages delivery. It ensures messages are delivered &lt;em&gt;at least once&lt;/em&gt; to the receiver (hence doesn’t guarantee the same message isn’t received several times).&lt;/p&gt;
+
+&lt;p&gt;Also, &lt;em&gt;TTL&lt;/em&gt; on messages is fairly low (never more than 30s) so they are lost when they aren’t consumed fast enough. This to prevent filling up queues on server side.&lt;/p&gt;
+
+&lt;p&gt;In order to cope with this client &amp;amp; server technical constraints, we also added a couple of application-level safeguards:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;important messages are resent to receivers upon connection. Even in case of short disconnection&lt;/li&gt;
+  &lt;li&gt;idempotency and statelessness are enforced: state is preserved in the backend, which decides when and how to send messages. MQTT clients are designed to support receiving same message several times. RabbitMQ only passes messages, doesn’t store them.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;Exponential backoff&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;MQTT clients may disconnect for different reasons: flky network quality, server-side closed, you name it. MQTT library we wrote is made to take care of reconnecting automatically. In order to avoid self-inflicted DDoS, clients will retry indefinitely but with an exponentially-increasing delay between each attempt every time.&lt;/p&gt;
+
+&lt;p&gt;As we were testing this, we noticed that this principle must be extended up to the reception of the first MQTT heartbeat answer from server: it’s only at that moment we know server is fully operational.
+&lt;br /&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;rabbitmq-tuning&quot;&gt;RabbitMQ tuning&lt;/h4&gt;
+
+&lt;p&gt;&lt;strong&gt;no more clustering&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;RabbitMQ clustering let’s you form clusters of nodes with the benefit of possible fail-over in case of node failure, or queues high availability. However it’s not well suited for load-balancing tens of thousands of connections.&lt;/p&gt;
+
+&lt;p&gt;First of all, communication overhead between nodes is significant and requires to keep nodes in the network to prevent latency. Second, recovery and upgrade are far more complex than with a collection of single nodes. 
+Last but not least, RabbitMQ suffers a bug that’s not directly linked to clustering, but gets worse because of it: in case of node shutdown or massive reconnection, thousands of auto-delete queues get evicted. This triggers a Mnesia (distributed DB RabbitMQ is using) lock contention and it can get up to several minutes for the node to recover from that. See &lt;a href=&quot;https://groups.google.com/d/msg/rabbitmq-users/hgRmhpL8Y6o/F7UoGyDsCwAJ&quot;&gt;this dicussion on RabbitMQ users list&lt;/a&gt; and related &lt;a href=&quot;https://github.com/rabbitmq/rabbitmq-server/issues/1566&quot;&gt;bug opened&lt;/a&gt; (not fixed in 3.6 yet).
+&lt;br /&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;os-tuning-sysctl-tcp-stack--network-interfaces&quot;&gt;OS tuning: sysctl, TCP stack &amp;amp; network interfaces&lt;/h4&gt;
+
+&lt;p&gt;Our current architecture pairs several RabbitMQ nodes with 1 HAProxy instance. HAProxy resources consumption is pretty low for that type of workload so it’s possible to achieve hundreds of thousands of connections with a single HAProxy instance.&lt;/p&gt;
+
+&lt;p&gt;In order to that, there’s a major OS constraint that limits number of outbound connections for a specific IP. This is first controlled by &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;net.ipv4.ip_local_port_range&lt;/code&gt; sysctl option (very low by default on most distributions). But the maximum is &lt;em&gt;65535&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;There are several ways to go beyond, we chose to use AWS ENIs (Elastic Network Interface): our instance setup script allocates 4 ENIs then configures each network interface. Finally, it can be used n HAProxy configuration as following:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;backend tcp-out-1883
+    default-server inter 30s rise 2 fall 2
+    timeout check 5s
+    option tcp-check
+    server server1-eni1 10.0.2.1:1883 source 10.0.1.1 check on-marked-down shutdown-sessions
+    server server1-eni2 10.0.2.1:1883 source 10.0.1.2 check on-marked-down shutdown-sessions
+    server server1-eni3 10.0.2.1:1883 source 10.0.1.3 check on-marked-down shutdown-sessions
+    server server1-eni4 10.0.2.1:1883 source 10.0.1.4 check on-marked-down shutdown-sessions
+    server server2-eni1 10.0.2.2:1883 source 10.0.1.1 check on-marked-down shutdown-sessions
+    server server2-eni2 10.0.2.2:1883 source 10.0.1.2 check on-marked-down shutdown-sessions
+    server server2-eni3 10.0.2.2:1883 source 10.0.1.3 check on-marked-down shutdown-sessions
+    server server2-eni4 10.0.2.2:1883 source 10.0.1.4 check on-marked-down shutdown-sessions
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;where &lt;em&gt;10.0.2.X&lt;/em&gt; are RabbitMQ nodes and &lt;em&gt;10.0.1.X&lt;/em&gt; are HAProxy network interfaces.&lt;/p&gt;
+
+&lt;p&gt;There are also a couple other sysctl options that can be tuned. &lt;a href=&quot;https://www.rabbitmq.com/networking.html&quot;&gt;RabbitMQ documentation&lt;/a&gt; gives some recommendations.
+&lt;br /&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;testing-a-load-testing-framework&quot;&gt;Testing: a load testing framework&lt;/h4&gt;
+
+&lt;p&gt;How can one validate settings at various levels without testing? For this purpose we created a small test framework that interacts with AWS EC2 and spawns desired number of instances, and execute several thousands of MQTT clients on each of them. MQTT client is using &lt;a href=&quot;https://www.eclipse.org/paho/&quot;&gt;Eclipse Paho&lt;/a&gt; library and is configurable (number of clients, ramp up period, interval between messages, QoS level, clean session).&lt;/p&gt;
+
+&lt;p&gt;This helped us validating client, server, OS, and software configurations, as well as finding the right amout of CPU/RAM required for the load.
+&lt;br /&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;automating-operations&quot;&gt;Automating operations&lt;/h4&gt;
+
+&lt;p&gt;It sounds obvious, but we didn’t have an end-to-end automated way of recreating our messaging gateways infrastructure. We know have ~90% scripted.&lt;/p&gt;
+
+&lt;p&gt;It’s of great help during testing phase, as we were able to simply trash a whole set of instances and configurations and restart from scratch. Now we use it for scaling operations.
+&lt;br /&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h4 id=&quot;high-availability-with-aws-route53&quot;&gt;High Availability with AWS Route53&lt;/h4&gt;
+
+&lt;p&gt;This was one of our goals in first article I wrote: we were first relying on clustering for HA, but it was only able to deal with AWS Availability Zone failures.&lt;/p&gt;
+
+&lt;p&gt;We implemented HA at a higher level, without RabbitMQ clustering. It’s using AWS Route53 and a combination of geo-location, weight and healtcheck rules to decide where to send clients. This offers both intra and cross region failover.&lt;/p&gt;
+
+&lt;p&gt;The whole thing is well described in &lt;a href=&quot;https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-complex-configs.html&quot;&gt;this document&lt;/a&gt;
+&lt;br /&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;final-notes&quot;&gt;Final notes&lt;/h2&gt;
+
+&lt;p&gt;We incrementally released this new version of our messaging infrastructure in December 2017 and January 2018. It proved to be a good move as we significantly recuded number of incidents and maintenance time, while improving scalability. There’s still work to do though!&lt;/p&gt;
+
+&lt;p&gt;Our next goals are about finalizing automation of gateway provisioning and setup. With that, we will be able to implement auto scaling: our workload doesn’t vary much, but in case of instance failure, automatically spawning and configuring a new can be a major improvement.&lt;/p&gt;
+
+</description>
+        <pubDate>Mon, 23 Apr 2018 10:00:00 +0200</pubDate>
+        <link>http://localhost:4000/iot/mqtt/scalability/rabbitmq/haproxy/scaling_mqtt_part2.html</link>
+        <guid isPermaLink="true">http://localhost:4000/iot/mqtt/scalability/rabbitmq/haproxy/scaling_mqtt_part2.html</guid>
+        
+        
+        <category>iot</category>
+        
+        <category>mqtt</category>
+        
+        <category>scalability</category>
+        
+        <category>rabbitmq</category>
+        
+        <category>haproxy</category>
+        
+      </item>
+    
+      <item>
+        <title>Scaling MQTT connections with RabbitMQ</title>
+        <description>&lt;h2 id=&quot;suddenly-it-failed&quot;&gt;Suddenly, it failed&lt;/h2&gt;
+
+&lt;p&gt;It happened at the beginning of 2017. Our number of clients had grown steadily so far, and we were confident our current MQTT clusters configuration was strong enough to cope with it for a while.&lt;/p&gt;
+
+&lt;p&gt;Wrong! So wrong! While we were quietly preparing for weekend leave, several alarm bells rang: rabbitmq node 1 not responding, then another, finally the entire cluster. Ok, no worries, let’s just restart it. Wrong again! While it’s easy to change a tire on a stopped car, doing it when you’re driving at 200 km/h is another thing: clients trying to automatically reconnect were preventing a smooth restart. After several unsuccessful attempts, lot of sweat, and placing the cluster in a safe mode, we finally managed to get it back to work.&lt;/p&gt;
+
+&lt;h2 id=&quot;after-the-storm-time-to-look-back&quot;&gt;After the storm, time to look back&lt;/h2&gt;
+
+&lt;p&gt;With this painful event, we realized we were still operating our message brokers, and everything around, as if they were handling a few hundreds of clients. Although we knew we would have to strengthen this core part of our infrastructure, it wasn’t showing any sign of weakness. The danger of things working well is you quickly forget them! And in a small but rapidly growing shop like ours, priorities change. Still, reality strikes back to make you face all the things you are missing:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;strong isolation&lt;/strong&gt;: a single message brokers cluster that does everything (internal/external communication) is very convenient at the beginning: it’s cheap and easy to setup. But one piece failing and the entire system is out. Also, upgrading or simply tuning becomes a stressful operation.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;performance tests&lt;/strong&gt;: what are our needs if number of clients double? Are we able to deal with forecasted throughput? What happens under flaky network conditions? What harwdware for that?&lt;/li&gt;
+  &lt;li&gt;clear &lt;strong&gt;disaster recovery procedures&lt;/strong&gt;: a document with some basic steps isn’t enough. Let’s learn from disasters, and shape up a correct recovery plan with realistic scenarios and steps.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;This article focuses on 1st point (but we worked also on the others, performance tests were one of the prerequisites for developing the solution).&lt;/p&gt;
+
+&lt;h2 id=&quot;divide-and-conquer&quot;&gt;Divide and conquer&lt;/h2&gt;
+
+&lt;p&gt;We expose our services through different APIs and protocols, but most of the activity comes from asynchronous messages processing that come from various sources: &lt;em&gt;internal&lt;/em&gt; (microservices communication based on AMQP) and &lt;em&gt;external&lt;/em&gt; (MQTT and STOMP, available for mobile apps, web apps, devices).&lt;/p&gt;
+
+&lt;p&gt;As a matter of fact, if something goes wrong with the broker, all communications stop. And things can go wrong in a lot of ways: broker crash (not so often), massive reconnection event (thousands of devices reconnecting at the same time), or sudden spike of messages in a specific exchange (if consumers aren’t fast enough, messages will pile up and performance can degrade for all the system).&lt;/p&gt;
+
+&lt;p&gt;Also, brokers exposing different protocols to various types of clients need to play with a lot of constraints: you need to tune for both throughput and high number of connections and you’re over-exposed to bugs due to the large number of plugins and custom settings you have to put in the game.&lt;/p&gt;
+
+&lt;p&gt;Finally, if you open communication channels to partners or external developers, you can’t easily isolate environments (privisioning, security, compliance, …) and probability of occurrence of a problem increases dramatically (for instance with bugs from incorrectly coded firmware), and you’re rapidly stuck with inextricable compatibility or upgrade issues (like impossibility to server different protocol versions to different clients).&lt;/p&gt;
+
+&lt;p&gt;Taking into account the experience we grew with RabbitMQ, and the large set of topologies you can build with it, it was a valid choice for us to help us build our next messaging system.&lt;/p&gt;
+
+&lt;h3 id=&quot;splitting-brokers&quot;&gt;Splitting brokers&lt;/h3&gt;
+
+&lt;p&gt;The plan was then to split the broker (actually cluster of brokers but we’re refering to it as a single entity). The plan was to create a &lt;em&gt;backend&lt;/em&gt; cluster to keep backend communications completely internal and expose external channels through &lt;em&gt;gateway&lt;/em&gt; brokers that could be located in different places of the world. But those brokers would have to send messages to each others (between backend and each gateway, not between gateways).&lt;/p&gt;
+
+&lt;p&gt;To do that, RabbitMQ has 2 plugins called &lt;a href=&quot;https://www.rabbitmq.com/federation.html&quot;&gt;federation&lt;/a&gt; and &lt;a href=&quot;https://www.rabbitmq.com/shovel.html&quot;&gt;shovel&lt;/a&gt;. Deciding which one to pick depends on target topology, patterns of message transfer and level of control you need.&lt;/p&gt;
+
+&lt;p&gt;We rolled out the plan in several phases, but are the 2 major steps:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;1 backend cluster + 1 gateway cluster&lt;/strong&gt; with direct messages routing through federation. Below a logical representation of how they communicate:
+&lt;img src=&quot;http://localhost:4000/assets/scale_mqtt/rabbitmq_split_step1.png&quot; alt=&quot;step 1&quot; /&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;1 backend cluster + X gateway clusters&lt;/strong&gt; with &lt;em&gt;intelligent&lt;/em&gt; routing: when messages need to be routed to more than 1 gateway, it becomes inefficient to send all messages to all gateways. We developped a simple message router that route messages based on known location of the client (and broadcasts in case of doubt).
+&lt;img src=&quot;http://localhost:4000/assets/scale_mqtt/rabbitmq_split_step2.png&quot; alt=&quot;step 2&quot; /&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Clients are routed using AWS Route53 latency-based configuration.&lt;/p&gt;
+
+&lt;h3 id=&quot;tuning-rabbitmq&quot;&gt;Tuning RabbitMQ&lt;/h3&gt;
+
+&lt;p&gt;It’s possible to tune RabbitMQ for throughput or for large number of connections. This is well documented &lt;a href=&quot;https://www.rabbitmq.com/networking.html&quot;&gt;here&lt;/a&gt;. We naturally applied those recommendations in order to maximize throughput on the backend cluster, and increase capacity to handle large number of connections on gateways.&lt;/p&gt;
+
+&lt;p&gt;We have also enabled HiPE compilation to increase throughput on some clusters and this is giving excellent results.&lt;/p&gt;
+
+&lt;p&gt;Running on AWS, we chose the ‘c’ type for our instances: RabbitMQ can be CPU intensive, for throughput intensive workloads, or when connections churn is high (which happens quite often if you have clients connecting from everywhere). We favored c3 instances (cheaper storage with SSD instance store volumes - requires snapshots for instance crash recovery) but c4 with proper IOPS configuration (gp2 or io1) does the trick (more expansive but data survives server crash or restart).&lt;/p&gt;
+
+&lt;h3 id=&quot;repeatability&quot;&gt;Repeatability&lt;/h3&gt;
+
+&lt;p&gt;The way we decide to deploy and locate gateways is data-driven: we do it depending on current number of customers per region/country, forecast in sells, new projects, and technical factors. Once we are aware of those parameters, it’s important to make the operation of setting up a new gateway as automatic as possible.&lt;/p&gt;
+
+&lt;p&gt;Of course, spinning up a new gateway isn’t just a matter of 1 new server in an AWS region: we have to setup the VPC, VPN connection with backend, proxy servers, and other IT support instances.&lt;/p&gt;
+
+&lt;p&gt;We did it using Hashicorp Terraform: it lets you declare and interact with AWS resources from declaration in simple configuration files. Almost all AWS resources are available, see &lt;a href=&quot;https://www.terraform.io/docs/providers/aws/&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Now if need to spawn a new gateway, it’s a matter of hours.&lt;/p&gt;
+
+&lt;h2 id=&quot;where-we-are-now&quot;&gt;Where we are now&lt;/h2&gt;
+
+&lt;p&gt;We started deploying these solutions in productions in March, and now we have 2 gateways in production (US and Japan), handling tens of thousands of connections.&lt;/p&gt;
+
+&lt;p&gt;Scalability and resiliency improved, and we significantly reduced number of problems we used to have. Also, massive reconnections are much less massive, by design: fewer clients per node, and clients are geographically closer to brokers, which reduces risk of network hicups.&lt;/p&gt;
+
+&lt;p&gt;We also improved maintainability: upgrades are progressively applied accross clusters, and we aren’t tied to a single solution anymore: if we decide to go for another messaging implementation for a particular need, it will be much easier to plug in.&lt;/p&gt;
+
+&lt;h3 id=&quot;next-steps&quot;&gt;Next steps&lt;/h3&gt;
+
+&lt;p&gt;We want to achieve strong high availability, using AWS Route53 latency + health checks based routing. This will answer the question “what happens if the entire cluster of brokers is down?”. A good example can be found &lt;a href=&quot;http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-failover-complex-configs.html&quot;&gt;here&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Split, split again! Internal workloads handled by the core cluster can be further segragated, by sending messages to dedicated message brokers, where relevant. Specifically, some of our workloads are log-oriented, don’t need true real-time processing, and would benefit from several days of data retention. Using something like kafka or kinesis would help in that matter.&lt;/p&gt;
+
+</description>
+        <pubDate>Tue, 27 Jun 2017 06:00:00 +0200</pubDate>
+        <link>http://localhost:4000/iot/mqtt/scalability/rabbitmq/scaling_mqtt.html</link>
+        <guid isPermaLink="true">http://localhost:4000/iot/mqtt/scalability/rabbitmq/scaling_mqtt.html</guid>
+        
+        
+        <category>iot</category>
+        
+        <category>mqtt</category>
+        
+        <category>scalability</category>
+        
+        <category>rabbitmq</category>
+        
+      </item>
+    
+      <item>
+        <title>Tuning Quartz Scheduler for large number of small jobs</title>
+        <description>&lt;h2 id=&quot;what-we-do-with-quartz-scheduler&quot;&gt;What we do with Quartz Scheduler&lt;/h2&gt;
+
+&lt;p&gt;We used &lt;a href=&quot;http://www.quartz-scheduler.org/&quot;&gt;Quartz Scheduler&lt;/a&gt; in first place to schedule time-based events on a large number of our HVAC devices, in order to trigger changes from one mode to another, and define interactions between modes. We then extended usage of Quartz to different areas, but the main usage pattern remains to run short-lived jobs that perform a single action.&lt;/p&gt;
+
+&lt;h2 id=&quot;the-problem&quot;&gt;The problem&lt;/h2&gt;
+
+&lt;p&gt;Quoted from Quartz documentation: “&lt;em&gt;The clustering feature works best for scaling out long-running and/or cpu-intensive jobs (distributing the work-load over multiple nodes). If you need to scale out to support thousands of short-running (e.g 1 second) jobs, consider partitioning the set of jobs by using multiple distinct schedulers (including multiple clustered schedulers for HA). The scheduler makes use of a cluster-wide lock, a pattern that degrades performance as you add more nodes (when going beyond about three nodes - depending upon your database’s capabilities, etc.).&lt;/em&gt;”&lt;/p&gt;
+
+&lt;p&gt;Indeed, it’s easy to confirm that adding nodes to a cluster doesn’t improve things at all (tested with 4, 5 and 6 nodes).&lt;/p&gt;
+
+&lt;p&gt;Cluster-wide lock is obtained by the &lt;code&gt;QuartzSchedulerThread&lt;/code&gt; using a database lock (&lt;code&gt;SELECT ... FOR UPDATE&lt;/code&gt;). It “reserves” a certain amount of triggers to execute (amount decided by &lt;code&gt;org.quartz.scheduler.batchTriggerAcquisitionMaxCount&lt;/code&gt;), execute them (in parallel, number of worker threads can be configured using &lt;code&gt;org.quartz.threadPool.threadCount&lt;/code&gt;, should be equal to batchTriggerAcquisitionMaxCount), then release the lock.&lt;/p&gt;
+
+&lt;p&gt;What happens in reality, for a clustered scheduler, is that one instance will execute the desired number of triggers while the other will be doing nothing. Clustering in Quarz is for high availability, or for load-balancing long-running jobs, but as stated in the docs, doesn’t help to run high number of short-lived jobs.&lt;/p&gt;
+
+&lt;p&gt;The impact for our clients was directly visible: instead of seeing desired action triggered a few seconds after desired time, it could take several minutes before kicking in. This can be illustrated by below chart:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/scale_quartz/schedulerlab_14_00_06_06_2017.png&quot; alt=&quot;before sharding&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;As you can see, a large part of our end users chose to trigger events on their devices at very common times (top of hour), so we need to handle a huge burst in the number of jobs to execute at specific hours of the day.&lt;/p&gt;
+
+&lt;h2 id=&quot;sharding-to-the-rescue&quot;&gt;Sharding to the rescue&lt;/h2&gt;
+
+&lt;p&gt;Jobs sharding isn’t a feature proposed by Quartz, although database structure is ready for that. As proposed in the documentation, the idea is to spawn different scheduler instances, each one responsible for a set of shards.&lt;/p&gt;
+
+&lt;p&gt;Sharding can be done in different manners: creating meaningful shards (product category, company, …) or using hashing based on some key (device UUID, user ID, …). We choose the latest, as it offers best sharding capabilities (no risk to create “fat” shards) and our jobs were already stored with these IDs.&lt;/p&gt;
+
+&lt;p&gt;To ensure sharding will remain efficient in time, especially during re-sharding operations (adding/removing new scheduler instance), it was important to use consistent hashing: using the simple hashing approach &lt;em&gt;hash(k) mod n&lt;/em&gt;, any change of &lt;em&gt;n&lt;/em&gt; will require to move a large number of keys, which can degrade performance a lot during operation. Instead, it’s preferable to use a consistent hashing technique: a “ring” of virtual shards is created first and each node is responsible for a set of partitions. Adding a new node requires to move only &lt;em&gt;1/(n+1)&lt;/em&gt; keys to the new node (scheduler). If number of keys remain equal, time for resharding decreases when number of nodes increases.&lt;/p&gt;
+
+&lt;p&gt;In our case, re-sharding involves updating jobs, triggers and related definitions in DB, so the less time it takes, the better. Here is a small benchmark that illustrates time it takes to move keys (update tables) with the 2 hashing techniques:&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Re-sharding after node addition benchmark (local MySQL, 8800 keys)&lt;/em&gt;&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;nb shards&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;naive hashing&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;consistent hashing&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;2&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;4400 keys moved / 360 sec&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;4290 keys moved / 349 sec&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;3&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;4800 keys moved / 460 sec&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;2440 keys moved / 190 sec&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;4&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;5500 keys moved / 570 sec&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;1820 keys moved / 145 sec&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;This consistent hashing mechanism has then to be made available to our scheduler API clients, so they can pick the right scheduler instance. To do that, each scheduler registers in our service discovery tool with a custom attribute (we use Consul, so the service registers with a custom tag) that represents its node ID. Then, each client discovers the service using the tag computed from hashing job key.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/scale_quartz/scheduler_sharding.png&quot; alt=&quot;sharding&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;In above diagram we see multiple MySQL databases, which is a possible solution for further increasing throughput (although not tested). On our side, we still use the same table structures to store all schedulers data.&lt;/p&gt;
+
+&lt;h2 id=&quot;benchmarking&quot;&gt;Benchmarking&lt;/h2&gt;
+
+&lt;p&gt;Here we’re presenting results from up to 4 schedulers: with more, we faced bottlenecks in downstream processes (benchmarks were done with “real-life” jobs), and we hit the limits of the instance we were running the jobs on (&amp;gt; 90% CPU usage). With 8 schedulers, and if all downstream communications are disabled, we reached &lt;strong&gt;1350 jobs/sec&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/scale_quartz/benchmark.png&quot; alt=&quot;benchmark&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;deploying-in-production&quot;&gt;Deploying in production&lt;/h2&gt;
+
+&lt;p&gt;We deployed 3 distinct scheduler instances in our target datacenter. Deployment took the scheduler API down for 4 minutes while resharding operation was in progress. The operation is triggered automatically by the service, if it’s configured with a node ID that has no associated job in database. Adding a new scheduler is automatic and doesn’t require any additional configuration.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/scale_quartz/schedulerlab_14_00_12_06_2017.png&quot; alt=&quot;after sharding&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Jobs at this hour now execute within an acceptable time, and most importantly we are confident we can now handle much more and keep execution times low.&lt;/p&gt;
+</description>
+        <pubDate>Tue, 20 Jun 2017 10:00:00 +0200</pubDate>
+        <link>http://localhost:4000/performance/scalability/scheduler/quartz/perf_tuning_quartz.html</link>
+        <guid isPermaLink="true">http://localhost:4000/performance/scalability/scheduler/quartz/perf_tuning_quartz.html</guid>
+        
+        
+        <category>performance</category>
+        
+        <category>scalability</category>
+        
+        <category>scheduler</category>
+        
+        <category>quartz</category>
         
       </item>
     

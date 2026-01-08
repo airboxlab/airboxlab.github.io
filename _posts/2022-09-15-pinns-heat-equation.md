@@ -3,7 +3,7 @@ layout: post
 title:  "Using Physics-informed Neural Networks to solve 2D heat equation"
 date: 2022-09-15 00:00:00 
 categories: "ai deeplearning physics"
-comments: false 
+comments: true 
 use_math: true
 author: Antoine Galataud
 ---

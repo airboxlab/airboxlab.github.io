@@ -3,7 +3,7 @@ layout: post
 title:  "Crowd sourced classifier to identify air pollution sources"
 date:   2021-07-1 00:00:00
 categories: "data_science air_quality classifier machine_learning"
-comments: false
+comments: true
 author: Antoine Galataud, Inouk Bourgon
 published: false
 ---

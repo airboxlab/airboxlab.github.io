@@ -3,7 +3,7 @@ layout: post
 title:  "HVAC processes control: can AI help?"
 date: 2021-01-24 00:00:00 
 categories: "hvac control ai reinforcement_learning"
-comments: false 
+comments: true 
 author: Antoine Galataud
 ---
 

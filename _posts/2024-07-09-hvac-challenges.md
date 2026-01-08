@@ -3,7 +3,7 @@ layout: post
 title:  "Unique challenges in scaling AI-driven HVAC control"
 date: 2024-07-09 00:00:00 
 categories: "ai hvac control"
-comments: false
+comments: true
 use_math: true
 author: Antoine Galataud
 ---
