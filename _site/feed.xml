@@ -6,9 +6,416 @@
 </description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml" />
-    <pubDate>Thu, 08 Jan 2026 13:53:12 +0100</pubDate>
-    <lastBuildDate>Thu, 08 Jan 2026 13:53:12 +0100</lastBuildDate>
+    <pubDate>Tue, 03 Mar 2026 14:14:44 +0100</pubDate>
+    <lastBuildDate>Tue, 03 Mar 2026 14:14:44 +0100</lastBuildDate>
     <generator>Jekyll v4.3.2</generator>
+    
+      <item>
+        <title>Off-policy evaluation: lessons learned from the field of HVAC control</title>
+        <description>
+&lt;style type=&quot;text/css&quot;&gt;
+.center {
+    display:block;
+    margin: 0 auto;
+    margin-top: 1.5rem;
+    margin-bottom: 3rem;
+}
+.center-m {
+    display:block;
+    margin: 0 auto;
+    width: 75%;
+    margin-top: 1.5rem;
+    margin-bottom: 3rem;
+}
+.center-sm {
+    display:block;
+    margin: 0 auto;
+    width: 50%;
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+.double-left {
+    width:49%;
+    display:block;
+    float:left;
+    margin: 0 auto;
+    margin-right: 2rem;
+}
+.double-left-sm {
+    width:35%;
+    display:block;
+    float:left;
+    margin: 0 auto;
+    margin-right: 2rem;
+}
+.double-right {
+    width:49%;
+    display:block;
+    float:right;
+    margin: 0 auto;
+    margin-right: 2rem;
+    margin-left: 2rem;
+}
+.double-right-sm {
+    width:35%;
+    display:block;
+    float:right;
+    margin: 0 auto;
+    margin-right: 2rem;
+    margin-left: 2rem;
+}
+.add-margin-right {
+    margin-right: 20px;
+}
+.double {
+    width: 49%;
+    margin: 0 auto;
+}
+.double-unconst {
+    width: auto;
+    margin: 0 auto;
+    margin-left: 1.5rem;
+}
+.image-foot {
+    font-size:10pt;
+    max-width: 30rem;
+    margin: 0 auto;
+    margin-bottom: 2rem;
+}
+.small-img {
+  width: 45%;
+}
+.small-txt {
+  font-size: 0.8rem;
+}
+ul {
+  display: table;
+}
+pre {
+  white-space: pre-wrap;
+  overflow-x: auto;
+  margin: 1rem 0pt 1rem 0pt;
+}
+code {
+  font-size: 0.9rem;
+  margin: 1rem 0pt 1rem 0pt;
+}
+h1, h2, h3, h4 {
+  margin: 1rem 0pt 1rem 0pt;
+}
+table {
+    width:80%;
+    margin: auto;
+    border-collapse: collapse;
+    text-align: center;
+}
+thead {
+    font-weight: bold;
+    background-color: #f2f2f2;
+}
+th, td {
+    border:1px solid #ccc;
+    padding:0.5rem;
+}
+tbody tr:nth-child(even) {
+    background-color: #fafafa;
+}
+tbody tr:nth-child(odd) {
+    background-color: #ffffff;
+}
+&lt;/style&gt;
+
+&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
+
+&lt;p&gt;&lt;strong&gt;Off-Policy Policy Evaluation (OPE)&lt;/strong&gt; is a technique for estimating the performance of a new reinforcement learning policy ($\pi_e$) using historical data collected from a different behavior policy ($\pi_b$). 
+This approach enables policy comparison and selection without deploying new policies into production, reducing risk and cost.&lt;/p&gt;
+
+&lt;p&gt;OPE relies on the mathematical framework of &lt;strong&gt;importance sampling&lt;/strong&gt; and &lt;strong&gt;model-based estimation&lt;/strong&gt; to provide unbiased or low-bias estimates of policy performance.&lt;/p&gt;
+
+&lt;p&gt;Under importance sampling, the value of the target policy $\pi_e$ can be estimated using trajectories collected under the behavior policy $\pi_b$ as follows:&lt;/p&gt;
+
+&lt;center&gt;
+$V_{\pi_e} = E_{\tau \sim \pi_e}[\sum_{t=0}^T r_t] 
+ = E_{\tau \sim \pi_b}[\sum_{t=0}^T \frac{\pi_e(a_t|s_t)}{\pi_b(a_t|s_t)} r_t] 
+ \approx \frac{1}{N} \sum_{i=1}^N \sum_{t=0}^T \frac{\pi_e(a_t^i|s_t^i)}{\pi_b(a_t^i|s_t^i)} r_t^i$
+&lt;/center&gt;
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;See &lt;a href=&quot;https://hopes.foobot.io/overview/index.html&quot;&gt;Hopes library documentation&lt;/a&gt; for more details on the mathematical background and different estimators.&lt;/p&gt;
+
+&lt;p&gt;Under model-based estimation, a model of the environment is learned from the data collected under $\pi_b$, 
+and then used to simulate trajectories under $\pi_e$ to estimate its performance.&lt;/p&gt;
+
+&lt;p&gt;It is particularly valuable when:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Deploying untested policies could have negative consequences (safety, costs, user experience)&lt;/li&gt;
+  &lt;li&gt;We want to evaluate multiple candidate policies before committing to one&lt;/li&gt;
+  &lt;li&gt;We have sufficient logged data from past deployments&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;This document explores when OPE is applicable, which estimators to use, how to interpret results, and what alternatives exist from our experience in the field of HVAC control.&lt;/p&gt;
+
+&lt;h2 id=&quot;when-does-it-make-sense&quot;&gt;When does it make sense?&lt;/h2&gt;
+
+&lt;p&gt;The applicability of OPE depends on the specific problem, the available data, and the policies being evaluated. Here are some key considerations.&lt;/p&gt;
+
+&lt;h3 id=&quot;ips-estimators&quot;&gt;IPS estimators&lt;/h3&gt;
+
+&lt;p&gt;If $\pi_b$ is deterministic, estimators of the Inverse Propensity Score (IPS) family will fail since $\pi_b(a|s)$ is 
+used as denominator in most definitions. Adding a $\epsilon$ to avoid division by zero introduces bias, 
+and dividing by a small number will make variance blow.&lt;/p&gt;
+
+&lt;p&gt;⇒ No IPS if $\pi_b$ is deterministic.&lt;/p&gt;
+
+&lt;h3 id=&quot;direct-method&quot;&gt;Direct method&lt;/h3&gt;
+
+&lt;p&gt;Direct Method estimator uses a learned model of cumulative rewards to estimate policy value. At its core, we use 
+$V^{DM}(s_0) = \sum_{a} \pi_e(a|s_0)·Q(s_0,a)$ for a given episode to estimate future policy return. 
+Since $Q$ is learned from data logged under $\pi_b$, the following assumptions hold:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;if $\pi_b$ and $\pi_e$ have very different responses (actions distribution), it’s very likely that $Q$ will be biased.&lt;/li&gt;
+  &lt;li&gt;if $\pi_b$ never explores region where $\pi_e$ operates, it’ll be biased too.&lt;/li&gt;
+  &lt;li&gt;if episodes horizon is long, there is more chance for error to happen and compound.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;A possible way to decrease bias for the learned model is to split long episodes into smaller, regular ones, and learn a separate model for each time bucket. While not solving the coverage problem, it can decrease errors due to temporal extrapolation, and makes changes in action distribution more explicit.&lt;/p&gt;
+
+&lt;p&gt;Another way to improve results, and this time coverage, is to form a dataset under multiple offline / online policies. For instance, using evaluation data generated during training (when model-based, the bias can then come from system dynamics that don’t match real world system), or by different versions of the behaviour policy.&lt;/p&gt;
+
+&lt;h2 id=&quot;what-estimators-can-be-used-and-prerequisites&quot;&gt;What estimators can be used, and prerequisites?&lt;/h2&gt;
+
+&lt;h3 id=&quot;ips-estimators-1&quot;&gt;IPS estimators&lt;/h3&gt;
+
+&lt;p&gt;Most IPS estimators use $\frac {\pi_e(a|s)}{\pi_b(a|s)}·r$ as a manner of re-weighting rewards obtained under $\pi_b$. 
+This assumes we need to log following information under $\pi_b$:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;states&lt;/li&gt;
+  &lt;li&gt;actions&lt;/li&gt;
+  &lt;li&gt;actions probabilities (propensity scores) → they can’t be reconstructed from logged actions alone by rolling out the policy.&lt;/li&gt;
+  &lt;li&gt;rewards&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;In practice, this information should be logged by the policy server (preferred), unless all these information is returned by the policy server and in this case the client side could log it.&lt;/p&gt;
+
+&lt;p&gt;We also need $\pi_e$ to be available so we can evaluate action probabilities under this policy. This should be in the shape of the policy model itself, or a probability function that expresses the policy correctly.&lt;/p&gt;
+
+&lt;p&gt;Since $\pi_b$ is the denominator, we also need support (coverage), expressed as $\pi_e(a|s) &amp;gt; 0 \implies \pi_b(a|s) &amp;gt; 0$. 
+Which practically means:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;all state - action pairs visited under $\pi_e$ should have been visited under $\pi_b$.&lt;/li&gt;
+  &lt;li&gt;for all state - action pairs visited under $\pi_e$, the probability of taking the action should never be 0 under $\pi_b$.&lt;/li&gt;
+  &lt;li&gt;$\pi_b$ shouldn’t be deterministic.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;(see also “When does it make sense”).&lt;/p&gt;
+
+&lt;h3 id=&quot;direct-method-1&quot;&gt;Direct method&lt;/h3&gt;
+
+&lt;p&gt;DM assumes learning a model that can predict cumulative return from an initial state, which can perform well across both policies. This assumption usually doesn’t hold, especially if $\pi_b$ and $\pi_e$ have different origins (e.g. very different modeling approaches), or when a new policy is supposed to perform better by taking trajectories unseen under old policy. DM should then be used with caution, by first performing a thorough analysis of the states and actions distributions under the two policies (see also “When does it make sense”).&lt;/p&gt;
+
+&lt;p&gt;Compared to IPS, we don’t need logged action probabilities (propensity scores) under $\pi_b$. The rest holds.&lt;/p&gt;
+
+&lt;h3 id=&quot;general-requirements&quot;&gt;General requirements&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Positivity of the reward: this is necessary when confidence interval and lower bound estimates  should be computed. This may require to rescale the logged / computed reward, for instance using a &lt;em&gt;MinMaxScaler&lt;/em&gt; to obtain a $[0, 1]$ range.&lt;/li&gt;
+  &lt;li&gt;Reward design consistency: make sure reward function doesn’t change over time, which is often the case in early experiments. OPE might more be adequate when training and deployment worfklows are stable.&lt;/li&gt;
+  &lt;li&gt;Data logging pipeline robustness: as indicated above, there are quite a few things to log, some of them are easier to get than others. When having episodes of length greater than 1, having a field to easily identify them can be interesting (or a &lt;em&gt;done&lt;/em&gt; column).&lt;/li&gt;
+  &lt;li&gt;Finite variance assumption: with long horizons, or slight probability mismatch, variance may explode. In this case, prefer per-decision estimators and / or self-normalized ones.&lt;/li&gt;
+  &lt;li&gt;Stationarity: if environment is unstable (e.g. in HVAC control depends on weather, occupancy, etc) it can be interesting to segment the analysis by control context to better understand where a new policy works better than an other.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;how-to-make-sense-of-the-value&quot;&gt;How to make sense of the value?&lt;/h2&gt;
+
+&lt;p&gt;OPE estimators are often biases or have high variance. Well, nothing new, there’s always a trade-off. Except here estimators can be largely biased, and variance can explode easily. Knowing that, how to interpret the output of our estimators? When to trust them?&lt;/p&gt;
+
+&lt;h3 id=&quot;good-practices&quot;&gt;Good practices&lt;/h3&gt;
+
+&lt;p&gt;At its core, OPE uses policies values as scores. Policies values are nothing but cumulative sum of rewards over a trajectory, obtained with different manners depending on the estimator.&lt;/p&gt;
+
+&lt;p&gt;As a consequence, if rewards, and more importantly their cumulative sum, are easily interpretable (e.g. cases where there is a single term, or equal weights for each term, no scale differences, etc), then we can give an interpretation about the scalar value of the OPE output.&lt;/p&gt;
+
+&lt;p&gt;Otherwise, the values should be interpreted by comparison, as in $V(\pi_e) &amp;gt;= V(\pi_b)$, which would mean the cumulative sum of rewards under first policy is higher than under second.&lt;/p&gt;
+
+&lt;p&gt;However, comparing values can be a weak estimator (single value comparison, suffering from estimators biases and variances). It’s important to rely on:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;confidence intervals (lower and upper bounds) for the estimators.&lt;/li&gt;
+  &lt;li&gt;multiple estimators outputs.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;For instance, checking if $LB(V(\pi_e)) &amp;gt;= LB(V(\pi_b))$ with $LB$ the lower bound of the confidence interval. It offers stronger guarantees about first policy being “better” than second.&lt;/p&gt;
+
+&lt;p&gt;Note that, in all cases it’s possible to:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;output policy value estimates for both $\pi_e$ and $\pi_b$. The first is obtained with OPE estimators, and the second is simply the cumulative sum of rewards under the same trajectories. In practice, we can even run OPE estimators with $\pi_e = \pi_b$, some terms will cancel.&lt;/li&gt;
+  &lt;li&gt;estimate multiple policies values to take a decision, e.g. $\pi_e^i \in P$ where $P$ is an ensemble of available target policies.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;beyond-good-practices-understanding-data-at-hand&quot;&gt;Beyond good practices, understanding data at hand&lt;/h3&gt;
+
+&lt;p&gt;There are several practical things to consider about the dataset and the problem at hand which may lead to different interpretations of the results:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Reward representativeness: does the reward truly capture the operational objective? In real-world problems, this isn’t always the case, because of missing information for reward design that is replaced by shaping. Sparse or delayed rewards are particularly difficult to handle, especially for trajectory-wise estimators: for instance Direct Method is only as good as the Q model it relies on, for which a new trajectory might be out of distribution. Consider careful inspection of reward distributions, using multiple estimators, splitting episodes into representative subsets, and introducing time or step information observations.&lt;/li&gt;
+  &lt;li&gt;Reward scale and variance: high reward variance increases estimator variance. It requires dealing with outliers steps or episodes (pruning), re-scaling rewards, and using robust estimators.&lt;/li&gt;
+  &lt;li&gt;Action space shape: special care needed when action imbalance exists. This leads to numeric instability of weights under IPS estimators, and estimators using a Q model may never see some actions taken under $\pi_b$.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;going-in-production-how-to-handle-overridden-policy-decisions&quot;&gt;Going in production: How to handle overridden policy decisions?&lt;/h2&gt;
+
+&lt;p&gt;In real-world systems policy decisions can be overridden by safety rules, manual decisions, etc. This comes as a 
+challenge for OPE as the logged propensities under $\pi_b$ no longer match the actual action applied, resulting in 
+state and reward not being the result of the policy decision.&lt;/p&gt;
+
+&lt;p&gt;A concrete example is the HVAC equipment optimal start problem we tackle with RL: once the policy has decided to switch 
+on the system, an “action stickiness” mechanism applies to keep the equipment turned on (both during training and real-world inference). 
+This comes as a challenge for many estimators, like IPS-style estimators:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;$\pi_b(a|s)$ can still tell action 0 is more likely, but the state and reward will be the one obtained 
+by taking $a = 1$.&lt;/li&gt;
+  &lt;li&gt;The estimator become biased as we will basically reweight the reward of taking $a = 1$ with the probability of not taking it.&lt;/li&gt;
+  &lt;li&gt;Cumulative sum of rewards must be computed until end of episode as states and rewards after the initial switch time 
+are important: the verification of the achievement is delayed and compounds as policy is penalized at every step for&lt;br /&gt;
+taking an action early and penalized for not achieving comfort at specific time (end of episode). 
+So we can’t truncate episodes until first switch on time.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;There are 2 practical solutions that differ in implementation but eventually end up to the same result:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Correct propensities by integrating the action stickiness information as an augmented state $s’ = (s, z =\text {switch has happened})$. 
+For both $\pi_e$ and $\pi_b$, we should have $\pi(1|z=1) = 1$. This guarantees support and no division by zero.&lt;/li&gt;
+  &lt;li&gt;Consider the episodes as 2 sub-episodes, the first part where propensities are applied until first switch time, 
+the second where only reward is kept as the importance ratio cancel with $\frac {\pi_e(1|s) = 1}{\pi_b(1|s) = 1} = 1$&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;The first option could be cleaner though, and could be used for all kind of estimators. This solution only holds if action stickiness applies to both policies.&lt;/p&gt;
+
+&lt;h2 id=&quot;post-deployment-evaluation&quot;&gt;Post-deployment evaluation&lt;/h2&gt;
+
+&lt;p&gt;As with any continuous deployment technique, continuous monitoring is necessary as a post-deployment evaluation step. This will allow to make sure deployed policy outcome is the desired one. The good thing here is that we won’t rely only on the reward, but on every data available from the target system.&lt;/p&gt;
+
+&lt;p&gt;One potential technique, given enough data, is an evaluation based on control-context equivalence (CCE): gathering periods with “similar” context prior and posterior to new policy deployment will allow to make sure the new policy is actually doing better.&lt;/p&gt;
+
+&lt;p&gt;Below example shows control-context equivalent evaluation on an optimal start problem:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/ope_guidlines/image.png&quot; alt=&quot;sources&quot; class=&quot;center&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Of course, it’s still possible to rely on OPE, and to compute reward estimates based on logged data after deployment, then compare $\hat{V}(\pi_e)$ with $V(\pi_e)$ with $\hat{V}$ being the value estimated on logged trajectories.&lt;/p&gt;
+
+&lt;h2 id=&quot;what-alternatives-exist&quot;&gt;What alternatives exist?&lt;/h2&gt;
+
+&lt;p&gt;OPE requires to proceed with care and has many pitfalls. It’s easy to fall into traps or regions where the method can’t cover our needs.&lt;/p&gt;
+
+&lt;p&gt;Alternatives include:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;using a model of the environment (probabilistic, physics-based twin, etc) to evaluate both policies. 
+This would offer robustness and coverage (any type of policy can be used), but it’s sometimes not available and 
+it’s harder to put in practice (need to run the model with a simulation engine, hook into it to rollout the policy, etc). 
+It introduces a bias:
+    &lt;ul&gt;
+      &lt;li&gt;in assuming model accurately captures transition dynamics of the environment, 
+e.g. $\hat{p}(s’|a,s) \approx p(s’|a,s)$&lt;/li&gt;
+      &lt;li&gt;in assuming trajectories can be replayed deterministically for the behavior policy $\pi_b$, which might not always be true (e.g. exploration is enabled under $\pi_b$).&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;post-deployment policies comparison with control context equivalence (CCE): if both $\pi_b$ and $\pi_e$ have been deployed, 
+comparing their performance can be done if context equivalence can be ensured. As with previous point, we can not 
+only compare their value estimate, but also check their performance in details (per-goal). It also introduces a bias 
+(full equivalence is impossible), and is only possible in an online manner ($\pi_e$ has to be deployed) which reduces 
+its applicability (we often want to estimate performance whithout deploying).&lt;/li&gt;
+  &lt;li&gt;online A/B testing: online A/B testing consists in deploying the candidate policy $\pi_e$ to a fraction of traffic 
+while keeping the current policy $\pi_b$ on the remaining traffic, then comparing their outcomes under the same 
+reward definition and operational constraints. Online A/B testing is best used once offline screening (OPE or simulation) 
+suggests a candidate is safe, and when monitoring and rollback mechanisms are in place.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Comparison of the approaches:&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Method&lt;/th&gt;
+      &lt;th&gt;No deployment?&lt;/th&gt;
+      &lt;th&gt;No model?&lt;/th&gt;
+      &lt;th&gt;Handles long horizon?&lt;/th&gt;
+      &lt;th&gt;Main risk&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;OPE&lt;/td&gt;
+      &lt;td&gt;✅&lt;/td&gt;
+      &lt;td&gt;✅&lt;/td&gt;
+      &lt;td&gt;⚠️&lt;/td&gt;
+      &lt;td&gt;bias/variance&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Simulator&lt;/td&gt;
+      &lt;td&gt;✅&lt;/td&gt;
+      &lt;td&gt;❌&lt;/td&gt;
+      &lt;td&gt;✅&lt;/td&gt;
+      &lt;td&gt;model error&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Online A/B&lt;/td&gt;
+      &lt;td&gt;❌&lt;/td&gt;
+      &lt;td&gt;✅&lt;/td&gt;
+      &lt;td&gt;✅&lt;/td&gt;
+      &lt;td&gt;operations&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;CCE&lt;/td&gt;
+      &lt;td&gt;❌ &lt;br /&gt;&lt;span style=&quot;font-size: 0.8rem&quot;&gt;(not simultaneously)&lt;/span&gt;&lt;/td&gt;
+      &lt;td&gt;✅&lt;/td&gt;
+      &lt;td&gt;✅&lt;/td&gt;
+      &lt;td&gt;context mismatch&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;OPE is a powerful technique for evaluating policies without deployment, but it requires careful consideration of the 
+problem, data, and estimators used. By following best practices and understanding the limitations, practitioners can 
+make informed decisions about when and how to use OPE effectively. Always consider alternatives and complement OPE 
+with post-deployment monitoring to ensure the best outcomes.&lt;/p&gt;
+
+&lt;p&gt;In a future article, we will share more on our experience with OPE in the field of HVAC control, including results obtained 
+on real-world problems.&lt;/p&gt;
+
+&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://www.incompleteideas.net/papers/PSS-00.pdf&quot;&gt;Eligibility traces for off-policy policy evaluation&lt;/a&gt;&lt;br /&gt;
+&lt;a href=&quot;https://arxiv.org/abs/1906.03735&quot;&gt;Intrinsically Efficient, Stable, and Bounded Off-Policy Evaluation for Reinforcement Learning&lt;/a&gt;&lt;br /&gt;
+&lt;a href=&quot;https://papers.nips.cc/paper_files/paper/2015/hash/39027dfad5138c9ca0c474d71db915c3-Abstract.html&quot;&gt;The Self-Normalized Estimator for Counterfactual Learning&lt;/a&gt;&lt;br /&gt;
+&lt;a href=&quot;https://arxiv.org/abs/2212.06355&quot;&gt;A Review of Off-Policy Evaluation in Reinforcement Learning&lt;/a&gt;&lt;br /&gt;
+&lt;a href=&quot;https://arxiv.org/pdf/1503.02834&quot;&gt;Doubly Robust Policy Evaluation and Optimization&lt;/a&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;tools&quot;&gt;Tools&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://hopes.foobot.io/&quot;&gt;HVAC optimisation with Off Policy Evaluation and Selection&lt;/a&gt;&lt;/p&gt;
+</description>
+        <pubDate>Sun, 01 Mar 2026 01:00:00 +0100</pubDate>
+        <link>http://localhost:4000/ai/hvac/control/ope-guidelines.html</link>
+        <guid isPermaLink="true">http://localhost:4000/ai/hvac/control/ope-guidelines.html</guid>
+        
+        
+        <category>ai</category>
+        
+        <category>hvac</category>
+        
+        <category>control</category>
+        
+      </item>
     
       <item>
         <title>What Does “Similar” Mean for Indoor Temperature Time Series?</title>
@@ -352,8 +759,8 @@ and less variance overall, but still captures some differences due to value shif
 
 &lt;p&gt;Where:&lt;/p&gt;
 &lt;ul&gt;
-  &lt;li&gt;(C(f)): complex FFT coefficients at frequency (f)&lt;/li&gt;
-  &lt;li&gt;(N): number of time steps&lt;/li&gt;
+  &lt;li&gt;$C(f)$: complex FFT coefficients at frequency $f$&lt;/li&gt;
+  &lt;li&gt;$N$: number of time steps&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;p&gt;We then compare the &lt;strong&gt;magnitude spectrum&lt;/strong&gt;, which captures the strength of different frequency components, 
@@ -496,7 +903,7 @@ When the heating is ON ($Q_{hvac}$ = $P_{heat}$, a constant), the temperature ri
 
     &lt;p&gt;$\sqrt{\frac{(\tau_1 - \tau_2)}{\max{\tau_1, \tau_2}}^2 + \frac{(G_1 - G_2)}{\max{G_1, G_2}}^2}$&lt;/p&gt;
 
-    &lt;p&gt;This produces a scale-free distance of range $[0, \sqrt(2)]$.&lt;/p&gt;
+    &lt;p&gt;This produces a scale-free distance of range $[0, \sqrt{2}]$.&lt;/p&gt;
   &lt;/li&gt;
 &lt;/ol&gt;
 
@@ -594,7 +1001,7 @@ When the heating is ON ($Q_{hvac}$ = $P_{heat}$, a constant), the temperature ri
 
 &lt;p&gt;On the distance matrix below, we see that the RC parameter-based distance captures similarity between the original and shifted/noisy series, 
 with a slightly larger distance for the noisy one.
-Note: given the distance computation method, the scale is different from previous methods ($[0, \sqrt(2)]$ here vs larger ranges before). 
+Note: given the distance computation method, the scale is different from previous methods ($[0, \sqrt{2}]$ here vs larger ranges before). 
 All the scores are below 0.3 except for the noisy one, indicating strong similarity.&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;/assets/ts_comp/rc_dist.svg&quot; alt=&quot;sources&quot; class=&quot;center-m&quot; /&gt;&lt;/p&gt;
@@ -2617,7 +3024,7 @@ teaching in simulated environment, efficient control policies can be discovered 
 }
 &lt;/style&gt;
 
-&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/scale_mqtt_2/drink-out-of-a-hose.jpg&quot; alt=&quot;firehose&quot; class=&quot;callout&quot; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&quot;/assets/scale_mqtt_2/drink-out-of-a-hose.jpg&quot; alt=&quot;firehose&quot; class=&quot;callout&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;We’ve been running our messaging gateways with a more distributed approach as described in &lt;a href=&quot;part I&quot;&gt;&lt;/a&gt; for more than a year now, and wanted to share problems we faced and solutions we found.&lt;/p&gt;
 
@@ -2811,11 +3218,11 @@ Last but not least, RabbitMQ suffers a bug that’s not directly linked to clust
 &lt;ol&gt;
   &lt;li&gt;
     &lt;p&gt;&lt;strong&gt;1 backend cluster + 1 gateway cluster&lt;/strong&gt; with direct messages routing through federation. Below a logical representation of how they communicate:
-&lt;img src=&quot;http://localhost:4000/assets/scale_mqtt/rabbitmq_split_step1.png&quot; alt=&quot;step 1&quot; /&gt;&lt;/p&gt;
+&lt;img src=&quot;/assets/scale_mqtt/rabbitmq_split_step1.png&quot; alt=&quot;step 1&quot; /&gt;&lt;/p&gt;
   &lt;/li&gt;
   &lt;li&gt;
     &lt;p&gt;&lt;strong&gt;1 backend cluster + X gateway clusters&lt;/strong&gt; with &lt;em&gt;intelligent&lt;/em&gt; routing: when messages need to be routed to more than 1 gateway, it becomes inefficient to send all messages to all gateways. We developped a simple message router that route messages based on known location of the client (and broadcasts in case of doubt).
-&lt;img src=&quot;http://localhost:4000/assets/scale_mqtt/rabbitmq_split_step2.png&quot; alt=&quot;step 2&quot; /&gt;&lt;/p&gt;
+&lt;img src=&quot;/assets/scale_mqtt/rabbitmq_split_step2.png&quot; alt=&quot;step 2&quot; /&gt;&lt;/p&gt;
   &lt;/li&gt;
 &lt;/ol&gt;
 
@@ -2866,104 +3273,6 @@ Last but not least, RabbitMQ suffers a bug that’s not directly linked to clust
         <category>scalability</category>
         
         <category>rabbitmq</category>
-        
-      </item>
-    
-      <item>
-        <title>Tuning Quartz Scheduler for large number of small jobs</title>
-        <description>&lt;h2 id=&quot;what-we-do-with-quartz-scheduler&quot;&gt;What we do with Quartz Scheduler&lt;/h2&gt;
-
-&lt;p&gt;We used &lt;a href=&quot;http://www.quartz-scheduler.org/&quot;&gt;Quartz Scheduler&lt;/a&gt; in first place to schedule time-based events on a large number of our HVAC devices, in order to trigger changes from one mode to another, and define interactions between modes. We then extended usage of Quartz to different areas, but the main usage pattern remains to run short-lived jobs that perform a single action.&lt;/p&gt;
-
-&lt;h2 id=&quot;the-problem&quot;&gt;The problem&lt;/h2&gt;
-
-&lt;p&gt;Quoted from Quartz documentation: “&lt;em&gt;The clustering feature works best for scaling out long-running and/or cpu-intensive jobs (distributing the work-load over multiple nodes). If you need to scale out to support thousands of short-running (e.g 1 second) jobs, consider partitioning the set of jobs by using multiple distinct schedulers (including multiple clustered schedulers for HA). The scheduler makes use of a cluster-wide lock, a pattern that degrades performance as you add more nodes (when going beyond about three nodes - depending upon your database’s capabilities, etc.).&lt;/em&gt;”&lt;/p&gt;
-
-&lt;p&gt;Indeed, it’s easy to confirm that adding nodes to a cluster doesn’t improve things at all (tested with 4, 5 and 6 nodes).&lt;/p&gt;
-
-&lt;p&gt;Cluster-wide lock is obtained by the &lt;code&gt;QuartzSchedulerThread&lt;/code&gt; using a database lock (&lt;code&gt;SELECT ... FOR UPDATE&lt;/code&gt;). It “reserves” a certain amount of triggers to execute (amount decided by &lt;code&gt;org.quartz.scheduler.batchTriggerAcquisitionMaxCount&lt;/code&gt;), execute them (in parallel, number of worker threads can be configured using &lt;code&gt;org.quartz.threadPool.threadCount&lt;/code&gt;, should be equal to batchTriggerAcquisitionMaxCount), then release the lock.&lt;/p&gt;
-
-&lt;p&gt;What happens in reality, for a clustered scheduler, is that one instance will execute the desired number of triggers while the other will be doing nothing. Clustering in Quarz is for high availability, or for load-balancing long-running jobs, but as stated in the docs, doesn’t help to run high number of short-lived jobs.&lt;/p&gt;
-
-&lt;p&gt;The impact for our clients was directly visible: instead of seeing desired action triggered a few seconds after desired time, it could take several minutes before kicking in. This can be illustrated by below chart:&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/scale_quartz/schedulerlab_14_00_06_06_2017.png&quot; alt=&quot;before sharding&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;As you can see, a large part of our end users chose to trigger events on their devices at very common times (top of hour), so we need to handle a huge burst in the number of jobs to execute at specific hours of the day.&lt;/p&gt;
-
-&lt;h2 id=&quot;sharding-to-the-rescue&quot;&gt;Sharding to the rescue&lt;/h2&gt;
-
-&lt;p&gt;Jobs sharding isn’t a feature proposed by Quartz, although database structure is ready for that. As proposed in the documentation, the idea is to spawn different scheduler instances, each one responsible for a set of shards.&lt;/p&gt;
-
-&lt;p&gt;Sharding can be done in different manners: creating meaningful shards (product category, company, …) or using hashing based on some key (device UUID, user ID, …). We choose the latest, as it offers best sharding capabilities (no risk to create “fat” shards) and our jobs were already stored with these IDs.&lt;/p&gt;
-
-&lt;p&gt;To ensure sharding will remain efficient in time, especially during re-sharding operations (adding/removing new scheduler instance), it was important to use consistent hashing: using the simple hashing approach &lt;em&gt;hash(k) mod n&lt;/em&gt;, any change of &lt;em&gt;n&lt;/em&gt; will require to move a large number of keys, which can degrade performance a lot during operation. Instead, it’s preferable to use a consistent hashing technique: a “ring” of virtual shards is created first and each node is responsible for a set of partitions. Adding a new node requires to move only &lt;em&gt;1/(n+1)&lt;/em&gt; keys to the new node (scheduler). If number of keys remain equal, time for resharding decreases when number of nodes increases.&lt;/p&gt;
-
-&lt;p&gt;In our case, re-sharding involves updating jobs, triggers and related definitions in DB, so the less time it takes, the better. Here is a small benchmark that illustrates time it takes to move keys (update tables) with the 2 hashing techniques:&lt;/p&gt;
-
-&lt;p&gt;&lt;em&gt;Re-sharding after node addition benchmark (local MySQL, 8800 keys)&lt;/em&gt;&lt;/p&gt;
-
-&lt;table&gt;
-  &lt;thead&gt;
-    &lt;tr&gt;
-      &lt;th style=&quot;text-align: center&quot;&gt;nb shards&lt;/th&gt;
-      &lt;th style=&quot;text-align: center&quot;&gt;naive hashing&lt;/th&gt;
-      &lt;th style=&quot;text-align: center&quot;&gt;consistent hashing&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;2&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;4400 keys moved / 360 sec&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;4290 keys moved / 349 sec&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;3&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;4800 keys moved / 460 sec&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;2440 keys moved / 190 sec&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;4&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;5500 keys moved / 570 sec&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;1820 keys moved / 145 sec&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-
-&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
-
-&lt;p&gt;This consistent hashing mechanism has then to be made available to our scheduler API clients, so they can pick the right scheduler instance. To do that, each scheduler registers in our service discovery tool with a custom attribute (we use Consul, so the service registers with a custom tag) that represents its node ID. Then, each client discovers the service using the tag computed from hashing job key.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/scale_quartz/scheduler_sharding.png&quot; alt=&quot;sharding&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;In above diagram we see multiple MySQL databases, which is a possible solution for further increasing throughput (although not tested). On our side, we still use the same table structures to store all schedulers data.&lt;/p&gt;
-
-&lt;h2 id=&quot;benchmarking&quot;&gt;Benchmarking&lt;/h2&gt;
-
-&lt;p&gt;Here we’re presenting results from up to 4 schedulers: with more, we faced bottlenecks in downstream processes (benchmarks were done with “real-life” jobs), and we hit the limits of the instance we were running the jobs on (&amp;gt; 90% CPU usage). With 8 schedulers, and if all downstream communications are disabled, we reached &lt;strong&gt;1350 jobs/sec&lt;/strong&gt;.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/scale_quartz/benchmark.png&quot; alt=&quot;benchmark&quot; /&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;deploying-in-production&quot;&gt;Deploying in production&lt;/h2&gt;
-
-&lt;p&gt;We deployed 3 distinct scheduler instances in our target datacenter. Deployment took the scheduler API down for 4 minutes while resharding operation was in progress. The operation is triggered automatically by the service, if it’s configured with a node ID that has no associated job in database. Adding a new scheduler is automatic and doesn’t require any additional configuration.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;http://localhost:4000/assets/scale_quartz/schedulerlab_14_00_12_06_2017.png&quot; alt=&quot;after sharding&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;Jobs at this hour now execute within an acceptable time, and most importantly we are confident we can now handle much more and keep execution times low.&lt;/p&gt;
-</description>
-        <pubDate>Tue, 20 Jun 2017 10:00:00 +0200</pubDate>
-        <link>http://localhost:4000/performance/scalability/scheduler/quartz/perf_tuning_quartz.html</link>
-        <guid isPermaLink="true">http://localhost:4000/performance/scalability/scheduler/quartz/perf_tuning_quartz.html</guid>
-        
-        
-        <category>performance</category>
-        
-        <category>scalability</category>
-        
-        <category>scheduler</category>
-        
-        <category>quartz</category>
         
       </item>
     
