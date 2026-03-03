@@ -284,7 +284,7 @@ One potential technique, given enough data, is an evaluation based on control-co
 
 Below example shows control-context equivalent evaluation on an optimal start problem:
 
-![sources]({{ site.baseurl }}/assets/ope_guidlines/image.png){: .center }
+![sources]({{ site.baseurl }}/assets/ope_guidelines/image.png){: .center }
 
 Of course, it’s still possible to rely on OPE, and to compute reward estimates based on logged data after deployment, then compare $\hat{V}(\pi_e)$ with $V(\pi_e)$ with $\hat{V}$ being the value estimated on logged trajectories.
 
