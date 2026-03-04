@@ -139,12 +139,12 @@ $V_{\pi_e} = E_{\tau \sim \pi_e}[\sum_{t=0}^T r_t]
 </center>
 <br>
 
-See [Hopes library documentation](https://hopes.foobot.io/overview/index.html) for more details on the mathematical background and different estimators.
-
 Under model-based estimation, a model of the environment is learned from the data collected under $\pi_b$, 
 and then used to simulate trajectories under $\pi_e$ to estimate its performance.
 
-It is particularly valuable when:
+See [Hopes library documentation](https://hopes.foobot.io/overview/index.html) for more details on the mathematical background and different estimators.
+
+OPE is particularly valuable when:
 
 - Deploying untested policies could have negative consequences (safety, costs, user experience)
 - We want to evaluate multiple candidate policies before committing to one
@@ -263,9 +263,9 @@ This comes as a challenge for many estimators, like IPS-style estimators:
   by taking $a = 1$. 
 - The estimator become biased as we will basically reweight the reward of taking $a = 1$ with the probability of not taking it.
 - Cumulative sum of rewards must be computed until end of episode as states and rewards after the initial switch time 
-  are important: the verification of the achievement is delayed and compounds as policy is penalized at every step for  
-  taking an action early and penalized for not achieving comfort at specific time (end of episode). 
-  So we can’t truncate episodes until first switch on time.
+  are important: the verification of the achievement is delayed and compounds as policy is penalized at every step for 
+  taking an action early and penalized for not achieving comfort at specific time (end of episode). So we can’t truncate 
+  episodes until first switch on time.
 
 There are 2 practical solutions that differ in implementation but eventually end up to the same result:
 
@@ -276,6 +276,15 @@ There are 2 practical solutions that differ in implementation but eventually end
 
 The first option could be cleaner though, and could be used for all kind of estimators. This solution only holds if action stickiness applies to both policies.
 
+Below is an illustration of the problem for a single episode:
+
+![sources]({{ site.baseurl }}/assets/ope_guidelines/overridden_policy_decisions_ope.svg){: .center }
+<center class="image-foot"><i>
+Illustration of the problem of overridden policy decisions for OPE. The behavior policy 
+$\pi_b$ is supposed to take action 0, but action 1 is applied instead, leading to a mismatch between logged propensities 
+and actual rewards.
+</i></center>
+
 ## Post-deployment evaluation
 
 As with any continuous deployment technique, continuous monitoring is necessary as a post-deployment evaluation step. This will allow to make sure deployed policy outcome is the desired one. The good thing here is that we won’t rely only on the reward, but on every data available from the target system. 
@@ -285,6 +294,7 @@ One potential technique, given enough data, is an evaluation based on control-co
 Below example shows control-context equivalent evaluation on an optimal start problem:
 
 ![sources]({{ site.baseurl }}/assets/ope_guidelines/bubble_plot_cce.svg){: .center }
+<center class="image-foot"><i>Bubble plot showing the post-deployment performance of old and new policy evaluated under CCE.</i></center> 
 
 Of course, it’s still possible to rely on OPE, and to compute reward estimates based on logged data after deployment, then compare $\hat{V}(\pi_e)$ with $V(\pi_e)$ with $\hat{V}$ being the value estimated on logged trajectories.
 
@@ -340,4 +350,4 @@ on real-world problems.
 
 ## Tools
 
-[HVAC optimisation with Off Policy Evaluation and Selection](https://hopes.foobot.io/)
+[HVAC optimisation with Off Policy Evaluation and Selection](https://github.com/airboxlab/hopes)
