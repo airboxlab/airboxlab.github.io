@@ -170,7 +170,9 @@ $V_{TWIS} = \frac {1}{n} \sum_{i=1}^n \sum_{t=0}^{T-1} \gamma^t w_{0:T-1}^i r_t^
 
 Where importance weight
 
-$w_{0:T-1}^i=\prod_{t=0}^{T-1}\frac{\pi_e(a_t|s_t)}{\pi_b(a_t|s_t)}$
+```math
+w_{0:T-1}^i=\prod_{t=0}^{T-1}\frac{\pi_e(a_t|s_t)}{\pi_b(a_t|s_t)}
+```
 
 So importance weight is a product over the entire trajectory, with intuitively the following consequence when horizon grows and probabilities mismatch: the product grows or shrinks exponentially, and variance explodes. We found that it can give very unstable results.
 
