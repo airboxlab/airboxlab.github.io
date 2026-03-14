@@ -164,6 +164,17 @@ and dividing by a small number will make variance blow.
 
 ⇒ No IPS if $\pi_b$ is deterministic.
 
+Some IPS estimators also tend to be more prone to high variance due to their definition. For instance, trajectory-wise importance sampling (TWIS) is defined as:
+
+$V_{TWIS} = \frac {1}{n} \sum_{i=1}^n \sum_{t=0}^{T-1} \gamma^t w_{0:T-1}^i r_t^i$
+
+Where importance weight
+
+$w_{0:T-1}^i = \prod_{t=0}^{T-1} \frac {\pi_e (a_t|s_t)}{\pi_b (a_t|s_t)}$
+
+So importance weight is a product over the entire trajectory, with intuitively the following consequence when horizon grows and probabilities mismatch: the product grows or shrinks exponentially, and variance explodes. We found that it can give very unstable results.
+
+In such situation, we prefer per-decision IS-type estimators, which reweights rewards up to a step only.
 ### Direct method
 
 Direct Method estimator uses a learned model of cumulative rewards to estimate policy value. At its core, we use 
