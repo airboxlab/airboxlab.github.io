@@ -273,8 +273,9 @@ In real-world systems policy decisions can be overridden by safety rules, manual
 challenge for OPE as the logged propensities under $\pi_b$ no longer match the actual action applied, resulting in 
 state and reward not being the result of the policy decision.
 
-A concrete example is the HVAC equipment optimal start problem we tackle with RL: once the policy has decided to switch 
-on the system, an "action stickiness" mechanism applies to keep the equipment turned on (both during training and real-world inference). 
+A concrete example is the HVAC equipment optimal start problem we tackle with RL: we can frame it as a sequential decision problem, 
+where the policy decides at each step if equipment must be switched on. Once the policy has decided to switch 
+on the system the first time, an "action stickiness" mechanism applies to keep the equipment turned on (both during training and real-world inference). 
 This comes as a challenge for many estimators, like IPS-style estimators: 
 
 - $\pi_b(a|s)$ can still tell action 0 is more likely, but the state and reward will be the one obtained 
