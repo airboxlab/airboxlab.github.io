@@ -324,7 +324,7 @@ Let’s consider:
 We now reformulate the new propensity $\pi^z$ under this reframed problem as the probability for the policy to switch on at $u$. This can be defined as:
 
 <center>
-$\pi^{z}(u, s_0) = (\prod_{t=0}^{u-1} \pi(0 \vert s_t)) \cdot \pi(1 \vert s_t)$
+$\pi^{z}(u, s_0) = (\prod_{t=0}^{u-1} \pi(0 \vert s_t)) \cdot \pi(1 \vert s_u)$
 </center>
 <br/>
 
