@@ -166,9 +166,17 @@ and dividing by a small number will make variance blow.
 
 Some IPS estimators also tend to be more prone to high variance due to their definition. For instance, trajectory-wise importance sampling (TWIS) is defined as:
 
+<center>
 $V_{TWIS} = \frac {1}{n} \sum_{i=1}^n \sum_{t=0}^{T-1} \gamma^t w_{0:T-1}^i r_t^i$
+</center>
 
-Where importance weight $w_{0:T-1}^i=\prod_{t=0}^{T-1}\frac{\pi_e(a_t \vert s_t)}{\pi_b(a_t \vert s_t)}$
+Where importance weight 
+
+<center>
+$w_{0:T-1}^i=\prod_{t=0}^{T-1}\frac{\pi_e(a_t \vert s_t)}{\pi_b(a_t \vert s_t)}$
+</center>
+
+And $a$ is the action, $s$ the state, $T$ the episode length, $t $$t$the timestep, $\gamma$ the discount factor, and $r$ the reward.
 
 So importance weight is a product over the entire trajectory, with intuitively the following consequence when horizon grows and probabilities mismatch: the product grows or shrinks exponentially, and variance explodes. We found that it can give very unstable results.
 
@@ -276,14 +284,23 @@ This comes as a challenge for many estimators, like IPS-style estimators:
   taking an action early and penalized for not achieving comfort at specific time (end of episode). So we can’t truncate 
   episodes until first switch on time.
 
-There are 2 practical solutions that differ in implementation but eventually end up to the same result:
+### A first naive solution
+
+Here are 2 practical solutions that differ in implementation but eventually end up to the same result:
 
 1. Correct propensities by integrating the action stickiness information as an augmented state $s' = (s, z =\text {switch has happened})$. 
    For both $\pi_e$ and $\pi_b$, we should have $\pi(1|z=1) = 1$. This guarantees support and no division by zero.
 2. Consider the episodes as 2 sub-episodes, the first part where propensities are applied until first switch time, 
    the second where only reward is kept as the importance ratio cancel with $\frac {\pi_e(1|s) = 1}{\pi_b(1|s) = 1} = 1$
 
-Below is an illustration of the problem for a single episode:
+The first option could be cleaner, and could be used for all kind of IPS-like estimators. However, there are 2 important caveats to understand:
+
+- this solution only holds if action stickiness applies to both policies.
+- this solution introduces a bias as it hides what could happen if $\pi_e$ can decide to switch on later than $\pi_b$: by forcing the same action probabilities on both policies at the timestep where  $\pi_b$ decided to switch on, we don’t take into account the possibility of  $\pi_e$ deciding to switch on later. Same applies if it's possible for $\pi_e$ to switch on earlier than $\pi_b$.
+
+As a consequence, this first solution (both options) will only highlight the difference between policies in the first part of the episode, and not in the second part where the achievement of comfort is verified. This can be a problem if we want to evaluate policies on their ability to achieve comfort, which is often the case in HVAC control.
+
+Below is an illustration of the problem and the naive solution for a single episode:
 
 ![sources]({{ site.baseurl }}/assets/ope_guidelines/overridden_policy_decisions_ope.svg){: .center }
 <center class="image-foot"><i>
@@ -292,10 +309,33 @@ $\pi_b$ is supposed to take action 0, but action 1 is applied instead, leading t
 and actual rewards.
 </i></center>
 
-The first option could be cleaner, and could be used for all kind of IPS-like estimators. However, there are 2 important caveats to understand:
+### Reshaping the problem
 
-- this solution only holds if action stickiness applies to both policies.
-- this solution introduces a bias as it hides what could happen if $\pi_e$ can decide to switch on later than $\pi_b$: by forcing the same action probabilities on both policies at the timestep where  $\pi_b$ decided to switch on, we don’t take into account the possibility of  $\pi_e$ deciding to switch on later. Same applies if it's possible for $\pi_e$ to switch on earlier than $\pi_b$.
+The initial problem is a sequential binary-action decision process. It is possible to **reframe it as a contextual multi-arm bandit problem**.
+
+Let’s consider:
+
+- $s_0$ the state which carries information about the initial system state, the objective, and forecast data.
+- $u \in U = \{0, 1, ..., T\}$ the new single action per episode (bandit) which states only at what step the switch-on occurs, for instance $u = 4$ means switch on happens at timestep 4 in the original problem setting.
+- $G = \sum_{t=0}^T \gamma^t r_t$ the whole episode return.
+
+We now reformulate the new propensity $\pi^z$ under this reframed problem as the probability for the policy to switch on at $u$. This can be defined as:
+
+<center>
+$\pi^{z}(u, s_0) = (\prod_{t=0}^{u-1} \pi(0 \vert s_t)) \cdot \pi(1 \vert s_t)$
+</center>
+<br/>
+
+Above equation can be read as the product of probabilities for taking action 0 (keep system off) before timestep $u$ multiplied by probability of taking action 1 (switch on) at step $t = u$.
+
+Using an appropriate estimator for this class of problem like IPS, we can now define the value estimate of evaluated policy as:
+
+<center>
+$V_{IPS} = \frac{1}{n} \sum_{i=1}^n \frac{\pi_e^z(u^i \vert s_0^i)}{\pi_b^z(u^i \vert s_0^i)}G^i$
+</center>
+<br/>
+
+This is a bit twisted, since we need data from the sequential decision process such as states and action probabilities from both $\pi_b$ and $\pi_e$, while reframing as a single step problem. It offers the advantage of avoiding some support problems we had before, but not all: since we rely on logged switch-on time $u$, if behavior policy doesn’t explore much (e.g. it always starts late in the episode) we may have timesteps not covered by the estimator.
 
 ## Post-deployment evaluation
 
