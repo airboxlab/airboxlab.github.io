@@ -283,8 +283,6 @@ There are 2 practical solutions that differ in implementation but eventually end
 2. Consider the episodes as 2 sub-episodes, the first part where propensities are applied until first switch time, 
    the second where only reward is kept as the importance ratio cancel with $\frac {\pi_e(1|s) = 1}{\pi_b(1|s) = 1} = 1$
 
-The first option could be cleaner though, and could be used for all kind of estimators. This solution only holds if action stickiness applies to both policies.
-
 Below is an illustration of the problem for a single episode:
 
 ![sources]({{ site.baseurl }}/assets/ope_guidelines/overridden_policy_decisions_ope.svg){: .center }
@@ -293,6 +291,11 @@ Illustration of the problem of overridden policy decisions for OPE. The behavior
 $\pi_b$ is supposed to take action 0, but action 1 is applied instead, leading to a mismatch between logged propensities 
 and actual rewards.
 </i></center>
+
+The first option could be cleaner, and could be used for all kind of IPS-like estimators. However, there are 2 important caveats to understand:
+
+- this solution only holds if action stickiness applies to both policies.
+- this solution introduces a bias as it partially hides what could happen if $\pi_e$ can decide to switch on later than $\pi_b$: by forcing the same action probabilities on both policies at the timestep where  $\pi_b$ decided to switch on, we don’t take into account the possibility of  $\pi_e$ deciding to switch on later.
 
 ## Post-deployment evaluation
 
