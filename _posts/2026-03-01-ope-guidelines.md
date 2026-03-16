@@ -295,7 +295,7 @@ and actual rewards.
 The first option could be cleaner, and could be used for all kind of IPS-like estimators. However, there are 2 important caveats to understand:
 
 - this solution only holds if action stickiness applies to both policies.
-- this solution introduces a bias as it partially hides what could happen if $\pi_e$ can decide to switch on later than $\pi_b$: by forcing the same action probabilities on both policies at the timestep where  $\pi_b$ decided to switch on, we don’t take into account the possibility of  $\pi_e$ deciding to switch on later.
+- this solution introduces a bias as it hides what could happen if $\pi_e$ can decide to switch on later than $\pi_b$: by forcing the same action probabilities on both policies at the timestep where  $\pi_b$ decided to switch on, we don’t take into account the possibility of  $\pi_e$ deciding to switch on later. Same applies if it's possible for $\pi_e$ to switch on earlier than $\pi_b$.
 
 ## Post-deployment evaluation
 
