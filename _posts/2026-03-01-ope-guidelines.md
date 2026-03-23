@@ -128,7 +128,7 @@ tbody tr:nth-child(odd) {
 **Off-Policy Policy Evaluation (OPE)** is a technique for estimating the performance of a new reinforcement learning policy ($\pi_e$) using historical data collected from a different behavior policy ($\pi_b$). 
 This approach enables policy comparison and selection without deploying new policies into production, reducing risk and cost.
 
-OPE relies on the mathematical framework of **importance sampling** and **model-based estimation** to provide unbiased or low-bias estimates of policy performance. 
+OPE relies on the mathematical framework of **importance sampling** and **model-based estimation** to provide unbiased or low-bias estimates of policy performance under specific assumptions. 
 
 Under importance sampling, the value of the target policy $\pi_e$ can be estimated using trajectories collected under the behavior policy $\pi_b$ as follows:
 
@@ -230,10 +230,10 @@ Compared to IPS, we don’t need logged action probabilities (propensity scores)
 ### General requirements
 
 - Positivity of the reward: this is necessary when confidence interval and lower bound estimates  should be computed. This may require to rescale the logged / computed reward, for instance using a *MinMaxScaler* to obtain a $[0, 1]$ range.
-- Reward design consistency: make sure reward function doesn’t change over time, which is often the case in early experiments. OPE might more be adequate when training and deployment worfklows are stable.
+- Reward design consistency: make sure reward function doesn’t change over time, which is often the case in early experiments. OPE might more be adequate when training and deployment workflows are stable.
 - Data logging pipeline robustness: as indicated above, there are quite a few things to log, some of them are easier to get than others. When having episodes of length greater than 1, having a field to easily identify them can be interesting (or a *done* column).
 - Finite variance assumption: with long horizons, or slight probability mismatch, variance may explode. In this case, prefer per-decision estimators and / or self-normalized ones.
-- Stationarity: if environment is unstable (e.g. in HVAC control depends on weather, occupancy, etc) it can be interesting to segment the analysis by control context to better understand where a new policy works better than an other.
+- Stationarity: if environment is unstable (e.g. in HVAC control depends on weather, occupancy, etc) it can be interesting to segment the analysis by control context to better understand where a new policy works better than another.
 
 ## How to make sense of the value?
 
@@ -379,7 +379,7 @@ Alternatives include:
   comparing their performance can be done if context equivalence can be ensured. As with previous point, we can not 
   only compare their value estimate, but also check their performance in details (per-goal). It also introduces a bias 
   (full equivalence is impossible), and is only possible in an online manner ($\pi_e$ has to be deployed) which reduces 
-  its applicability (we often want to estimate performance whithout deploying).
+  its applicability (we often want to estimate performance without deploying).
 - online A/B testing: online A/B testing consists in deploying the candidate policy $\pi_e$ to a fraction of traffic 
   while keeping the current policy $\pi_b$ on the remaining traffic, then comparing their outcomes under the same 
   reward definition and operational constraints. Online A/B testing is best used once offline screening (OPE or simulation) 
