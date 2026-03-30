@@ -354,7 +354,7 @@ problems we had before, but not all: since we rely on logged switch-on time $u$,
 
 One other consideration is that this formulation helps us not to rely on the initial state alone. Since we rely on the trajectory 
 until switch time, this offers a coarse state representation that includes the initial state and the system dynamics until switch time, 
-which is better. 
+which carries more information. 
 
 ## Post-deployment evaluation
 
