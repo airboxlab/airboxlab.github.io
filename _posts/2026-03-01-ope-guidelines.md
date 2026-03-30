@@ -347,7 +347,14 @@ $V_{IPS} = \frac{1}{n} \sum_{i=1}^n \frac{\pi_e^z(u^i \vert s_0^i)}{\pi_b^z(u^i 
 </center>
 <br/>
 
-This is a bit twisted, since we need data from the sequential decision process such as states and action probabilities from both $\pi_b$ and $\pi_e$, while reframing as a single step problem. It offers the advantage of avoiding some support problems we had before, but not all: since we rely on logged switch-on time $u$, if behavior policy doesn’t explore much (e.g. it always starts late in the episode) we may have timesteps not covered by the estimator.
+This is a bit twisted, since we need data from the sequential decision process such as states and action probabilities 
+from both $\pi_b$ and $\pi_e$, while reframing as a single step problem. It offers the advantage of avoiding some support 
+problems we had before, but not all: since we rely on logged switch-on time $u$, if behavior policy doesn’t explore much 
+(e.g. it always starts late in the episode) we may have timesteps not covered by the estimator.
+
+One other consideration is that this formulation helps us not to rely on the initial state alone. Since we rely on the trajectory 
+until switch time, this offers a coarse state representation that includes the initial state and the system dynamics until switch time, 
+which is better. 
 
 ## Post-deployment evaluation
 
