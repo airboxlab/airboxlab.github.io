@@ -315,7 +315,7 @@ and actual rewards.
 
 ### Reshaping the problem
 
-The initial problem is a sequential binary-action decision process. It is possible to **reparameterize the sequential decision problem into a single episodic action corresponding to the switch time**. 
+Let's try with a second approach; the initial problem is a sequential binary-action decision process. It is possible to **reparameterize the sequential decision problem into a single episodic action corresponding to the switch time**. 
 Instead of modeling the sequence of binary actions, we treat the episode as choosing one decision variable $u$ representing the timestep at which the switch occurs.
 
 Let’s consider:
