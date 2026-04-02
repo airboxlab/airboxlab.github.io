@@ -358,6 +358,41 @@ One other consideration is that this formulation helps us not to rely on the ini
 until switch time, this offers a coarse state representation that includes the initial state and the system dynamics until switch time, 
 which carries more information. 
 
+### Doubling down with Doubly Robust estimator
+
+As we stated earlier, IPS estimators can be unstable with large variance, and Direct Method (DM) can be biased (only as good as the learned model). 
+Doubly Robust (DR) estimator combines both approaches to leverage their advantages and mitigate their weaknesses. Its definition is as follows:
+
+<center>
+$V_{DR} = \frac{1}{n} \sum_{i=1}^n \left[ \sum_{t=0}^{T-1} \gamma^t \left( \frac{\pi_e(a_t^i|s_t^i)}{\pi_b(a_t^i|s_t^i)} (r_t^i - Q(s_t^i, a_t^i)) + \sum_{a} \pi_e(a|s_t^i) Q(s_t^i, a) \right) \right]$
+</center>
+<br/>
+
+Where $Q(s_t^i, a_t^i)$ is the estimated action-value function for state $s_t^i$ and action $a_t^i$.
+
+It can be interpreted as a correction to the Direct Method estimator using importance sampling to adjust for the bias in the model: 
+importance weights are applied to the residuals between observed rewards and the model's predictions, while the direct (second) term provides 
+a baseline estimate of the value based on the model.
+
+This formulation stands for all sequential decision problems, however it can be adapted to the reframed, contextual bandit-like problem 
+with a single action per episode as follows:
+
+<center>
+$V_{\text{DR}} = \frac1n\sum_{i=1}^n \left[\sum_{u\in U}\pi_e^z(u\mid x_i)R(x_i,u) + \frac{\pi_e^z(u_i\mid x_i)} {\pi_b^z(u_i\mid x_i)} \bigl(G_i-R(x_i,u_i)\bigr) \right]$
+</center>
+
+With this time:
+- $R(s_i,u)$ is the model that estimates full episode return.
+- $G_i$ is the actual total return observed in the episode.
+- $u_i$ is the action taken in the episode, i.e. the switch time.
+- $\pi_e^z(u\mid x_i)$ and $\pi_b^z(u\mid x_i)$ are the probabilities of taking action $u$ under the evaluated and behavior policies, respectively. This is described in the previous section.
+- $U$ is the set of possible actions (switch times). In the direct term, we sum over all possible switch times weighted 
+  by the evaluated policy's probabilities, while in the importance sampling term, we only consider the actual switch time that occurred in the episode.
+
+A particular attention point to the following adaptation: as discussed for DM in earlier sections, the model can be weak if it learns from the initial state alone. That's 
+why we introduce a variable $x$ to represent the coarse state representation that includes the initial state and the trajectory until switch time, 
+which carries more information about system dynamics. Note that this was already the case in previous section for the reframed IPS estimator.
+
 ## Post-deployment evaluation
 
 As with any continuous deployment technique, continuous monitoring is necessary as a post-deployment evaluation step. This will allow to make sure deployed policy outcome is the desired one. The good thing here is that we won’t rely only on the reward, but on every data available from the target system. 
@@ -369,7 +404,9 @@ Below example shows control-context equivalent evaluation on an optimal start pr
 ![sources]({{ site.baseurl }}/assets/ope_guidelines/bubble_plot_cce.svg){: .center }
 <center class="image-foot"><i>Bubble plot showing the post-deployment performance of old and new policy evaluated under CCE.</i></center> 
 
-Of course, it’s still possible to rely on OPE, and to compute reward estimates based on logged data after deployment, then compare $\hat{V}(\pi_e)$ with $V(\pi_e)$ with $\hat{V}$ being the value estimated on logged trajectories.
+Of course, it’s still possible to rely on OPE, and to compute reward estimates based on logged data after deployment, then compare $\hat{V}(\pi_e)$ and $V(\pi_e)$ with: 
+- $V(\pi_e)$ being the value estimated on logged trajectories.
+- $\hat{V}(\pi_e)$ the true value of the policy, which can be estimated by the cumulative sum of rewards under the new policy after deployment.
 
 ## What alternatives exist?
 
@@ -420,6 +457,7 @@ on real-world problems.
 [The Self-Normalized Estimator for Counterfactual Learning](https://papers.nips.cc/paper_files/paper/2015/hash/39027dfad5138c9ca0c474d71db915c3-Abstract.html)<br>
 [A Review of Off-Policy Evaluation in Reinforcement Learning](https://arxiv.org/abs/2212.06355)<br>
 [Doubly Robust Policy Evaluation and Optimization](https://arxiv.org/pdf/1503.02834)<br>
+[Doubly Robust Off-policy Value Evaluation for Reinforcement Learning](https://arxiv.org/abs/1511.03722)<br>
 
 ## Tools
 
