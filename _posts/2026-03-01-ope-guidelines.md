@@ -267,7 +267,7 @@ There are several practical things to consider about the dataset and the problem
 - Reward scale and variance: high reward variance increases estimator variance. It requires dealing with outliers steps or episodes (pruning), re-scaling rewards, and using robust estimators.
 - Action space shape: special care needed when action imbalance exists. This leads to numeric instability of weights under IPS estimators, and estimators using a Q model may never see some actions taken under $\pi_b$.
 
-## A real-world challenge: overridden policy decisions
+## A real-world challenge: binary action decision process in a stochastic environment with overridden policy decisions
 
 In real-world systems policy decisions can be overridden by safety rules, manual decisions, etc. This comes as a 
 challenge for OPE as the logged propensities under $\pi_b$ no longer match the actual action applied, resulting in 
