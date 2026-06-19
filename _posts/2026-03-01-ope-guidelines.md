@@ -378,17 +378,18 @@ This formulation stands for all sequential decision problems, however it can be 
 with a single action per episode as follows:
 
 <center>
-$V_{\text{DR}} = \frac1n\sum_{i=1}^n \left[\sum_{u\in U}\pi_e^z(u\mid x_i)R(x_i,u) + \frac{\pi_e^z(u_i\mid x_i)} {\pi_b^z(u_i\mid x_i)} \bigl(G_i-R(x_i,u_i)\bigr) \right]$
+$V_{\text{DR}} = \frac{1}{n}\sum_{i=1}^n \left[\sum_{u\in U} \pi_e^z(u \mid s_0^i)\, R(s_0^i,u) + \frac{\pi_e^z(u^i \mid s_0^i)}{\pi_b^z(u^i \mid s_0^i)} \left(G^i - R(s_0^i,u^i)\right)\right]$
 </center>
 
-With this time:
-- $R(s_i,u)$ is the model that estimates full episode return.
-- $G_i$ is the actual total return observed in the episode.
-- $u_i$ is the action taken in the episode, i.e. the switch time.
-- $\pi_e^z(u\mid x_i)$ and $\pi_b^z(u\mid x_i)$ are the probabilities of taking action $u$ under the evaluated and behavior policies, respectively. This is described in the previous section.
-- $U$ is the set of possible actions (switch times). In the direct term, we sum over all possible switch times weighted 
-  by the evaluated policy's probabilities, while in the importance sampling term, we only consider the actual switch time that occurred in the episode.
-
+* $i$ indexes an episode.
+* $s_0^i$ is the initial context of episode $i$.
+* $u \in U = \{0, 1, ..., T\}$ is a candidate switch time.
+* $u^i$ is the switch time observed in episode $i$ under the behavior policy.
+* $G^i = \sum_{t=0}^{T} \gamma^t r_t^i$ is the observed full episode return.
+* $R(s_0^i,u)$ is the learned direct model estimating the expected full episode return if switch time $u$ is chosen from initial context $s_0^i$.
+* $\pi_e^z(u \mid s_0^i)$ and $\pi_b^z(u \mid s_0^i)$ are the probabilities of choosing switch time $u$ under the evaluated and behavior policies, respectively, using the reframed switch-time formulation described in the previous section.
+* $U$ is the set of possible switch times. In the direct term, we sum over all possible switch times weighted by the evaluated policy probability. In the correction term, we only use the switch time actually observed in the logged episode.
+ 
 A particular attention point to the following adaptation: as discussed for DM in earlier sections, the model can be weak if it learns from the initial state alone. That's 
 why we introduce a variable $x$ to represent the coarse state representation that includes the initial state and the trajectory until switch time, 
 which carries more information about system dynamics. Note that this was already the case in previous section for the reframed IPS estimator.
