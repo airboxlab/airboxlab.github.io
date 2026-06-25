@@ -11,6 +11,7 @@ author: Antoine Galataud, Davide Coraci
   <meta name="robots" content="noindex">
 {% endif %}
 
+<meta name="google-site-verification" content="5t_0lKZ7GP1TcPL6rwLbrzLVF8y5uB9JGaeirGzUEKg" />
 <style type="text/css">
 .center {
     display:block;
