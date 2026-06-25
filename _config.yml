@@ -36,4 +36,4 @@ defaults:
       share: false
       related: false
       sitemap: false  # To hide from sitemap.xml
-      noindex: true   # To hide from robots and crawlers
+      noindex: false   # To hide from robots and crawlers
