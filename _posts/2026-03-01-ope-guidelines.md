@@ -378,7 +378,7 @@ This formulation stands for all sequential decision problems, however it can be 
 with a single action per episode as follows:
 
 <center>
-$V_{\text{DR}} = \frac{1}{n}\sum_{i=1}^n \left[\sum_{u\in U} \pi_e^z(u \mid s_0^i)\, R(s_0^i,u) + \frac{\pi_e^z(u^i \mid s_0^i)}{\pi_b^z(u^i \mid s_0^i)} \left(G^i - R(s_0^i,u^i)\right)\right]$
+$V_{\text{DR}} = \frac{1}{n}\sum_{i=1}^n \left[\sum_{u\in U} \pi_e^z(u \mid s_0^i)\, Q(s_0^i,u) + \frac{\pi_e^z(u^i \mid s_0^i)}{\pi_b^z(u^i \mid s_0^i)} \left(G^i - Q(s_0^i,u^i)\right)\right]$
 </center>
 
 * $i$ indexes an episode.
@@ -386,7 +386,7 @@ $V_{\text{DR}} = \frac{1}{n}\sum_{i=1}^n \left[\sum_{u\in U} \pi_e^z(u \mid s_0^
 * $u \in U = \{0, 1, ..., T\}$ is a candidate switch time.
 * $u^i$ is the switch time observed in episode $i$ under the behavior policy.
 * $G^i = \sum_{t=0}^{T} \gamma^t r_t^i$ is the observed full episode return.
-* $R(s_0^i,u)$ is the learned direct model estimating the expected full episode return if switch time $u$ is chosen from initial context $s_0^i$.
+* $Q(s_0^i,u)$ is the learned direct model estimating the expected full episode return if switch time $u$ is chosen from initial context $s_0^i$.
 * $\pi_e^z(u \mid s_0^i)$ and $\pi_b^z(u \mid s_0^i)$ are the probabilities of choosing switch time $u$ under the evaluated and behavior policies, respectively, using the reframed switch-time formulation described in the previous section.
 * $U$ is the set of possible switch times. In the direct term, we sum over all possible switch times weighted by the evaluated policy probability. In the correction term, we only use the switch time actually observed in the logged episode.
  
